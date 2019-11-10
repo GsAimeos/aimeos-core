@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MShop
  * @subpackage Price
  */
@@ -18,9 +18,50 @@ namespace Aimeos\MShop\Price\Item;
  * @subpackage Price
  */
 abstract class Base
-	extends \Aimeos\MShop\Common\Item\ListRef\Base
+	extends \Aimeos\MShop\Common\Item\Base
 	implements \Aimeos\MShop\Price\Item\Iface
 {
+	use \Aimeos\MShop\Common\Item\ListRef\Traits {
+		__clone as __cloneList;
+	}
+	use \Aimeos\MShop\Common\Item\PropertyRef\Traits {
+		__clone as __cloneProperty;
+	}
+
+
+	private $precision;
+
+
+	/**
+	 * Initalizes the object with the given values
+	 *
+	 * @param string $prefix Prefix for the keys returned by toArray()
+	 * @param array $values Associative array of key/value pairs for price, costs, rebate and currencyid
+	 * @param \Aimeos\MShop\Common\Item\Lists\Iface[] $listItems List of list items
+	 * @param \Aimeos\MShop\Common\Item\Iface[] $refItems List of referenced items
+	 * @param \Aimeos\MShop\Common\Item\Property\Iface[] $propItems List of property items
+	 */
+	public function __construct( $prefix, array $values = [], array $listItems = [], array $refItems = [], array $propItems = [] )
+	{
+		parent::__construct( $prefix, $values );
+
+		$this->precision = ( isset( $values['.precision'] ) ? $values['.precision'] : 2 );
+		$this->initListItems( $listItems, $refItems );
+		$this->initPropertyItems( $propItems );
+	}
+
+
+	/**
+	 * Creates a deep clone of all objects
+	 */
+	 public function __clone()
+	 {
+		 parent::__clone();
+		 $this->__cloneList();
+		 $this->__cloneProperty();
+	 }
+
+
 	/**
 	 * Compares the properties of the given price item with its own one.
 	 *
@@ -44,8 +85,9 @@ abstract class Base
 		if( $this->getValue() === $price->getValue()
 			&& $this->getCosts() === $price->getCosts()
 			&& $this->getRebate() === $price->getRebate()
-			&& $this->getTaxRate() === $price->getTaxRate()
 			&& $this->getTaxFlag() === $price->getTaxFlag()
+			&& $this->getTaxRate() === $price->getTaxRate()
+			&& $this->getTaxRates() === $price->getTaxRates()
 			&& $this->getQuantity() === $price->getQuantity()
 			&& $this->getCurrencyId() === $price->getCurrencyId()
 		) {
@@ -53,6 +95,17 @@ abstract class Base
 		}
 
 		return false;
+	}
+
+
+	/**
+	 * Returns the decimal precision of the price
+	 *
+	 * @return integer Number of decimal digits
+	 */
+	public function getPrecision()
+	{
+		return $this->precision;
 	}
 
 
@@ -70,13 +123,13 @@ abstract class Base
 	/**
 	 * Tests if the price is within the requirements.
 	 *
-	 * @param integer|double $value Monetary value
-	 * @param integer $precision Number of decimal places
+	 * @param string|integer|double $value Monetary value
+	 * @param integer|null $precision Number of decimal digits, null for default value
 	 * @return string Sanitized monetary value
 	 */
-	protected function checkPrice( $value, $precision = 2 )
+	protected function checkPrice( $value, $precision = null )
 	{
-		if( $value !== '' && !is_numeric( $value ) ) {
+		if( $value != '' && !is_numeric( $value ) ) {
 			throw new \Aimeos\MShop\Price\Exception( sprintf( 'Invalid characters in price "%1$s"', $value ) );
 		}
 
@@ -87,12 +140,12 @@ abstract class Base
 	/**
 	 * Formats the money value.
 	 *
-	 * @param string|double $number Money value
-	 * @param integer $precision Number of decimal places
+	 * @param string|integer|double $number Money value
+	 * @param integer|null $precision Number of decimal digits, null for default value
 	 * @return string Formatted money value
 	 */
-	protected function formatNumber( $number, $precision = 2 )
+	protected function formatNumber( $number, $precision = null )
 	{
-		return number_format( (double) $number, $precision, '.', '' );
+		return number_format( (double) $number, $precision ?: $this->precision, '.', '' );
 	}
 }

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage View
  */
@@ -19,6 +19,10 @@ namespace Aimeos\MW\View\Helper\Encoder;
  */
 interface Iface extends \Aimeos\MW\View\Helper\Iface
 {
+	const TAINT = 0;
+	const TRUST = 1;
+
+
 	/**
 	 * Returns the encoder.
 	 *
@@ -62,7 +66,7 @@ interface Iface extends \Aimeos\MW\View\Helper\Iface
 	 * @param string $value URI/URL string
 	 * @param integer $trust Zero to distrust the input, one (1) if you trust in it
 	 * @param boolean $strip Stip HTML tags if they are part of the input
-	 * @param array $replace Associative list of characters or strings that should be replaced
+	 * @param string[] $replace Associative list of characters or strings that should be replaced
 	 * @return string Escaped URI/URL string
 	 */
 	public function url( $value, $trust = self::TAINT, $strip = true, $replace = array( ' ' => '_' ) );

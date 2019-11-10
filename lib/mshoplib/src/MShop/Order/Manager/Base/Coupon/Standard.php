@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Order
  */
@@ -20,68 +20,72 @@ namespace Aimeos\MShop\Order\Manager\Base\Coupon;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Base
-	implements \Aimeos\MShop\Order\Manager\Base\Coupon\Iface
+	implements \Aimeos\MShop\Order\Manager\Base\Coupon\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
-		'order.base.coupon.id'=> array(
-			'code'=>'order.base.coupon.id',
-			'internalcode'=>'mordbaco."id"',
+		'order.base.coupon.id' => array(
+			'code' => 'order.base.coupon.id',
+			'internalcode' => 'mordbaco."id"',
 			'internaldeps' => array( 'LEFT JOIN "mshop_order_base_coupon" AS mordbaco ON ( mordba."id" = mordbaco."baseid" )' ),
-			'label'=>'Order base coupon ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'label' => 'Coupon ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		'order.base.coupon.siteid'=> array(
-			'code'=>'order.base.coupon.siteid',
-			'internalcode'=>'mordbaco."siteid"',
-			'label'=>'Order base coupon site ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'order.base.coupon.siteid' => array(
+			'code' => 'order.base.coupon.siteid',
+			'internalcode' => 'mordbaco."siteid"',
+			'label' => 'Coupon site ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		'order.base.coupon.baseid'=> array(
-			'code'=>'order.base.coupon.baseid',
-			'internalcode'=>'mordbaco."baseid"',
-			'label'=>'Order base ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'order.base.coupon.baseid' => array(
+			'code' => 'order.base.coupon.baseid',
+			'internalcode' => 'mordbaco."baseid"',
+			'label' => 'Order ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		'order.base.coupon.ordprodid'=> array(
-			'code'=>'order.base.coupon.productid',
-			'internalcode'=>'mordbaco."ordprodid"',
-			'label'=>'Order coupon product ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'order.base.coupon.ordprodid' => array(
+			'code' => 'order.base.coupon.productid',
+			'internalcode' => 'mordbaco."ordprodid"',
+			'label' => 'Coupon product ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
 		),
-		'order.base.coupon.code'=> array(
-			'code'=>'order.base.coupon.code',
-			'internalcode'=>'mordbaco."code"',
-			'label'=>'Order base coupon code',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'order.base.coupon.code' => array(
+			'code' => 'order.base.coupon.code',
+			'internalcode' => 'mordbaco."code"',
+			'label' => 'Coupon code',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'order.base.coupon.mtime'=> array(
-			'code'=>'order.base.coupon.mtime',
-			'internalcode'=>'mordbaco."mtime"',
-			'label'=>'Order base coupon modification time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'order.base.coupon.ctime' => array(
+			'code' => 'order.base.coupon.ctime',
+			'internalcode' => 'mordbaco."ctime"',
+			'label' => 'Coupon create date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'order.base.coupon.ctime'=> array(
-			'code'=>'order.base.coupon.ctime',
-			'internalcode'=>'mordbaco."ctime"',
-			'label'=>'Order base coupon creation date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'order.base.coupon.mtime' => array(
+			'code' => 'order.base.coupon.mtime',
+			'internalcode' => 'mordbaco."mtime"',
+			'label' => 'Coupon modify date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'order.base.coupon.editor'=> array(
-			'code'=>'order.base.coupon.editor',
-			'internalcode'=>'mordbaco."editor"',
-			'label'=>'Order base coupon editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'order.base.coupon.editor' => array(
+			'code' => 'order.base.coupon.editor',
+			'internalcode' => 'mordbaco."editor"',
+			'label' => 'Coupon editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
 
@@ -103,9 +107,10 @@ class Standard
 	 *
 	 * @param \Aimeos\MW\Criteria\Iface $search Search criteria
 	 * @param string $key Search key to aggregate items for
-	 * @return array List of the search keys as key and the number of counted items as value
+	 * @return integer[] List of the search keys as key and the number of counted items as value
+	 * @todo 2018.01 Add optional parameters to interface
 	 */
-	public function aggregate( \Aimeos\MW\Criteria\Iface $search, $key )
+	public function aggregate( \Aimeos\MW\Criteria\Iface $search, $key, $value = null, $type = null )
 	{
 		/** mshop/order/manager/base/coupon/standard/aggregate/mysql
 		 * Counts the number of records grouped by the values in the key column and matched by the given criteria
@@ -156,67 +161,295 @@ class Standard
 		 * @see mshop/order/manager/base/coupon/standard/search/ansi
 		 * @see mshop/order/manager/base/coupon/standard/count/ansi
 		 */
-		$cfgkey = 'mshop/order/manager/base/coupon/standard/aggregate';
-		return $this->aggregateBase( $search, $key, $cfgkey, array( 'order.base.coupon' ) );
+		$cfgkey = 'mshop/order/manager/base/coupon/standard/aggregate' . $type;
+		return $this->aggregateBase( $search, $key, $cfgkey, array( 'order.base.coupon' ), $value );
 	}
 
 
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param integer[] $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Order\Manager\Base\Coupon\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/order/manager/base/coupon/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array() ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, [] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/order/manager/base/coupon/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/order/manager/base/coupon/standard/delete' );
 	}
 
 
 	/**
-	 * Creates a new order base coupon object.
+	 * Creates a new empty item instance
 	 *
-	 * @return \Aimeos\MShop\Order\Item\Base\Coupon\Iface New order coupon object
+	 * @param array $values Values the item should be initialized with
+	 * @return \Aimeos\MShop\Order\Item\Base\Coupon\Iface New order coupon item object
 	 */
-	public function createItem()
+	public function createItem( array $values = [] )
 	{
-		$values = array( 'order.base.coupon.siteid' => $this->getContext()->getLocale()->getSiteId() );
+		$values['order.base.coupon.siteid'] = $this->getContext()->getLocale()->getSiteId();
 		return $this->createItemBase( $values );
+	}
+
+
+	/**
+	 * Creates a search critera object
+	 *
+	 * @param boolean $default Add default criteria (optional)
+	 * @return \Aimeos\MW\Criteria\Iface New search criteria object
+	 */
+	public function createSearch( $default = false )
+	{
+		$search = parent::createSearch( $default );
+		$search->setSortations( [$search->sort( '+', 'order.base.coupon.id' )] );
+
+		return $search;
 	}
 
 
 	/**
 	 * Returns the order coupon item for the given ID.
 	 *
-	 * @param integer $id ID of the item that should be retrieved
+	 * @param string $id ID of the item that should be retrieved
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
+	 * @param boolean $default Add default criteria
 	 * @return \Aimeos\MShop\Order\Item\Base\Coupon\Iface Item for the given ID
 	 */
-	public function getItem( $id, array $ref = array() )
+	public function getItem( $id, array $ref = [], $default = false )
 	{
-		return $this->getItemBase( 'order.base.coupon.id', $id, $ref );
+		return $this->getItemBase( 'order.base.coupon.id', $id, $ref, $default );
+	}
+
+
+	/**
+	 * Removes multiple items.
+	 *
+	 * @param \Aimeos\MShop\Common\Item\Iface[]|string[] $itemIds List of item objects or IDs of the items
+	 * @return \Aimeos\MShop\Order\Manager\Base\Address\Iface Manager object for chaining method calls
+	 */
+	public function deleteItems( array $itemIds )
+	{
+		/** mshop/order/manager/base/coupon/standard/delete/mysql
+		 * Deletes the items matched by the given IDs from the database
+		 *
+		 * @see mshop/order/manager/base/coupon/standard/delete/ansi
+		 */
+
+		/** mshop/order/manager/base/coupon/standard/delete/ansi
+		 * Deletes the items matched by the given IDs from the database
+		 *
+		 * Removes the records specified by the given IDs from the order database.
+		 * The records must be from the site that is configured via the
+		 * context item.
+		 *
+		 * The ":cond" placeholder is replaced by the name of the ID column and
+		 * the given ID or list of IDs while the site ID is bound to the question
+		 * mark.
+		 *
+		 * The SQL statement should conform to the ANSI standard to be
+		 * compatible with most relational database systems. This also
+		 * includes using double quotes for table and column names.
+		 *
+		 * @param string SQL statement for deleting items
+		 * @since 2014.03
+		 * @category Developer
+		 * @see mshop/order/manager/base/coupon/standard/insert/ansi
+		 * @see mshop/order/manager/base/coupon/standard/update/ansi
+		 * @see mshop/order/manager/base/coupon/standard/newid/ansi
+		 * @see mshop/order/manager/base/coupon/standard/search/ansi
+		 * @see mshop/order/manager/base/coupon/standard/count/ansi
+		 */
+		$path = 'mshop/order/manager/base/coupon/standard/delete';
+
+		return $this->deleteItemsBase( $itemIds, $path );
+	}
+
+
+	/**
+	 * Returns the available manager types
+	 *
+	 * @param boolean $withsub Return also the resource type of sub-managers if true
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
+	 */
+	public function getResourceType( $withsub = true )
+	{
+		$path = 'mshop/order/manager/base/coupon/submanagers';
+
+		return $this->getResourceTypeBase( 'order/base/coupon', $path, [], $withsub );
+	}
+
+
+	/**
+	 * Returns the attributes that can be used for searching.
+	 *
+	 * @param boolean $withsub Return also attributes of sub-managers if true
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
+	 */
+	public function getSearchAttributes( $withsub = true )
+	{
+		/** mshop/order/manager/base/coupon/submanagers
+		 * List of manager names that can be instantiated by the order base coupon manager
+		 *
+		 * Managers provide a generic interface to the underlying storage.
+		 * Each manager has or can have sub-managers caring about particular
+		 * aspects. Each of these sub-managers can be instantiated by its
+		 * parent manager using the getSubManager() method.
+		 *
+		 * The search keys from sub-managers can be normally used in the
+		 * manager as well. It allows you to search for items of the manager
+		 * using the search keys of the sub-managers to further limit the
+		 * retrieved list of items.
+		 *
+		 * @param array List of sub-manager names
+		 * @since 2014.03
+		 * @category Developer
+		 */
+		$path = 'mshop/order/manager/base/coupon/submanagers';
+
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
+	}
+
+
+	/**
+	 * Returns a new sub manager specified by its name.
+	 *
+	 * @param string $manager Name of the sub manager type in lower case
+	 * @param string|null $name Name of the implementation, will be from configuration (or Default) if null
+	 * @return \Aimeos\MShop\Common\Manager\Iface Manager object
+	 */
+	public function getSubManager( $manager, $name = null )
+	{
+		/** mshop/order/manager/base/coupon/name
+		 * Class name of the used order base coupon manager implementation
+		 *
+		 * Each default order base coupon manager can be replaced by an alternative imlementation.
+		 * To use this implementation, you have to set the last part of the class
+		 * name as configuration value so the manager factory knows which class it
+		 * has to instantiate.
+		 *
+		 * For example, if the name of the default class is
+		 *
+		 *  \Aimeos\MShop\Order\Manager\Base\Coupon\Standard
+		 *
+		 * and you want to replace it with your own version named
+		 *
+		 *  \Aimeos\MShop\Order\Manager\Base\Coupon\Mycoupon
+		 *
+		 * then you have to set the this configuration option:
+		 *
+		 *  mshop/order/manager/base/coupon/name = Mycoupon
+		 *
+		 * The value is the last part of your own class name and it's case sensitive,
+		 * so take care that the configuration value is exactly named like the last
+		 * part of the class name.
+		 *
+		 * The allowed characters of the class name are A-Z, a-z and 0-9. No other
+		 * characters are possible! You should always start the last part of the class
+		 * name with an upper case character and continue only with lower case characters
+		 * or numbers. Avoid chamel case names like "MyCoupon"!
+		 *
+		 * @param string Last part of the class name
+		 * @since 2014.03
+		 * @category Developer
+		 */
+
+		/** mshop/order/manager/base/coupon/decorators/excludes
+		 * Excludes decorators added by the "common" option from the order base coupon manager
+		 *
+		 * Decorators extend the functionality of a class by adding new aspects
+		 * (e.g. log what is currently done), executing the methods of the underlying
+		 * class only in certain conditions (e.g. only for logged in users) or
+		 * modify what is returned to the caller.
+		 *
+		 * This option allows you to remove a decorator added via
+		 * "mshop/common/manager/decorators/default" before they are wrapped
+		 * around the order base coupon manager.
+		 *
+		 *  mshop/order/manager/base/coupon/decorators/excludes = array( 'decorator1' )
+		 *
+		 * This would remove the decorator named "decorator1" from the list of
+		 * common decorators ("\Aimeos\MShop\Common\Manager\Decorator\*") added via
+		 * "mshop/common/manager/decorators/default" for the order base coupon manager.
+		 *
+		 * @param array List of decorator names
+		 * @since 2014.03
+		 * @category Developer
+		 * @see mshop/common/manager/decorators/default
+		 * @see mshop/order/manager/base/coupon/decorators/global
+		 * @see mshop/order/manager/base/coupon/decorators/local
+		 */
+
+		/** mshop/order/manager/base/coupon/decorators/global
+		 * Adds a list of globally available decorators only to the order base coupon manager
+		 *
+		 * Decorators extend the functionality of a class by adding new aspects
+		 * (e.g. log what is currently done), executing the methods of the underlying
+		 * class only in certain conditions (e.g. only for logged in users) or
+		 * modify what is returned to the caller.
+		 *
+		 * This option allows you to wrap global decorators
+		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the order base coupon
+		 * manager.
+		 *
+		 *  mshop/order/manager/base/coupon/decorators/global = array( 'decorator1' )
+		 *
+		 * This would add the decorator named "decorator1" defined by
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the order
+		 * base coupon manager.
+		 *
+		 * @param array List of decorator names
+		 * @since 2014.03
+		 * @category Developer
+		 * @see mshop/common/manager/decorators/default
+		 * @see mshop/order/manager/base/coupon/decorators/excludes
+		 * @see mshop/order/manager/base/coupon/decorators/local
+		 */
+
+		/** mshop/order/manager/base/coupon/decorators/local
+		 * Adds a list of local decorators only to the order base coupon manager
+		 *
+		 * Decorators extend the functionality of a class by adding new aspects
+		 * (e.g. log what is currently done), executing the methods of the underlying
+		 * class only in certain conditions (e.g. only for logged in users) or
+		 * modify what is returned to the caller.
+		 *
+		 * This option allows you to wrap local decorators
+		 * ("\Aimeos\MShop\Order\Manager\Base\Coupon\Decorator\*") around the order
+		 * base coupon manager.
+		 *
+		 *  mshop/order/manager/base/coupon/decorators/local = array( 'decorator2' )
+		 *
+		 * This would add the decorator named "decorator2" defined by
+		 * "\Aimeos\MShop\Order\Manager\Base\Coupon\Decorator\Decorator2" only
+		 * to the order base coupon manager.
+		 *
+		 * @param array List of decorator names
+		 * @since 2014.03
+		 * @category Developer
+		 * @see mshop/common/manager/decorators/default
+		 * @see mshop/order/manager/base/coupon/decorators/excludes
+		 * @see mshop/order/manager/base/coupon/decorators/global
+		 */
+
+		return $this->getSubManagerBase( 'order', 'base/coupon/' . $manager, $name );
 	}
 
 
 	/**
 	 * Adds a new item to the storage or updates an existing one.
 	 *
-	 * @param \Aimeos\MShop\Common\Item\Iface $item Item that should be saved to the storage
+	 * @param \Aimeos\MShop\Order\Item\Base\Coupon\Iface $item Item that should be saved to the storage
 	 * @param boolean $fetch True if the new ID should be returned in the item
+	 * @return \Aimeos\MShop\Order\Item\Base\Coupon\Iface $item Updated item including the generated ID
 	 */
-	public function saveItem( \Aimeos\MShop\Common\Item\Iface $item, $fetch = true )
+	public function saveItem( \Aimeos\MShop\Order\Item\Base\Coupon\Iface $item, $fetch = true )
 	{
-		$iface = '\\Aimeos\\MShop\\Order\\Item\\Base\\Coupon\\Iface';
-		if( !( $item instanceof $iface ) ) {
-			throw new \Aimeos\MShop\Order\Exception( sprintf( 'Object is not of required type "%1$s"', $iface ) );
-		}
-
 		if( !$item->isModified() ) {
-			return;
+			return $item;
 		}
 
 		$context = $this->getContext();
@@ -229,6 +462,7 @@ class Standard
 		{
 			$id = $item->getId();
 			$date = date( 'Y-m-d H:i:s' );
+			$columns = $this->getObject()->getSaveAttributes();
 
 			if( $id === null )
 			{
@@ -268,6 +502,7 @@ class Standard
 				 * @see mshop/order/manager/base/coupon/standard/count/ansi
 				 */
 				$path = 'mshop/order/manager/base/coupon/standard/insert';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ) );
 			}
 			else
 			{
@@ -304,22 +539,28 @@ class Standard
 				 * @see mshop/order/manager/base/coupon/standard/count/ansi
 				 */
 				$path = 'mshop/order/manager/base/coupon/standard/update';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ), false );
 			}
 
-			$stmt = $this->getCachedStatement( $conn, $path );
+			$idx = 1;
+			$stmt = $this->getCachedStatement( $conn, $path, $sql );
 
-			$stmt->bind( 1, $item->getBaseId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 2, $context->getLocale()->getSiteId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 3, $item->getProductId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 4, $item->getCode() );
-			$stmt->bind( 5, $date ); // mtime
-			$stmt->bind( 6, $context->getEditor() );
+			foreach( $columns as $name => $entry ) {
+				$stmt->bind( $idx++, $item->get( $name ), $entry->getInternalType() );
+			}
+
+			$stmt->bind( $idx++, $item->getBaseId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			$stmt->bind( $idx++, $item->getProductId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			$stmt->bind( $idx++, $item->getCode() );
+			$stmt->bind( $idx++, $date ); // mtime
+			$stmt->bind( $idx++, $context->getEditor() );
+			$stmt->bind( $idx++, $context->getLocale()->getSiteId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 
 			if( $id !== null ) {
-				$stmt->bind( 7, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+				$stmt->bind( $idx++, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 				$item->setId( $id );
 			} else {
-				$stmt->bind( 7, $date ); // ctime
+				$stmt->bind( $idx++, $date ); // ctime
 			}
 
 			$stmt->execute()->finish();
@@ -373,93 +614,8 @@ class Standard
 			$dbm->release( $conn, $dbname );
 			throw $e;
 		}
-	}
 
-
-	/**
-	 * Removes multiple items specified by ids in the array.
-	 *
-	 * @param array $ids List of IDs
-	 */
-	public function deleteItems( array $ids )
-	{
-		/** mshop/order/manager/base/coupon/standard/delete/mysql
-		 * Deletes the items matched by the given IDs from the database
-		 *
-		 * @see mshop/order/manager/base/coupon/standard/delete/ansi
-		 */
-
-		/** mshop/order/manager/base/coupon/standard/delete/ansi
-		 * Deletes the items matched by the given IDs from the database
-		 *
-		 * Removes the records specified by the given IDs from the order database.
-		 * The records must be from the site that is configured via the
-		 * context item.
-		 *
-		 * The ":cond" placeholder is replaced by the name of the ID column and
-		 * the given ID or list of IDs while the site ID is bound to the question
-		 * mark.
-		 *
-		 * The SQL statement should conform to the ANSI standard to be
-		 * compatible with most relational database systems. This also
-		 * includes using double quotes for table and column names.
-		 *
-		 * @param string SQL statement for deleting items
-		 * @since 2014.03
-		 * @category Developer
-		 * @see mshop/order/manager/base/coupon/standard/insert/ansi
-		 * @see mshop/order/manager/base/coupon/standard/update/ansi
-		 * @see mshop/order/manager/base/coupon/standard/newid/ansi
-		 * @see mshop/order/manager/base/coupon/standard/search/ansi
-		 * @see mshop/order/manager/base/coupon/standard/count/ansi
-		 */
-		$path = 'mshop/order/manager/base/coupon/standard/delete';
-		$this->deleteItemsBase( $ids, $path );
-	}
-
-
-	/**
-	 * Returns the available manager types
-	 *
-	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
-	 */
-	public function getResourceType( $withsub = true )
-	{
-		$path = 'mshop/order/manager/base/coupon/submanagers';
-
-		return $this->getResourceTypeBase( 'order/base/coupon', $path, array(), $withsub );
-	}
-
-
-	/**
-	 * Returns the attributes that can be used for searching.
-	 *
-	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array Returns a list of attributes implementing \Aimeos\MW\Criteria\Attribute\Iface
-	 */
-	public function getSearchAttributes( $withsub = true )
-	{
-		/** mshop/order/manager/base/coupon/submanagers
-		 * List of manager names that can be instantiated by the order base coupon manager
-		 *
-		 * Managers provide a generic interface to the underlying storage.
-		 * Each manager has or can have sub-managers caring about particular
-		 * aspects. Each of these sub-managers can be instantiated by its
-		 * parent manager using the getSubManager() method.
-		 *
-		 * The search keys from sub-managers can be normally used in the
-		 * manager as well. It allows you to search for items of the manager
-		 * using the search keys of the sub-managers to further limit the
-		 * retrieved list of items.
-		 *
-		 * @param array List of sub-manager names
-		 * @since 2014.03
-		 * @category Developer
-		 */
-		$path = 'mshop/order/manager/base/coupon/submanagers';
-
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $item;
 	}
 
 
@@ -471,9 +627,9 @@ class Standard
 	 * @param integer|null &$total Number of items that are available in total
 	 * @return array Return a list of items implementing \Aimeos\MShop\Order\Item\Base\Coupon\Iface
 	 */
-	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = array(), &$total = null )
+	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = [], &$total = null )
 	{
-		$items = array();
+		$items = [];
 		$context = $this->getContext();
 
 		$dbm = $context->getDatabaseManager();
@@ -483,7 +639,9 @@ class Standard
 		try
 		{
 			$required = array( 'order.base.coupon' );
-			$level = \Aimeos\MShop\Locale\Manager\Base::SITE_SUBTREE;
+
+			$level = \Aimeos\MShop\Locale\Manager\Base::SITE_ALL;
+			$level = $context->getConfig()->get( 'mshop/order/manager/sitemode', $level );
 
 			/** mshop/order/manager/base/coupon/standard/search/mysql
 			 * Retrieves the records matched by the given criteria in the database
@@ -602,7 +760,7 @@ class Standard
 			try
 			{
 				while( ( $row = $results->fetch() ) !== false ) {
-					$items[$row['order.base.coupon.id']] = $this->createItemBase( $row );
+					$items[(string) $row['order.base.coupon.id']] = $this->createItemBase( $row );
 				}
 			}
 			catch( \Exception $e )
@@ -624,134 +782,12 @@ class Standard
 
 
 	/**
-	 * Returns a new sub manager specified by its name.
-	 *
-	 * @param string $manager Name of the sub manager type in lower case
-	 * @param string|null $name Name of the implementation, will be from configuration (or Default) if null
-	 * @return \Aimeos\MShop\Common\Manager\Iface Manager object
-	 */
-	public function getSubManager( $manager, $name = null )
-	{
-		/** mshop/order/manager/base/coupon/name
-		 * Class name of the used order base coupon manager implementation
-		 *
-		 * Each default order base coupon manager can be replaced by an alternative imlementation.
-		 * To use this implementation, you have to set the last part of the class
-		 * name as configuration value so the manager factory knows which class it
-		 * has to instantiate.
-		 *
-		 * For example, if the name of the default class is
-		 *
-		 *  \Aimeos\MShop\Order\Manager\Base\Coupon\Standard
-		 *
-		 * and you want to replace it with your own version named
-		 *
-		 *  \Aimeos\MShop\Order\Manager\Base\Coupon\Mycoupon
-		 *
-		 * then you have to set the this configuration option:
-		 *
-		 *  mshop/order/manager/base/coupon/name = Mycoupon
-		 *
-		 * The value is the last part of your own class name and it's case sensitive,
-		 * so take care that the configuration value is exactly named like the last
-		 * part of the class name.
-		 *
-		 * The allowed characters of the class name are A-Z, a-z and 0-9. No other
-		 * characters are possible! You should always start the last part of the class
-		 * name with an upper case character and continue only with lower case characters
-		 * or numbers. Avoid chamel case names like "MyCoupon"!
-		 *
-		 * @param string Last part of the class name
-		 * @since 2014.03
-		 * @category Developer
-		 */
-
-		/** mshop/order/manager/base/coupon/decorators/excludes
-		 * Excludes decorators added by the "common" option from the order base coupon manager
-		 *
-		 * Decorators extend the functionality of a class by adding new aspects
-		 * (e.g. log what is currently done), executing the methods of the underlying
-		 * class only in certain conditions (e.g. only for logged in users) or
-		 * modify what is returned to the caller.
-		 *
-		 * This option allows you to remove a decorator added via
-		 * "mshop/common/manager/decorators/default" before they are wrapped
-		 * around the order base coupon manager.
-		 *
-		 *  mshop/order/manager/base/coupon/decorators/excludes = array( 'decorator1' )
-		 *
-		 * This would remove the decorator named "decorator1" from the list of
-		 * common decorators ("\Aimeos\MShop\Common\Manager\Decorator\*") added via
-		 * "mshop/common/manager/decorators/default" for the order base coupon manager.
-		 *
-		 * @param array List of decorator names
-		 * @since 2014.03
-		 * @category Developer
-		 * @see mshop/common/manager/decorators/default
-		 * @see mshop/order/manager/base/coupon/decorators/global
-		 * @see mshop/order/manager/base/coupon/decorators/local
-		 */
-
-		/** mshop/order/manager/base/coupon/decorators/global
-		 * Adds a list of globally available decorators only to the order base coupon manager
-		 *
-		 * Decorators extend the functionality of a class by adding new aspects
-		 * (e.g. log what is currently done), executing the methods of the underlying
-		 * class only in certain conditions (e.g. only for logged in users) or
-		 * modify what is returned to the caller.
-		 *
-		 * This option allows you to wrap global decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the order base coupon manager.
-		 *
-		 *  mshop/order/manager/base/coupon/decorators/global = array( 'decorator1' )
-		 *
-		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the order controller.
-		 *
-		 * @param array List of decorator names
-		 * @since 2014.03
-		 * @category Developer
-		 * @see mshop/common/manager/decorators/default
-		 * @see mshop/order/manager/base/coupon/decorators/excludes
-		 * @see mshop/order/manager/base/coupon/decorators/local
-		 */
-
-		/** mshop/order/manager/base/coupon/decorators/local
-		 * Adds a list of local decorators only to the order base coupon manager
-		 *
-		 * Decorators extend the functionality of a class by adding new aspects
-		 * (e.g. log what is currently done), executing the methods of the underlying
-		 * class only in certain conditions (e.g. only for logged in users) or
-		 * modify what is returned to the caller.
-		 *
-		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the order base coupon manager.
-		 *
-		 *  mshop/order/manager/base/coupon/decorators/local = array( 'decorator2' )
-		 *
-		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the order
-		 * controller.
-		 *
-		 * @param array List of decorator names
-		 * @since 2014.03
-		 * @category Developer
-		 * @see mshop/common/manager/decorators/default
-		 * @see mshop/order/manager/base/coupon/decorators/excludes
-		 * @see mshop/order/manager/base/coupon/decorators/global
-		 */
-
-		return $this->getSubManagerBase( 'order', 'base/coupon/' . $manager, $name );
-	}
-
-
-	/**
 	 * Create new order base coupon item object initialized with given parameters.
 	 *
 	 * @param array $values Associative list of order coupon property pairs
-	 * @return \Aimeos\MShop\Order\Item\Base\Coupon\Standard New item
+	 * @return \Aimeos\MShop\Order\Item\Base\Coupon\Iface New order base coupon item
 	 */
-	protected function createItemBase( array $values = array() )
+	protected function createItemBase( array $values = [] )
 	{
 		return new \Aimeos\MShop\Order\Item\Base\Coupon\Standard( $values );
 	}

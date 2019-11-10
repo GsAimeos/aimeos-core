@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Service
  */
@@ -19,55 +19,52 @@ namespace Aimeos\MShop\Service\Item;
  * @subpackage Service
  */
 class Standard
-	extends \Aimeos\MShop\Common\Item\ListRef\Base
+	extends \Aimeos\MShop\Common\Item\Base
 	implements \Aimeos\MShop\Service\Item\Iface
 {
-	private $values;
+	use \Aimeos\MShop\Common\Item\Config\Traits;
+	use \Aimeos\MShop\Common\Item\ListRef\Traits;
+
+
+	private $date;
+
 
 	/**
 	 * Initializes the item object.
 	 *
 	 * @param array $values Parameter for initializing the basic properties
-	 * @param \Aimeos\MShop\Common\Lists\Item\Iface[] $listItems List of list items
+	 * @param \Aimeos\MShop\Common\Item\Lists\Iface[] $listItems List of list items
 	 * @param \Aimeos\MShop\Common\Item\Iface[] $refItems List of referenced items
 	 */
-	public function __construct( array $values = array(), array $listItems = array(), array $refItems = array() )
+	public function __construct( array $values = [], array $listItems = [], array $refItems = [] )
 	{
-		parent::__construct( 'service.', $values, $listItems, $refItems );
+		parent::__construct( 'service.', $values );
 
-		$this->values = $values;
+		$this->date = ( isset( $values['.date'] ) ? $values['.date'] : null );
+		$this->initListItems( $listItems, $refItems );
 	}
 
 
 	/**
-	 * Returns the code of the service item payment if available.
+	 * Returns the code of the service item if available
 	 *
 	 * @return string Service item code
 	 */
 	public function getCode()
 	{
-		if( isset( $this->values['service.code'] ) ) {
-			return (string) $this->values['service.code'];
-		}
-
-		return '';
+		return (string) $this->get( 'service.code', '' );
 	}
 
 
 	/**
-	 * Sets the code of the service item payment.
+	 * Sets the code of the service item
 	 *
-	 * @param string code of the service item payment
+	 * @param string $code Code of the service item
 	 * @return \Aimeos\MShop\Service\Item\Iface Service item for chaining method calls
 	 */
 	public function setCode( $code )
 	{
-		if( $code == $this->getCode() ) { return $this; }
-
-		$this->values['service.code'] = (string) $this->checkCode( $code );;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'service.code', $this->checkCode( $code ) );
 	}
 
 
@@ -78,58 +75,19 @@ class Standard
 	 */
 	public function getType()
 	{
-		if( isset( $this->values['service.type'] ) ) {
-			return (string) $this->values['service.type'];
-		}
-
-		return null;
+		return $this->get( 'service.type' );
 	}
 
 
 	/**
-	 * Returns the localized name of the type
+	 * Sets the type of the service item.
 	 *
-	 * @return string|null Localized name of the type
-	 */
-	public function getTypeName()
-	{
-		if( isset( $this->values['service.typename'] ) ) {
-			return (string) $this->values['service.typename'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Returns the type ID of the service item if available.
-	 *
-	 * @return integer|null Service item type ID
-	 */
-	public function getTypeId()
-	{
-		if( isset( $this->values['service.typeid'] ) ) {
-			return (int) $this->values['service.typeid'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Sets the type ID of the service item.
-	 *
-	 * @param integer Type ID of the service item
+	 * @param string $type Type of the service item
 	 * @return \Aimeos\MShop\Service\Item\Iface Service item for chaining method calls
 	 */
-	public function setTypeId( $typeId )
+	public function setType( $type )
 	{
-		if( $typeId == $this->getTypeId() ) { return $this; }
-
-		$this->values['service.typeid'] = (int) $typeId;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'service.type', $this->checkCode( $type ) );
 	}
 
 
@@ -140,11 +98,7 @@ class Standard
 	 */
 	public function getProvider()
 	{
-		if( isset( $this->values['service.provider'] ) ) {
-			return (string) $this->values['service.provider'];
-		}
-
-		return '';
+		return (string) $this->get( 'service.provider', '' );
 	}
 
 
@@ -156,44 +110,80 @@ class Standard
 	 */
 	public function setProvider( $provider )
 	{
-		if( $provider == $this->getProvider() ) { return $this; }
+		if( preg_match( '/^[A-Za-z0-9]+(,[A-Za-z0-9]+)*$/', $provider ) !== 1 ) {
+			throw new \Aimeos\MShop\Service\Exception( sprintf( 'Invalid provider name "%1$s"', $provider ) );
+		}
 
-		$this->values['service.provider'] = (string) $provider;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'service.provider', (string) $provider );
 	}
 
 
 	/**
-	 * Returns the label of the service item payment if available.
+	 * Returns the label of the service item if available.
 	 *
 	 * @return string Service item label
 	 */
 	public function getLabel()
 	{
-		if( isset( $this->values['service.label'] ) ) {
-			return (string) $this->values['service.label'];
-		}
-
-		return '';
+		return (string) $this->get( 'service.label', '' );
 	}
 
 
 	/**
-	 * Sets the label of the service item payment.
+	 * Sets the label of the service item
 	 *
-	 * @param string label of the service item payment
+	 * @param string $label Label of the service item
 	 * @return \Aimeos\MShop\Service\Item\Iface Service item for chaining method calls
 	 */
 	public function setLabel( $label )
 	{
-		if( $label == $this->getLabel() ) { return $this; }
+		return $this->set( 'service.label', (string) $label );
+	}
 
-		$this->values['service.label'] = (string) $label;
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Returns the starting point of time, in which the service is available.
+	 *
+	 * @return string|null ISO date in YYYY-MM-DD hh:mm:ss format
+	 */
+	public function getDateStart()
+	{
+		return $this->get( 'service.datestart' );
+	}
+
+
+	/**
+	 * Sets a new starting point of time, in which the service is available.
+	 *
+	 * @param string|null $date New ISO date in YYYY-MM-DD hh:mm:ss format
+	 * @return \Aimeos\MShop\Product\Item\Iface Product item for chaining method calls
+	 */
+	public function setDateStart( $date )
+	{
+		return $this->set( 'service.datestart', $this->checkDateFormat( $date ) );
+	}
+
+
+	/**
+	 * Returns the ending point of time, in which the service is available.
+	 *
+	 * @return string|null ISO date in YYYY-MM-DD hh:mm:ss format
+	 */
+	public function getDateEnd()
+	{
+		return $this->get( 'service.dateend' );
+	}
+
+
+	/**
+	 * Sets a new ending point of time, in which the service is available.
+	 *
+	 * @param string|null $date New ISO date in YYYY-MM-DD hh:mm:ss format
+	 * @return \Aimeos\MShop\Product\Item\Iface Product item for chaining method calls
+	 */
+	public function setDateEnd( $date )
+	{
+		return $this->set( 'service.dateend', $this->checkDateFormat( $date ) );
 	}
 
 
@@ -204,11 +194,7 @@ class Standard
 	 */
 	public function getConfig()
 	{
-		if( isset( $this->values['service.config'] ) ) {
-			return (array) $this->values['service.config'];
-		}
-
-		return array();
+		return (array) $this->get( 'service.config', [] );
 	}
 
 
@@ -220,10 +206,7 @@ class Standard
 	 */
 	public function setConfig( array $config )
 	{
-		$this->values['service.config'] = $config;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'service.config', $config );
 	}
 
 
@@ -234,11 +217,7 @@ class Standard
 	 */
 	public function getPosition()
 	{
-		if( isset( $this->values['service.position'] ) ) {
-			return (int) $this->values['service.position'];
-		}
-
-		return 0;
+		return (int) $this->get( 'service.position', 0 );
 	}
 
 
@@ -250,12 +229,7 @@ class Standard
 	 */
 	public function setPosition( $pos )
 	{
-		if( $pos == $this->getPosition() ) { return $this; }
-
-		$this->values['service.position'] = (int) $pos;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'service.position', (int) $pos );
 	}
 
 
@@ -266,11 +240,7 @@ class Standard
 	 */
 	public function getStatus()
 	{
-		if( isset( $this->values['service.status'] ) ) {
-			return (int) $this->values['service.status'];
-		}
-
-		return 0;
+		return (int) $this->get( 'service.status', 1 );
 	}
 
 
@@ -282,12 +252,7 @@ class Standard
 	 */
 	public function setStatus( $status )
 	{
-		if( $status == $this->getStatus() ) { return $this; }
-
-		$this->values['service.status'] = (int) $status;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'service.status', (int) $status );
 	}
 
 
@@ -303,52 +268,69 @@ class Standard
 
 
 	/**
-	 * Sets the item values from the given array.
+	 * Tests if the item is available based on status, time, language and currency
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @return boolean True if available, false if not
 	 */
-	public function fromArray( array $list )
+	public function isAvailable()
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
-		unset( $list['service.type'], $list['service.typename'] );
+		return parent::isAvailable() && $this->getStatus() > 0
+			&& ( $this->getDateStart() === null || $this->getDateStart() < $this->date )
+			&& ( $this->getDateEnd() === null || $this->getDateEnd() > $this->date );
+	}
+
+
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
+	 *
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Service\Item\Iface Service item for chaining method calls
+	 */
+	public function fromArray( array &$list, $private = false )
+	{
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'service.typeid': $this->setTypeId( $value ); break;
-				case 'service.code': $this->setCode( $value ); break;
-				case 'service.label': $this->setLabel( $value ); break;
-				case 'service.provider': $this->setProvider( $value ); break;
-				case 'service.position': $this->setPosition( $value ); break;
-				case 'service.config': $this->setConfig( $value ); break;
-				case 'service.status': $this->setStatus( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'service.type': $item = $item->setType( $value ); break;
+				case 'service.code': $item = $item->setCode( $value ); break;
+				case 'service.label': $item = $item->setLabel( $value ); break;
+				case 'service.provider': $item = $item->setProvider( $value ); break;
+				case 'service.position': $item = $item->setPosition( $value ); break;
+				case 'service.datestart': $item = $item->setDateStart( $value ); break;
+				case 'service.dateend': $item = $item->setDateEnd( $value ); break;
+				case 'service.config': $item = $item->setConfig( $value ); break;
+				case 'service.status': $item = $item->setStatus( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
-		$list['service.typename'] = $this->getTypeName();
-		$list['service.typeid'] = $this->getTypeId();
 		$list['service.type'] = $this->getType();
 		$list['service.code'] = $this->getCode();
 		$list['service.label'] = $this->getLabel();
 		$list['service.provider'] = $this->getProvider();
 		$list['service.position'] = $this->getPosition();
+		$list['service.datestart'] = $this->getDateStart();
+		$list['service.dateend'] = $this->getDateEnd();
 		$list['service.config'] = $this->getConfig();
 		$list['service.status'] = $this->getStatus();
 

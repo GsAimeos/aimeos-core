@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Stock
  */
@@ -19,7 +19,7 @@ namespace Aimeos\MShop\Stock\Item;
  * @subpackage Stock
  */
 interface Iface
-	extends \Aimeos\MShop\Common\Item\Iface, \Aimeos\MShop\Common\Item\Typeid\Iface
+	extends \Aimeos\MShop\Common\Item\Iface, \Aimeos\MShop\Common\Item\TypeRef\Iface
 {
 	/**
 	 * Returns the code of the stock item.
@@ -41,15 +41,15 @@ interface Iface
 	 *
 	 * @return integer|null Stock level
 	 */
-	public function getStocklevel();
+	public function getStockLevel();
 
 	/**
 	 * Sets the stock level.
 	 *
-	 * @param integer $stocklevel New stock level
-	 * @return \Aimeos\MShop\Stock\Item\Stock\Iface Stock stock item for chaining method calls
+	 * @param integer|null $stocklevel New stock level
+	 * @return \Aimeos\MShop\Stock\Item\Iface Stock stock item for chaining method calls
 	 */
-	public function setStocklevel( $stocklevel );
+	public function setStockLevel( $stocklevel );
 
 	/**
 	 * Returns the back in stock date of the stock.
@@ -62,7 +62,22 @@ interface Iface
 	 * Sets the stock back in stock date.
 	 *
 	 * @param string|null $backdate New back in stock date of the stock
-	 * @return \Aimeos\MShop\Stock\Item\Stock\Iface Stock stock item for chaining method calls
+	 * @return \Aimeos\MShop\Stock\Item\Iface Stock stock item for chaining method calls
 	 */
 	public function setDateBack( $backdate );
+
+	/**
+	 * Returns the expected delivery time frame
+	 *
+	 * @return string Expected delivery time frame
+	 */
+	public function getTimeframe();
+
+	/**
+	 * Sets the expected delivery time frame
+	 *
+	 * @param string $timeframe Expected delivery time frame
+	 * @return \Aimeos\MShop\Stock\Item\Iface Stock stock item for chaining method calls
+	 */
+	public function setTimeframe( $timeframe );
 }

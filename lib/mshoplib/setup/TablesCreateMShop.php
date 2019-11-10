@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -22,7 +22,7 @@ class TablesCreateMShop extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPreDependencies()
 	{
-		return array();
+		return [];
 	}
 
 
@@ -33,7 +33,7 @@ class TablesCreateMShop extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPostDependencies()
 	{
-		return array();
+		return [];
 	}
 
 
@@ -69,6 +69,7 @@ class TablesCreateMShop extends \Aimeos\MW\Setup\Task\Base
 
 		$files = array(
 			'db-product' => 'default' . $ds . 'schema' . $ds . 'index.php',
+			'db-order' => 'default' . $ds . 'schema' . $ds . 'subscription.php',
 		);
 
 		$this->setupSchema( $files, true );
@@ -107,6 +108,7 @@ class TablesCreateMShop extends \Aimeos\MW\Setup\Task\Base
 
 		$files = array(
 			'db-product' => 'default' . $ds . 'schema' . $ds . 'index.php',
+			'db-order' => 'default' . $ds . 'schema' . $ds . 'subscription.php',
 		);
 
 		$this->setupSchema( $files );
@@ -118,12 +120,13 @@ class TablesCreateMShop extends \Aimeos\MW\Setup\Task\Base
 	 *
 	 * @param string $type Schema type, e.g. "table" or "sequence"
 	 * @param string $relpath Relative path to the scheme file
+	 * @param \Doctrine\DBAL\Schema\SchemaConfig Schema configuration object
 	 * @return \Doctrine\DBAL\Schema\Schema[] Associative list of names as keys and schema objects as values
 	 */
-	protected function getSchemaObjects( $type, $relpath )
+	protected function getSchemaObjects( $type, $relpath, \Doctrine\DBAL\Schema\SchemaConfig $config )
 	{
-		$schemaList = array();
-		$dbalschema = new \Doctrine\DBAL\Schema\Schema();
+		$schemaList = [];
+		$dbalschema = new \Doctrine\DBAL\Schema\Schema( [], [], $config );
 
 		foreach( $this->getSetupPaths() as $abspath )
 		{
@@ -167,25 +170,25 @@ class TablesCreateMShop extends \Aimeos\MW\Setup\Task\Base
 		{
 			$this->msg( 'Using schema from ' . basename( $relpath ), 1 ); $this->status( '' );
 
-			$dbal = $this->getConnection( $rname )->getRawObject();
+			$conn = $this->acquire( $rname );
+			$dbal = $conn->getRawObject();
 
 			if( !( $dbal instanceof \Doctrine\DBAL\Connection ) ) {
 				throw new \Aimeos\MW\Setup\Exception( 'Not a DBAL connection' );
 			}
 
 			$dbalManager = $dbal->getSchemaManager();
+			$config = $dbalManager->createSchemaConfig();
 			$platform = $dbal->getDatabasePlatform();
 			$schema = $this->getSchema( $rname );
 
 
-			foreach( $this->getSchemaObjects( 'table', $relpath ) as $name => $dbalschema )
+			foreach( $this->getSchemaObjects( 'table', $relpath, $config ) as $name => $dbalschema )
 			{
 				$this->msg( sprintf( 'Checking table "%1$s": ', $name ), 2 );
 
-				$table = $dbalManager->listTableDetails( $name );
-				$tables = ( $table->getColumns() !== array() ? array( $table ) : array() );
-
-				$tableSchema = new \Doctrine\DBAL\Schema\Schema( $tables );
+				$tables = ( $dbalManager->tablesExist( [$name] ) ? [$dbalManager->listTableDetails( $name )] : [] );
+				$tableSchema = new \Doctrine\DBAL\Schema\Schema( $tables, [], $config );
 				$schemaDiff = \Doctrine\DBAL\Schema\Comparator::compareSchemas( $tableSchema, $dbalschema );
 				$stmts = $this->remove( $this->exclude( $schemaDiff, $relpath ), $clean )->toSaveSql( $platform );
 
@@ -197,11 +200,11 @@ class TablesCreateMShop extends \Aimeos\MW\Setup\Task\Base
 			{
 				$sequences = $dbalManager->listSequences();
 
-				foreach( $this->getSchemaObjects( 'sequence', $relpath ) as $name => $dbalschema )
+				foreach( $this->getSchemaObjects( 'sequence', $relpath, $config ) as $name => $dbalschema )
 				{
 					$this->msg( sprintf( 'Checking sequence "%1$s": ', $name ), 2 );
 
-					$seqSchema = new \Doctrine\DBAL\Schema\Schema( array(), $sequences );
+					$seqSchema = new \Doctrine\DBAL\Schema\Schema( [], $sequences, $config );
 					$schemaDiff = \Doctrine\DBAL\Schema\Comparator::compareSchemas( $seqSchema, $dbalschema );
 					$stmts = $this->remove( $schemaDiff, $clean )->toSaveSql( $platform );
 
@@ -209,6 +212,8 @@ class TablesCreateMShop extends \Aimeos\MW\Setup\Task\Base
 					$this->status( 'done' );
 				}
 			}
+
+			$this->release( $conn, $rname );
 		}
 	}
 
@@ -309,14 +314,11 @@ class TablesCreateMShop extends \Aimeos\MW\Setup\Task\Base
 	{
 		if( $clean !== true )
 		{
-			foreach( $schemaDiff->changedTables as $tableDiff )
-			{
-				$tableDiff->removedColumns = array();
-				$tableDiff->removedIndexes = array();
-				$tableDiff->renamedIndexes = array();
+			foreach( $schemaDiff->changedTables as $tableDiff ) {
+				$tableDiff->removedColumns = [];
 			}
 
-			$schemaDiff->removedSequences = array();
+			$schemaDiff->removedSequences = [];
 		}
 
 		return $schemaDiff;

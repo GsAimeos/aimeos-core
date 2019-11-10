@@ -7,13 +7,13 @@ class OneTask extends Base
 {
 	public function getPreDependencies()
 	{
-		return array();
+		return [];
 	}
 
 
 	public function getPostDependencies()
 	{
-		return array( 'TwoTask');
+		return array( 'TwoTask' );
 	}
 
 

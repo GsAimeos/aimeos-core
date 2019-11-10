@@ -2,18 +2,14 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  */
 
 
 namespace Aimeos\MShop\Service\Provider\Decorator;
 
 
-/**
- * Test class for \Aimeos\MShop\Service\Provider\Decorator\Weight.
- */
-class WeightTest extends \PHPUnit_Framework_TestCase
+class WeightTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $context;
@@ -25,10 +21,10 @@ class WeightTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->context = \TestHelperMShop::getContext();
 
-		$servManager = \Aimeos\MShop\Service\Manager\Factory::createManager( $this->context );
+		$servManager = \Aimeos\MShop\Service\Manager\Factory::create( $this->context );
 		$this->servItem = $servManager->createItem();
 
-		$this->mockProvider = $this->getMockBuilder( '\\Aimeos\\MShop\\Service\\Provider\\Decorator\\Example' )
+		$this->mockProvider = $this->getMockBuilder( \Aimeos\MShop\Service\Provider\Decorator\Example::class )
 			->disableOriginalConstructor()->getMock();
 
 		$this->object = new \Aimeos\MShop\Service\Provider\Decorator\Weight( $this->mockProvider, $this->context, $this->servItem );
@@ -37,12 +33,14 @@ class WeightTest extends \PHPUnit_Framework_TestCase
 
 	protected function tearDown()
 	{
-		\Aimeos\MShop\Order\Manager\Factory::injectManager( '\\Aimeos\\MShop\\Order\\Manager\\StandardMock', null );
+		\Aimeos\MShop\Order\Manager\Factory::injectManager( '\Aimeos\MShop\Order\Manager\StandardMock', null );
 	}
 
 
 	public function testGetConfigBE()
 	{
+		$this->mockProvider->expects( $this->once() )->method( 'getConfigBE' )->will( $this->returnValue( [] ) );
+
 		$result = $this->object->getConfigBE();
 
 		$this->assertArrayHasKey( 'weight.min', $result );
@@ -54,7 +52,7 @@ class WeightTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->mockProvider->expects( $this->once() )
 			->method( 'checkConfigBE' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$attributes = array( 'weight.min' => '10.0' );
 		$result = $this->object->checkConfigBE( $attributes );
@@ -68,9 +66,9 @@ class WeightTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->mockProvider->expects( $this->once() )
 			->method( 'checkConfigBE' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
-		$attributes = array( 'weight.min' => array() );
+		$attributes = array( 'weight.min' => [] );
 		$result = $this->object->checkConfigBE( $attributes );
 
 		$this->assertEquals( 2, count( $result ) );
@@ -121,7 +119,7 @@ class WeightTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function getOrderBaseItem()
 	{
-		$manager = \Aimeos\MShop\Factory::createManager( $this->context, 'order' );
+		$manager = \Aimeos\MShop::create( $this->context, 'order' );
 
 		$search = $manager->createSearch();
 		$search->setConditions( $search->compare( '==', 'order.datepayment', '2008-02-15 12:34:56' ) );
@@ -131,7 +129,7 @@ class WeightTest extends \PHPUnit_Framework_TestCase
 			throw new \RuntimeException( 'No order item found' );
 		}
 
-		$baseManager = \Aimeos\MShop\Factory::createManager( $this->context, 'order/base' );
+		$baseManager = \Aimeos\MShop::create( $this->context, 'order/base' );
 		return $baseManager->load( $item->getBaseId() );
 	}
 }

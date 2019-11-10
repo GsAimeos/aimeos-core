@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Tree
  */
@@ -20,14 +20,14 @@ namespace Aimeos\MW\Tree\Node;
  * @property integer $left Left number of the nested set item
  * @property integer $right Right number of the nested set item
  */
-class DBNestedSet extends \Aimeos\MW\Tree\Node\Standard
+class DBNestedSet extends Standard
 {
 	/**
 	 * Tests if a node has children.
 	 *
-	 * @return boolean True if node has children, false if not
+	 * @return bool True if node has children, false if not
 	 */
-	public function hasChildren()
+	public function hasChildren() : bool
 	{
 		if( isset( $this->right ) && isset( $this->left ) && $this->right > $this->left + 1 ) {
 			return true;

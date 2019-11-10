@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MW
  * @subpackage DB
  */
@@ -19,9 +19,9 @@ namespace Aimeos\MW\DB\Manager;
  */
 class DBAL implements \Aimeos\MW\DB\Manager\Iface
 {
-	private $config = null;
-	private $connections = array();
-	private $count = array();
+	private $connections = [];
+	private $count = [];
+	private $config;
 
 
 	/**
@@ -40,18 +40,36 @@ class DBAL implements \Aimeos\MW\DB\Manager\Iface
 	 */
 	public function __destruct()
 	{
-		foreach( $this->connections as $conn ) {
-			unset( $conn );
+		foreach( $this->connections as $name => $list )
+		{
+			foreach( $list as $key => $conn ) {
+				unset( $this->connections[$name][$key] );
+			}
 		}
 	}
 
 
 	/**
-	 * Clones the objects inside.
+	 * Reset when cloning the object
 	 */
 	public function __clone()
 	{
-		$this->config = clone $this->config;
+		$this->connections = [];
+		$this->count = [];
+	}
+
+
+	/**
+	 * Clean up the objects inside
+	 */
+	public function __sleep()
+	{
+		$this->__destruct();
+
+		$this->connections = [];
+		$this->count = [];
+
+		return get_object_vars( $this );
 	}
 
 
@@ -65,6 +83,10 @@ class DBAL implements \Aimeos\MW\DB\Manager\Iface
 	{
 		try
 		{
+			if( $this->config->get( 'resource/' . $name ) === null ) {
+				$name = 'db';
+			}
+
 			$adapter = $this->config->get( 'resource/' . $name . '/adapter', 'mysql' );
 
 			if( !isset( $this->connections[$name] ) || empty( $this->connections[$name] ) )
@@ -86,7 +108,6 @@ class DBAL implements \Aimeos\MW\DB\Manager\Iface
 			}
 
 			return array_pop( $this->connections[$name] );
-
 		}
 		catch( \Exception $e ) {
 			throw new \Aimeos\MW\DB\Exception( $e->getMessage(), $e->getCode() );
@@ -106,6 +127,10 @@ class DBAL implements \Aimeos\MW\DB\Manager\Iface
 			throw new \Aimeos\MW\DB\Exception( 'Connection object isn\'t of type DBAL' );
 		}
 
+		if( $this->config->get( 'resource/' . $name ) === null ) {
+			$name = 'db';
+		}
+
 		$this->connections[$name][] = $connection;
 	}
 
@@ -119,7 +144,7 @@ class DBAL implements \Aimeos\MW\DB\Manager\Iface
 	 */
 	protected function createConnection( $name, $adapter )
 	{
-		$params = $this->config->get( 'resource/' . $name );
+		$params = $this->config->get( 'resource/' . $name, [] );
 
 		$params['user'] = $this->config->get( 'resource/' . $name . '/username' );
 		$params['dbname'] = $this->config->get( 'resource/' . $name . '/database' );
@@ -137,13 +162,8 @@ class DBAL implements \Aimeos\MW\DB\Manager\Iface
 			default: $params['driver'] = $adapter;
 		}
 
-		$conn = \Doctrine\DBAL\DriverManager::getConnection( $params );
-		$dbc = new \Aimeos\MW\DB\Connection\DBAL( $conn );
+		$stmts = $this->config->get( 'resource/' . $name . '/stmt', [] );
 
-		foreach( $this->config->get( 'resource/' . $name . '/stmt', array() ) as $stmt ) {
-			$dbc->create( $stmt )->execute()->finish();
-		}
-
-		return $dbc;
+		return new \Aimeos\MW\DB\Connection\DBAL( $params, $stmts );
 	}
 }

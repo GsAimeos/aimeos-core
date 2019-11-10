@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -22,18 +22,7 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPreDependencies()
 	{
-		return array( 'MShopSetLocale', 'TextAddTestData', 'MediaAddTestData', 'AttributeAddTestData', 'PriceAddTestData' );
-	}
-
-
-	/**
-	 * Returns the list of task names which depends on this task.
-	 *
-	 * @return string[] List of task names
-	 */
-	public function getPostDependencies()
-	{
-		return array( 'CatalogRebuildTestIndex' );
+		return ['AttributeAddTestData', 'MediaAddTestData', 'PriceAddTestData', 'TextAddTestData'];
 	}
 
 
@@ -42,13 +31,10 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function migrate()
 	{
-		$iface = '\\Aimeos\\MShop\\Context\\Item\\Iface';
-		if( !( $this->additional instanceof $iface ) ) {
-			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Additionally provided object is not of type "%1$s"', $iface ) );
-		}
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Context\Item\Iface::class, $this->additional );
 
 		$this->msg( 'Adding attribute-list test data', 0 );
-		$this->additional->setEditor( 'core:unittest' );
+		$this->additional->setEditor( 'core:lib/mshoplib' );
 
 		$ds = DIRECTORY_SEPARATOR;
 		$path = __DIR__ . $ds . 'data' . $ds . 'attribute-list.php';
@@ -57,12 +43,12 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 			throw new \Aimeos\MShop\Exception( sprintf( 'No file "%1$s" found for attribute domain', $path ) );
 		}
 
-		$refKeys = array();
+		$refKeys = [];
 		foreach( $testdata['attribute/lists'] as $dataset ) {
 			$refKeys[$dataset['domain']][] = $dataset['refid'];
 		}
 
-		$refIds = array();
+		$refIds = [];
 		$refIds['media'] = $this->getMediaData( $refKeys['media'] );
 		$refIds['price'] = $this->getPriceData( $refKeys['price'] );
 		$refIds['text'] = $this->getTextData( $refKeys['text'] );
@@ -81,9 +67,9 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	private function getMediaData( array $keys )
 	{
-		$mediaManager = \Aimeos\MShop\Media\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$mediaManager = \Aimeos\MShop\Media\Manager\Factory::create( $this->additional, 'Standard' );
 
-		$urls = array();
+		$urls = [];
 		foreach( $keys as $dataset )
 		{
 			if( ( $pos = strpos( $dataset, '/' ) ) === false || ( $str = substr( $dataset, $pos + 1 ) ) === false ) {
@@ -96,7 +82,7 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 		$search = $mediaManager->createSearch();
 		$search->setConditions( $search->compare( '==', 'media.url', $urls ) );
 
-		$refIds = array();
+		$refIds = [];
 		foreach( $mediaManager->searchItems( $search ) as $item ) {
 			$refIds['media/' . $item->getUrl()] = $item->getId();
 		}
@@ -113,9 +99,9 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	private function getTextData( array $keys )
 	{
-		$textManager = \Aimeos\MShop\Text\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$textManager = \Aimeos\MShop\Text\Manager\Factory::create( $this->additional, 'Standard' );
 
-		$labels = array();
+		$labels = [];
 		foreach( $keys as $dataset )
 		{
 			if( ( $pos = strpos( $dataset, '/' ) ) === false || ( $str = substr( $dataset, $pos + 1 ) ) === false ) {
@@ -128,7 +114,7 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 		$search = $textManager->createSearch();
 		$search->setConditions( $search->compare( '==', 'text.label', $labels ) );
 
-		$refIds = array();
+		$refIds = [];
 		foreach( $textManager->searchItems( $search ) as $item ) {
 			$refIds['text/' . $item->getLabel()] = $item->getId();
 		}
@@ -146,7 +132,7 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	private function getPriceData( array $keys )
 	{
-		$value = $ship = $domain = $code = array();
+		$value = $ship = $domain = $code = [];
 		foreach( $keys as $dataset )
 		{
 			$exp = explode( '/', $dataset );
@@ -161,9 +147,7 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 			$ship[] = $exp[4];
 		}
 
-		$typeids = $this->getPriceTypeIds( $domain, $code );
-
-		return $this->getPriceIds( $value, $ship, $typeids );
+		return $this->getPriceIds( $value, $ship );
 	}
 
 
@@ -176,10 +160,10 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	private function addAttributeListData( array $testdata, array $refIds )
 	{
-		$attributeManager = \Aimeos\MShop\Attribute\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$attributeManager = \Aimeos\MShop\Attribute\Manager\Factory::create( $this->additional, 'Standard' );
 		$attributeListManager = $attributeManager->getSubManager( 'lists', 'Standard' );
 
-		$codes = $typeCodes = array();
+		$codes = $typeCodes = [];
 		foreach( $testdata['attribute/lists'] as $dataset )
 		{
 			$exp = explode( '/', $dataset['parentid'] );
@@ -193,11 +177,10 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 		}
 
 
-		$this->conn->begin();
+		$attributeManager->begin();
 
-		$typeids = $this->getAttributeTypeIds( array( 'product' ), $typeCodes );
-		$listItemTypeIds = $this->getAttributeListTypeIds( $testdata['attribute/lists/type'] );
-		$parentIds = $this->getAttributeIds( $codes, $typeids );
+		$parentIds = $this->getAttributeIds( $codes, $typeCodes );
+		$this->addAttributeListTypeItems( $testdata['attribute/lists/type'] );
 
 		$listItem = $attributeListManager->createItem();
 		foreach( $testdata['attribute/lists'] as $dataset )
@@ -206,18 +189,14 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 				throw new \Aimeos\MW\Setup\Exception( sprintf( 'No attribute ID found for "%1$s"', $dataset['parentid'] ) );
 			}
 
-			if( !isset( $listItemTypeIds[$dataset['typeid']] ) ) {
-				throw new \Aimeos\MW\Setup\Exception( sprintf( 'No attribute list type ID found for "%1$s"', $dataset['typeid'] ) );
-			}
-
 			if( !isset( $refIds[$dataset['domain']][$dataset['refid']] ) ) {
 				throw new \Aimeos\MW\Setup\Exception( sprintf( 'No "%1$s" ref ID found for "%2$s"', $dataset['refid'], $dataset['domain'] ) );
 			}
 
 			$listItem->setId( null );
 			$listItem->setParentId( $parentIds[$dataset['parentid']] );
-			$listItem->setTypeId( $listItemTypeIds[$dataset['typeid']] );
 			$listItem->setRefId( $refIds[$dataset['domain']][$dataset['refid']] );
+			$listItem->setType( $dataset['type'] );
 			$listItem->setDomain( $dataset['domain'] );
 			$listItem->setDateStart( $dataset['start'] );
 			$listItem->setDateEnd( $dataset['end'] );
@@ -228,7 +207,7 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 			$attributeListManager->saveItem( $listItem, false );
 		}
 
-		$this->conn->commit();
+		$attributeManager->commit();
 	}
 
 
@@ -236,23 +215,23 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 * Returns the attribute IDs for the given data
 	 *
 	 * @param array $codes Attribute codes
-	 * @param array $typeIds List of price type IDs
-	 * @param array Associative list of identifiers as keys and attribute IDs as values
+	 * @param array $typeCodes List of attribute type codes
+	 * @return array Associative list of identifiers as keys and attribute IDs as values
 	 */
-	protected function getAttributeIds( array $codes, array $typeIds )
+	protected function getAttributeIds( array $codes, array $typeCodes )
 	{
-		$manager = \Aimeos\MShop\Attribute\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$manager = \Aimeos\MShop\Attribute\Manager\Factory::create( $this->additional, 'Standard' );
 
 		$search = $manager->createSearch();
 		$expr = array(
 			$search->compare( '==', 'attribute.code', $codes ),
-			$search->compare( '==', 'attribute.typeid', $typeIds ),
+			$search->compare( '==', 'attribute.type', $typeCodes ),
 		);
 		$search->setConditions( $search->combine( '&&', $expr ) );
 
-		$parentIds = array();
+		$parentIds = [];
 		foreach( $manager->searchItems( $search ) as $item ) {
-			$parentIds['attribute/' . $item->getType() . '/' . $item->getCode()] = $item->getId();
+			$parentIds[$item->getDomain() . '/' . $item->getType() . '/' . $item->getCode()] = $item->getId();
 		}
 
 		return $parentIds;
@@ -260,46 +239,16 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 
 
 	/**
-	 * Returns the attribute type IDs for the given domains and codes
-	 *
-	 * @param array $domain Domain the attribute type is for
-	 * @param array $code Code the attribute type is for
-	 * @return array List of attribute type IDs
-	 */
-	protected function getAttributeTypeIds( array $domain, array $code )
-	{
-		$manager = \Aimeos\MShop\Attribute\Manager\Factory::createManager( $this->additional, 'Standard' );
-		$typeManager = $manager->getSubManager( 'type', 'Standard' );
-
-		$search = $typeManager->createSearch();
-		$expr = array(
-			$search->compare( '==', 'attribute.type.domain', $domain ),
-			$search->compare( '==', 'attribute.type.code', $code ),
-		);
-		$search->setConditions( $search->combine( '&&', $expr ) );
-
-		$typeids = array();
-		foreach( $typeManager->searchItems( $search ) as $item ) {
-			$typeids[] = $item->getId();
-		}
-
-		return $typeids;
-	}
-
-
-	/**
-	 * Returns the attribute list type IDs for the given data sets
+	 * Adds the attribute list type items
 	 *
 	 * @param array $data Associative list of identifiers as keys and data sets as values
-	 * @return array Associative list of identifiers as keys and list type IDs as values
 	 */
-	protected function getAttributeListTypeIds( array $data )
+	protected function addAttributeListTypeItems( array $data )
 	{
-		$manager = \Aimeos\MShop\Attribute\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$manager = \Aimeos\MShop\Attribute\Manager\Factory::create( $this->additional, 'Standard' );
 		$listManager = $manager->getSubManager( 'lists', 'Standard' );
 		$listTypeManager = $listManager->getSubManager( 'type', 'Standard' );
 
-		$listItemTypeIds = array();
 		$listItemType = $listTypeManager->createItem();
 
 		foreach( $data as $key => $dataset )
@@ -311,10 +260,7 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 			$listItemType->setStatus( $dataset['status'] );
 
 			$listTypeManager->saveItem( $listItemType );
-			$listItemTypeIds[$key] = $listItemType->getId();
 		}
-
-		return $listItemTypeIds;
 	}
 
 
@@ -323,54 +269,24 @@ class AttributeListAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 *
 	 * @param array $value Price values
 	 * @param array $ship Price shipping costs
-	 * @param array $typeIds List of price type IDs
 	 * @param array Associative list of identifiers as keys and price IDs as values
 	 */
-	protected function getPriceIds( array $value, array $ship, array $typeIds )
+	protected function getPriceIds( array $value, array $ship )
 	{
-		$manager = \Aimeos\MShop\Price\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$manager = \Aimeos\MShop\Price\Manager\Factory::create( $this->additional, 'Standard' );
 
 		$search = $manager->createSearch();
 		$expr = array(
 			$search->compare( '==', 'price.value', $value ),
 			$search->compare( '==', 'price.costs', $ship ),
-			$search->compare( '==', 'price.typeid', $typeIds )
 		);
 		$search->setConditions( $search->combine( '&&', $expr ) );
 
-		$parentIds = array();
+		$parentIds = [];
 		foreach( $manager->searchItems( $search ) as $item ) {
 			$parentIds['price/' . $item->getDomain() . '/' . $item->getType() . '/' . $item->getValue() . '/' . $item->getCosts()] = $item->getId();
 		}
 
 		return $parentIds;
-	}
-
-
-	/**
-	 * Returns the price type IDs for the given domains and codes
-	 *
-	 * @param array $domain Domain the price type is for
-	 * @param array $code Code the price type is for
-	 * @return array List of price type IDs
-	 */
-	protected function getPriceTypeIds( array $domain, array $code )
-	{
-		$manager = \Aimeos\MShop\Price\Manager\Factory::createManager( $this->additional, 'Standard' );
-		$typeManager = $manager->getSubManager( 'type', 'Standard' );
-
-		$search = $typeManager->createSearch();
-		$expr = array(
-			$search->compare( '==', 'price.type.domain', $domain ),
-			$search->compare( '==', 'price.type.code', $code ),
-		);
-		$search->setConditions( $search->combine( '&&', $expr ) );
-
-		$typeids = array();
-		foreach( $typeManager->searchItems( $search ) as $item ) {
-			$typeids[] = $item->getId();
-		}
-
-		return $typeids;
 	}
 }

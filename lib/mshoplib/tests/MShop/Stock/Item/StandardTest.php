@@ -3,14 +3,14 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MShop\Stock\Item;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $values;
@@ -22,10 +22,9 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 			'stock.id' => 66,
 			'stock.siteid' => 99,
 			'stock.productcode' => 'CNC',
-			'stock.typeid' => 44,
 			'stock.type' => 'default',
-			'stock.typename' => 'Standard',
 			'stock.stocklevel' => 1000,
+			'stock.timeframe' => '2-3d',
 			'stock.backdate' => '2010-01-01 11:55:00',
 			'stock.mtime' => '2011-01-01 00:00:02',
 			'stock.ctime' => '2011-01-01 00:00:01',
@@ -35,104 +34,136 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->object = new \Aimeos\MShop\Stock\Item\Standard( $this->values );
 	}
 
+
 	protected function tearDown()
 	{
 		$this->object = null;
 	}
+
 
 	public function testGetId()
 	{
 		$this->assertEquals( 66, $this->object->getId() );
 	}
 
+
 	public function testSetId()
 	{
 		$return = $this->object->setId( null );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Stock\Item\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Stock\Item\Iface::class, $return );
 		$this->assertNull( $this->object->getId() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetSiteId()
 	{
 		$this->assertEquals( 99, $this->object->getSiteId() );
 	}
 
+
 	public function testGetProductCode()
 	{
 		$this->assertEquals( 'CNC', $this->object->getProductCode() );
 	}
 
+
 	public function testSetProductCode()
 	{
 		$return = $this->object->setProductCode( 'CNE' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Stock\Item\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Stock\Item\Iface::class, $return );
 		$this->assertEquals( 'CNE', $this->object->getProductCode() );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
-	public function testGetTypeId()
+
+	public function testGetType()
 	{
-		$this->assertEquals( 44, $this->object->getTypeId() );
+		$this->assertEquals( 'default', $this->object->getType() );
 	}
 
-	public function testSetTypeId()
-	{
-		$return = $this->object->setTypeId( 30000 );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Stock\Item\Iface', $return );
-		$this->assertEquals( 30000, $this->object->getTypeId() );
+	public function testSetType()
+	{
+		$return = $this->object->setType( 'test' );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Stock\Item\Iface::class, $return );
+		$this->assertEquals( 'test', $this->object->getType() );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
-	public function testGetStocklevel()
+
+	public function testGetStockLevel()
 	{
-		$this->assertEquals( 1000, $this->object->getStocklevel() );
+		$this->assertEquals( 1000, $this->object->getStockLevel() );
 	}
 
-	public function testSetStocklevel()
-	{
-		$return = $this->object->setStocklevel( 200 );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Stock\Item\Iface', $return );
-		$this->assertEquals( 200, $this->object->getStocklevel() );
+	public function testSetStockLevel()
+	{
+		$return = $this->object->setStockLevel( 200 );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Stock\Item\Iface::class, $return );
+		$this->assertEquals( 200, $this->object->getStockLevel() );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
-	public function testSetStocklevelNull()
-	{
-		$this->object->setStocklevel( null );
-		$this->assertEquals( null, $this->object->getStocklevel() );
 
-		$this->object->setStocklevel( '' );
-		$this->assertEquals( null, $this->object->getStocklevel() );
+	public function testSetStockLevelNull()
+	{
+		$this->object->setStockLevel( null );
+		$this->assertEquals( null, $this->object->getStockLevel() );
+
+		$this->object->setStockLevel( '' );
+		$this->assertEquals( null, $this->object->getStockLevel() );
 	}
+
 
 	public function testGetDateBack()
 	{
 		$this->assertEquals( '2010-01-01 11:55:00', $this->object->getDateBack() );
 	}
 
+
 	public function testSetDateBack()
 	{
 		$return = $this->object->setDateBack( '2010-10-10 01:10:00' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Stock\Item\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Stock\Item\Iface::class, $return );
 		$this->assertEquals( '2010-10-10 01:10:00', $this->object->getDateBack() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
+
+	public function testGetTimeFrame()
+	{
+		$this->assertEquals( '2-3d', $this->object->getTimeFrame() );
+	}
+
+
+	public function testSetTimeFrame()
+	{
+		$return = $this->object->setTimeFrame( '1w' );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Stock\Item\Iface::class, $return );
+		$this->assertEquals( '1w', $this->object->getTimeFrame() );
+		$this->assertTrue( $this->object->isModified() );
+	}
+
 
 	public function testGetTimeModified()
 	{
 		$this->assertEquals( '2011-01-01 00:00:02', $this->object->getTimeModified() );
 	}
 
+
 	public function testGetTimeCreated()
 	{
 		$this->assertEquals( '2011-01-01 00:00:01', $this->object->getTimeCreated() );
 	}
+
 
 	public function testGetEditor()
 	{
@@ -150,41 +181,51 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$item = new \Aimeos\MShop\Stock\Item\Standard();
 
-		$list = array(
+		$list = $entries = array(
 			'stock.id' => 1,
-			'stock.typeid' => 3,
+			'stock.type' => 'default',
 			'stock.stocklevel' => 10,
+			'stock.timeframe' => '4-5d',
 			'stock.productcode' => 'CNC',
 			'stock.dateback' => '2000-01-01 00:00:00',
 		);
 
-		$unknown = $item->fromArray( $list );
+		$item = $item->fromArray( $entries, true );
 
-		$this->assertEquals( array(), $unknown );
-
+		$this->assertEquals( [], $entries );
 		$this->assertEquals( $list['stock.id'], $item->getId() );
+		$this->assertEquals( $list['stock.type'], $item->getType() );
 		$this->assertEquals( $list['stock.productcode'], $item->getProductCode() );
-		$this->assertEquals( $list['stock.typeid'], $item->getTypeId() );
-		$this->assertEquals( $list['stock.stocklevel'], $item->getStocklevel() );
+		$this->assertEquals( $list['stock.stocklevel'], $item->getStockLevel() );
+		$this->assertEquals( $list['stock.timeframe'], $item->getTimeFrame() );
 		$this->assertEquals( $list['stock.dateback'], $item->getDateBack() );
 	}
 
 
 	public function testToArray()
 	{
-		$arrayObject = $this->object->toArray();
+		$arrayObject = $this->object->toArray( true );
+
 		$this->assertEquals( count( $this->values ), count( $arrayObject ) );
 
 		$this->assertEquals( $this->object->getId(), $arrayObject['stock.id'] );
 		$this->assertEquals( $this->object->getSiteId(), $arrayObject['stock.siteid'] );
+		$this->assertEquals( $this->object->getType(), $arrayObject['stock.type'] );
 		$this->assertEquals( $this->object->getProductCode(), $arrayObject['stock.productcode'] );
-		$this->assertEquals( $this->object->getTypeId(), $arrayObject['stock.typeid'] );
-		$this->assertEquals( $this->object->getStocklevel(), $arrayObject['stock.stocklevel'] );
+		$this->assertEquals( $this->object->getStockLevel(), $arrayObject['stock.stocklevel'] );
+		$this->assertEquals( $this->object->getTimeFrame(), $arrayObject['stock.timeframe'] );
 		$this->assertEquals( $this->object->getDateBack(), $arrayObject['stock.dateback'] );
 		$this->assertEquals( $this->object->getTimeCreated(), $arrayObject['stock.ctime'] );
 		$this->assertEquals( $this->object->getTimeModified(), $arrayObject['stock.mtime'] );
 		$this->assertEquals( $this->object->getEditor(), $arrayObject['stock.editor'] );
 	}
+
+
+	public function testIsAvailable()
+	{
+		$this->assertTrue( $this->object->isAvailable() );
+	}
+
 
 	public function testIsModified()
 	{

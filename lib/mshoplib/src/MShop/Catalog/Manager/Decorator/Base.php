@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Catalog
  */
@@ -20,8 +20,19 @@ namespace Aimeos\MShop\Catalog\Manager\Decorator;
  */
 abstract class Base
 	extends \Aimeos\MShop\Common\Manager\Decorator\Base
-	implements \Aimeos\MShop\Common\Manager\Decorator\Iface, \Aimeos\MShop\Catalog\Manager\Iface
 {
+	/**
+	 * Creates a new lists item object
+	 *
+	 * @param array $values Values the item should be initialized with
+	 * @return \Aimeos\MShop\Common\Item\Lists\Iface New lists item object
+	 */
+	public function createListsItem( array $values = [] )
+	{
+		return $this->getManager()->createListsItem( $values );
+	}
+
+
 	/**
 	 * Returns a list of items starting with the given category that are in the path to the root node
 	 *
@@ -29,7 +40,7 @@ abstract class Base
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
 	 * @return array Associative list of items implementing \Aimeos\MShop\Catalog\Item\Iface with IDs as keys
 	 */
-	public function getPath( $id, array $ref = array() )
+	public function getPath( $id, array $ref = [] )
 	{
 		return $this->getManager()->getPath( $id, $ref );
 	}
@@ -39,12 +50,12 @@ abstract class Base
 	 * Returns a node and its descendants depending on the given resource.
 	 *
 	 * @param string|null $id Retrieve nodes starting from the given ID
-	 * @param string[] List of domains (e.g. text, media, etc.) whose referenced items should be attached to the objects
+	 * @param string[] $ref List of domains (e.g. text, media, etc.) whose referenced items should be attached to the objects
 	 * @param integer $level One of the level constants from \Aimeos\MW\Tree\Manager\Base
 	 * @param \Aimeos\MW\Criteria\Iface|null $criteria Optional criteria object with conditions
 	 * @return \Aimeos\MW\Tree\Node\Iface Node, maybe with subnodes
 	 */
-	public function getTree( $id = null, array $ref = array(), $level = \Aimeos\MW\Tree\Manager\Base::LEVEL_TREE, \Aimeos\MW\Criteria\Iface $criteria = null )
+	public function getTree( $id = null, array $ref = [], $level = \Aimeos\MW\Tree\Manager\Base::LEVEL_TREE, \Aimeos\MW\Criteria\Iface $criteria = null )
 	{
 		return $this->getManager()->getTree( $id, $ref, $level, $criteria );
 	}
@@ -74,15 +85,5 @@ abstract class Base
 	public function moveItem( $id, $oldParentId, $newParentId, $refId = null )
 	{
 		$this->getManager()->moveItem( $id, $oldParentId, $newParentId, $refId );
-	}
-
-
-	/**
-	 * Rebuild the index for searching products.
-	 * This can be a long lasting operation.
-	 */
-	public function rebuildIndex()
-	{
-		$this->getManager()->rebuildIndex();
 	}
 }

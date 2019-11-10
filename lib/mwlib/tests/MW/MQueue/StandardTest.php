@@ -3,7 +3,7 @@
 namespace Aimeos\MW\MQueue;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -25,7 +25,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$queue = $this->object->getQueue( 'email' );
 
-		$this->assertInstanceOf( '\Aimeos\MW\MQueue\Queue\Iface', $queue );
+		$this->assertInstanceOf( \Aimeos\MW\MQueue\Queue\Iface::class, $queue );
 		$this->assertSame( $queue, $this->object->getQueue( 'email' ) );
 	}
 }

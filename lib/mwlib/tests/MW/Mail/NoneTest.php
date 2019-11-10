@@ -2,13 +2,13 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  */
 
 namespace Aimeos\MW\Mail;
 
 
-class NoneTest extends \PHPUnit_Framework_TestCase
+class NoneTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -21,13 +21,13 @@ class NoneTest extends \PHPUnit_Framework_TestCase
 
 	protected function tearDown()
 	{
-		unset($this->object);
+		unset( $this->object );
 	}
 
 
 	public function testCreateMessage()
 	{
-		$this->assertInstanceOf( '\Aimeos\MW\Mail\Message\Iface', $this->object->createMessage() );
+		$this->assertInstanceOf( \Aimeos\MW\Mail\Message\Iface::class, $this->object->createMessage() );
 	}
 
 

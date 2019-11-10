@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage View
  */
@@ -47,7 +47,7 @@ class Standard
 	/**
 	 * Returns the formatted number.
 	 *
-	 * @param int|float|decimal $number Number to format
+	 * @param integer|double|string $number Number to format
 	 * @param integer|null $decimals Number of decimals behind the decimal point or null for default value
 	 * @return string Formatted number
 	 */
@@ -57,6 +57,6 @@ class Standard
 			$decimals = $this->decimals;
 		}
 
-		return number_format( $number, $decimals, $this->dsep, $this->tsep );
+		return number_format( (double) $number, $decimals, $this->dsep, $this->tsep );
 	}
 }

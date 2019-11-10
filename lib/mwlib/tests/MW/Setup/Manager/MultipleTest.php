@@ -3,13 +3,13 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 namespace Aimeos\MW\Setup\Manager;
 
 
-class MultipleTest extends \PHPUnit_Framework_TestCase
+class MultipleTest extends \PHPUnit\Framework\TestCase
 {
 	private $config;
 	private $dbm;
@@ -36,7 +36,7 @@ class MultipleTest extends \PHPUnit_Framework_TestCase
 	public function testMigrate()
 	{
 		$taskPath = __DIR__ . DIRECTORY_SEPARATOR . 'tasks';
-		$conf = array( 'db' => $this->config->get( 'resource/db', array() ) );
+		$conf = array( 'db' => $this->config->get( 'resource/db', [] ) );
 		$object = new \Aimeos\MW\Setup\Manager\Multiple( $this->dbm, $conf, $taskPath );
 
 		ob_start();
@@ -57,7 +57,7 @@ class MultipleTest extends \PHPUnit_Framework_TestCase
 ';
 
 		$taskPath = __DIR__ . DIRECTORY_SEPARATOR . 'tasks';
-		$conf = array( 'db' => $this->config->get( 'resource/db', array() ) );
+		$conf = array( 'db' => $this->config->get( 'resource/db', [] ) );
 		$object = new \Aimeos\MW\Setup\Manager\Multiple( $this->dbm, $conf, $taskPath );
 
 		ob_start();
@@ -77,7 +77,7 @@ class MultipleTest extends \PHPUnit_Framework_TestCase
 ';
 
 		$taskPath = __DIR__ . DIRECTORY_SEPARATOR . 'tasks';
-		$conf = array( 'db' => $this->config->get( 'resource/db', array() ) );
+		$conf = array( 'db' => $this->config->get( 'resource/db', [] ) );
 		$object = new \Aimeos\MW\Setup\Manager\Multiple( $this->dbm, $conf, $taskPath );
 
 		ob_start();

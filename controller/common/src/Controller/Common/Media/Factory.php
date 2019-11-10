@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018
  * @package Controller
  * @subpackage Common
  */
@@ -19,22 +19,7 @@ namespace Aimeos\Controller\Common\Media;
  */
 class Factory
 {
-	private static $objects = array();
-
-
-	/**
-	 * Injects a controller object.
-	 *
-	 * The object is returned via createController() if an instance of the class
-	 * with the name name is requested.
-	 *
-	 * @param string $classname Full name of the class for which the object should be returned
-	 * @param null|\Aimeos\Controller\Common\Media\Iface $controller Frontend controller object
-	 */
-	public static function injectController( $classname, \Aimeos\Controller\Common\Media\Iface $controller = null )
-	{
-		self::$objects[$classname] = $controller;
-	}
+	private static $objects = [];
 
 
 	/**
@@ -45,7 +30,7 @@ class Factory
 	 * @return \Aimeos\Controller\Common\Media\Iface New media controller object
 	 * @throws \Aimeos\Controller\Common\Exception
 	 */
-	public static function createController( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
+	public static function create( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
 	{
 		/** controller/common/media/name
 		 * Class name of the used media common controller implementation
@@ -84,13 +69,14 @@ class Factory
 			$name = $context->getConfig()->get( 'controller/common/media/name', 'Standard' );
 		}
 
-		if( ctype_alnum( $name ) === false ) {
-			$classname = is_string( $name ) ? '\\Aimeos\\Controller\\Common\\Media\\' . $name : '<not a string>';
+		if( ctype_alnum( $name ) === false )
+		{
+			$classname = is_string( $name ) ? '\Aimeos\Controller\Common\Media\\' . $name : '<not a string>';
 			throw new \Aimeos\Controller\Common\Exception( sprintf( 'Invalid characters in class name "%1$s"', $classname ) );
 		}
 
-		$iface = '\\Aimeos\\Controller\\Common\\Media\\Iface';
-		$classname = '\\Aimeos\\Controller\\Common\\Media\\' . $name;
+		$iface = \Aimeos\Controller\Common\Media\Iface::class;
+		$classname = 'Aimeos\Controller\Common\Media\\' . $name;
 
 		if( isset( self::$objects[$classname] ) ) {
 			return self::$objects[$classname];
@@ -103,9 +89,24 @@ class Factory
 		$controller = new $classname( $context );
 
 		if( !( $controller instanceof $iface ) ) {
-			throw new \Aimeos\Controller\Common\Exception( sprintf( 'Class "%1$s" does not implement interface "%2$s"', $classname, $interface ) );
+			throw new \Aimeos\Controller\Common\Exception( sprintf( 'Class "%1$s" does not implement interface "%2$s"', $classname, $iface ) );
 		}
 
 		return $controller;
+	}
+
+
+	/**
+	 * Injects a controller object.
+	 *
+	 * The object is returned via createController() if an instance of the class
+	 * with the name name is requested.
+	 *
+	 * @param string $classname Full name of the class for which the object should be returned
+	 * @param null|\Aimeos\Controller\Common\Media\Iface $controller Frontend controller object
+	 */
+	public static function inject( $classname, \Aimeos\Controller\Common\Media\Iface $controller = null )
+	{
+		self::$objects[trim( $classname, '\\' )] = $controller;
 	}
 }

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Stock
  */
@@ -22,145 +22,14 @@ class Standard
 	extends \Aimeos\MShop\Common\Item\Base
 	implements \Aimeos\MShop\Stock\Item\Iface
 {
-	private $values;
-
-
 	/**
 	 * Initializes the stock item object with the given values
 	 *
 	 * @param array $values Associative list of product stock key/value pairs
 	 */
-	public function __construct( array $values = array( ) )
+	public function __construct( array $values = [] )
 	{
 		parent::__construct( 'stock.', $values );
-
-		$this->values = $values;
-	}
-
-
-	/**
-	 * Returns the type code of the product stock item.
-	 *
-	 * @return string|null Type code of the product stock item
-	 */
-	public function getType()
-	{
-		if( isset( $this->values['stock.type'] ) ) {
-			return (string) $this->values['stock.type'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Returns the localized name of the type
-	 *
-	 * @return string|null Localized name of the type
-	 */
-	public function getTypeName()
-	{
-		if( isset( $this->values['stock.typename'] ) ) {
-			return (string) $this->values['stock.typename'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Returns the type id of the product stock item
-	 *
-	 * @return integer|null Type of the product stock item
-	 */
-	public function getTypeId()
-	{
-		if( isset( $this->values['stock.typeid'] ) ) {
-			return (int) $this->values['stock.typeid'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Sets the new type of the product stock item
-	 *
-	 * @param integer|null $id Type of the product stock item
-	 * @return \Aimeos\MShop\Stock\Item\Iface Stock item for chaining method calls
-	 */
-	public function setTypeId( $id )
-	{
-		if ( $id == $this->getTypeId() ) { return $this; }
-
-		$this->values['stock.typeid'] = (int) $id;
-		$this->setModified();
-
-		return $this;
-	}
-
-
-	/**
-	 * Returns the code of the stock item.
-	 *
-	 * @return string Product code (SKU)
-	 */
-	public function getProductCode()
-	{
-		if( isset( $this->values['stock.productcode'] ) ) {
-			return (string) $this->values['stock.productcode'];
-		}
-
-		return '';
-	}
-
-
-	/**
-	 * Sets a new code of the stock item.
-	 *
-	 * @param string $code New product code (SKU)
-	 * @return \Aimeos\MShop\Stock\Item\Iface Stock item for chaining method calls
-	 */
-	public function setProductCode( $code )
-	{
-		if( $code == $this->getProductCode() ) { return $this; }
-
-		$this->values['stock.productcode'] = (string) $code;
-		$this->setModified();
-
-		return $this;
-	}
-
-
-	/**
-	 * Returns the stock level.
-	 *
-	 * @return integer|null Stock level
-	 */
-	public function getStocklevel()
-	{
-		if( isset( $this->values['stock.stocklevel'] ) ) {
-			return (int) $this->values['stock.stocklevel'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Sets the stock level.
-	 *
-	 * @param integer|null $stocklevel New stock level
-	 * @return \Aimeos\MShop\Stock\Item\Iface Stock item for chaining method calls
-	 */
-	public function setStocklevel( $stocklevel )
-	{
-		if( $stocklevel === $this->getStocklevel() ) { return $this; }
-
-		$this->values['stock.stocklevel'] = ( is_numeric( $stocklevel ) ? (int) $stocklevel : null );
-		$this->setModified();
-
-		return $this;
 	}
 
 
@@ -171,11 +40,7 @@ class Standard
 	 */
 	public function getDateBack()
 	{
-		if( isset( $this->values['stock.backdate'] ) ) {
-			return (string) $this->values['stock.backdate'];
-		}
-
-		return null;
+		return $this->get( 'stock.backdate' );
 	}
 
 
@@ -187,12 +52,99 @@ class Standard
 	 */
 	public function setDateBack( $backdate )
 	{
-		if( $backdate == $this->getDateBack() ) { return $this; }
+		return $this->set( 'stock.backdate', $this->checkDateFormat( $backdate ) );
+	}
 
-		$this->values['stock.backdate'] = $this->checkDateFormat( $backdate );;
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Returns the type code of the product stock item.
+	 *
+	 * @return string|null Type code of the product stock item
+	 */
+	public function getType()
+	{
+		return $this->get( 'stock.type', 'default' );
+	}
+
+
+	/**
+	 * Sets the new type of the product stock item
+	 *
+	 * @param string $type Type of the product stock item
+	 * @return \Aimeos\MShop\Stock\Item\Iface Stock item for chaining method calls
+	 */
+	public function setType( $type )
+	{
+		return $this->set( 'stock.type', $this->checkCode( $type ) );
+	}
+
+
+	/**
+	 * Returns the code of the stock item.
+	 *
+	 * @return string Product code (SKU)
+	 */
+	public function getProductCode()
+	{
+		return (string) $this->get( 'stock.productcode', '' );
+	}
+
+
+	/**
+	 * Sets a new code of the stock item.
+	 *
+	 * @param string $code New product code (SKU)
+	 * @return \Aimeos\MShop\Stock\Item\Iface Stock item for chaining method calls
+	 */
+	public function setProductCode( $code )
+	{
+		return $this->set( 'stock.productcode', (string) $code );
+	}
+
+
+	/**
+	 * Returns the stock level.
+	 *
+	 * @return integer|null Stock level
+	 */
+	public function getStockLevel()
+	{
+		return $this->get( 'stock.stocklevel' );
+	}
+
+
+	/**
+	 * Sets the stock level.
+	 *
+	 * @param integer|null $stocklevel New stock level
+	 * @return \Aimeos\MShop\Stock\Item\Iface Stock item for chaining method calls
+	 */
+	public function setStockLevel( $stocklevel )
+	{
+		return $this->set( 'stock.stocklevel', is_numeric( $stocklevel ) ? (int) $stocklevel : null );
+	}
+
+
+	/**
+	 * Returns the expected delivery time frame
+	 *
+	 * @return string Expected delivery time frame
+	 */
+	public function getTimeframe()
+	{
+		return (string) $this->get( 'stock.timeframe', '' );
+	}
+
+
+	/**
+	 * Sets the expected delivery time frame
+	 *
+	 * @param string $timeframe Expected delivery time frame
+	 * @return \Aimeos\MShop\Stock\Item\Iface Stock stock item for chaining method calls
+	 */
+	public function setTimeframe( $timeframe )
+	{
+		return $this->set( 'stock.timeframe', (string) $timeframe );
 	}
 
 
@@ -207,47 +159,50 @@ class Standard
 	}
 
 
-	/**
-	 * Sets the item values from the given array.
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Stock\Item\Iface Stock item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'stock.productcode': $this->setProductCode( $value ); break;
-				case 'stock.stocklevel': $this->setStocklevel( $value ); break;
-				case 'stock.dateback': $this->setDateBack( $value ); break;
-				case 'stock.typeid': $this->setTypeId( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'stock.productcode': $item = $item->setProductCode( $value ); break;
+				case 'stock.stocklevel': $item = $item->setStockLevel( $value ); break;
+				case 'stock.timeframe': $item = $item->setTimeFrame( $value ); break;
+				case 'stock.dateback': $item = $item->setDateBack( $value ); break;
+				case 'stock.type': $item = $item->setType( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
 		$list['stock.productcode'] = $this->getProductCode();
-		$list['stock.stocklevel'] = $this->getStocklevel();
+		$list['stock.stocklevel'] = $this->getStockLevel();
+		$list['stock.timeframe'] = $this->getTimeFrame();
 		$list['stock.dateback'] = $this->getDateBack();
-		$list['stock.typename'] = $this->getTypeName();
-		$list['stock.typeid'] = $this->getTypeId();
 		$list['stock.type'] = $this->getType();
 
 		return $list;

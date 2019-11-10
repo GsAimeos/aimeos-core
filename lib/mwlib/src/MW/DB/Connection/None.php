@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage DB
  */
@@ -22,6 +22,17 @@ class None
 	extends \Aimeos\MW\DB\Connection\Base
 	implements \Aimeos\MW\DB\Connection\Iface
 {
+	/**
+	 * Connects (or reconnects) to the database server
+	 *
+	 * @return \Aimeos\MW\DB\Connection\Iface Connection instance for method chaining
+	 */
+	public function connect()
+	{
+		throw new \Aimeos\MW\DB\Exception( 'This method is not implemented' );
+	}
+
+
 	/**
 	 * Creates a database statement.
 	 *

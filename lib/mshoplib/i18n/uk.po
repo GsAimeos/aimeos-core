@@ -1,24 +1,66 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 msgid ""
 msgstr ""
 "Project-Id-Version: aimeos-core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-03 12:04+0100\n"
-"PO-Revision-Date: 2015-09-29 12:32+0000\n"
-"Last-Translator: Aimeos <aimeos@aimeos.org>\n"
+"POT-Creation-Date: 2019-10-03 10:00+0200\n"
+"PO-Revision-Date: 2019-10-03 08:03+0000\n"
+"Last-Translator: Aimeos\n"
 "Language-Team: Ukrainian (http://www.transifex.com/aimeos/aimeos-core/language/uk/)\n"
-"Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Language: uk\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+
+#. / Supplier address format with label (%1$s), company (%2$s),
+#. / address part one (%3$s, e.g street), address part two (%4$s, e.g house
+#. number), address part three (%5$s, e.g additional information),
+#. / postal/zip code (%6$s), city (%7$s), state (%8$s), country ID (%9$s),
+#. / e-mail (%10$s), phone (%11$s), facsimile/telefax (%12$s), web site
+#. (%13$s)
+#, php-format
+msgid ""
+"%1$s\n"
+"%2$s\n"
+"%3$s %4$s\n"
+"%5$s\n"
+"%6$s %7$s\n"
+"%8$s %9$s\n"
+"%10$s\n"
+"%11$s\n"
+"%12$s\n"
+"%13$s\n"
+msgstr ""
+
+#. / Supplier address format with label (%1$s), company (%2$s),
+#. / address part one (%3$s, e.g street), address part two (%4$s, e.g house
+#. number), address part three (%5$s, e.g additional information),
+#. / postal/zip code (%6$s), city (%7$s), state (%8$s), country ID (%9$s),
+#. / e-mail (%10$s), phone (%11$s), facsimile/telefax (%12$s), web site
+#. (%13$s)
+#, php-format
+msgid "%1$s, %2$s, %3$s %4$s, %6$s %7$s"
+msgstr ""
 
 #, php-format
 msgid "Address for domain \"%1$s\" not available"
+msgstr ""
+
+#, php-format
+msgid "Address for type \"%1$s\" not available"
+msgstr ""
+
+#, php-format
+msgid "Address item for removal not found"
+msgstr ""
+
+#, php-format
+msgid "Address not available"
 msgstr ""
 
 #, php-format
@@ -35,6 +77,10 @@ msgstr ""
 
 #, php-format
 msgid "Basket empty"
+msgstr ""
+
+#, php-format
+msgid "Bought voucher is in currency \"%1$s\", basket uses \"%2$s\""
 msgstr ""
 
 #, php-format
@@ -63,10 +109,18 @@ msgstr ""
 
 #, php-format
 msgid "Class \"%1$s\" does not implement interface \"%2$s\""
-msgstr ""
+msgstr "Клас \"%1$s\" не реализуе інтерфейс \"%2$s\""
 
 #, php-format
 msgid "Class \"%1$s\" not available"
+msgstr "Клас \"%1$s\" не доступний"
+
+#, php-format
+msgid "Code \"%1$s\" must not be longer than %2$d characters"
+msgstr ""
+
+#, php-format
+msgid "Code \"%1$s\" must not be longer than 32 characters"
 msgstr ""
 
 #, php-format
@@ -106,7 +160,19 @@ msgid "Curl could not be initialized"
 msgstr ""
 
 #, php-format
+msgid "Curl error: \"%1$s\" - \"%2$s\""
+msgstr ""
+
+#, php-format
 msgid "Database manager object not available"
+msgstr ""
+
+#, php-format
+msgid "Date value before \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Duplicate coupon code"
 msgstr ""
 
 #, php-format
@@ -114,11 +180,31 @@ msgid "Duplicate coupon code \"%1$s\""
 msgstr ""
 
 #, php-format
+msgid "Expanding \"%1$s\" node failed"
+msgstr ""
+
+#, php-format
+msgid "File or directory \"%1$s\" doesn't exist"
+msgstr ""
+
+#, php-format
 msgid "File system manager object not available"
 msgstr ""
 
 #, php-format
+msgid "Finished order status import from \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Finished order status import from file \"%1$s\""
+msgstr ""
+
+#, php-format
 msgid "Flags \"%1$s\" not within allowed range"
+msgstr ""
+
+#, php-format
+msgid "Flags not within allowed range"
 msgstr ""
 
 #, php-format
@@ -128,6 +214,10 @@ msgstr ""
 #. / Locale ID %1$s
 #, php-format
 msgid "Internationalization object not available for \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Invalid ISO country code \"%1$s\""
 msgstr ""
 
 #, php-format
@@ -152,10 +242,12 @@ msgstr ""
 
 #, php-format
 msgid "Invalid characters in class name \"%1$s\""
-msgstr ""
+msgstr "Недопустимі символы в назві класу \"%1$s\""
 
 #, php-format
-msgid "Invalid characters in date \"%1$s\". ISO format \"YYYY-MM-DD hh:mm:ss\" expected."
+msgid ""
+"Invalid characters in date \"%1$s\". ISO format \"YYYY-MM-DD hh:mm:ss\" "
+"expected."
 msgstr ""
 
 #, php-format
@@ -198,6 +290,9 @@ msgstr ""
 msgid "Invalid configuration for coupon provider \"%1$s\", needs \"%2$s\""
 msgstr ""
 
+msgid "Invalid delivery type"
+msgstr ""
+
 #, php-format
 msgid "Invalid factory \"%1$s\""
 msgstr ""
@@ -207,7 +302,15 @@ msgid "Invalid mime type \"%1$s\""
 msgstr ""
 
 #, php-format
+msgid "Invalid provider name \"%1$s\""
+msgstr ""
+
+#, php-format
 msgid "Invalid serialized basket. \"%1$s\" returns \"%2$s\"."
+msgstr ""
+
+#, php-format
+msgid "Invalid time interval format \"%1$s\""
 msgstr ""
 
 #, php-format
@@ -223,7 +326,8 @@ msgid "Item can not be deleted. Site ID of item differs from present site ID."
 msgstr ""
 
 #, php-format
-msgid "Item could not be saved using method saveItem(). Item ID not available."
+msgid ""
+"Item could not be saved using method saveItem(). Item ID not available."
 msgstr ""
 
 #, php-format
@@ -240,6 +344,10 @@ msgstr "Item with ID \"%2$s\" in \"%1$s\" not found"
 
 #, php-format
 msgid "Job with ID \"%1$s\" not found"
+msgstr ""
+
+#, php-format
+msgid "List item for removal from domain \"%1$s\" not found"
 msgstr ""
 
 #, php-format
@@ -315,7 +423,21 @@ msgid "New ID \"%1$s\" for item differs from old ID \"%2$s\""
 msgstr ""
 
 #, php-format
-msgid "Newly created site can not be saved using method \"saveItem()\". Try using method \"insertItem()\" instead."
+msgid ""
+"Newly created site can not be saved using method \"saveItem()\". Try using "
+"method \"insertItem()\" instead."
+msgstr ""
+
+#, php-format
+msgid "No XML file \"%1$s\" found"
+msgstr ""
+
+#, php-format
+msgid "No bought voucher for code \"%1$s\" available"
+msgstr ""
+
+#, php-format
+msgid "No catalog node for ID \"%1$s\""
 msgstr ""
 
 #, php-format
@@ -327,11 +449,27 @@ msgid "No item with \"%2$s\" in \"%1$s\" found"
 msgstr ""
 
 #, php-format
+msgid "No more credit available for voucher \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "No order for ID \"%1$s\" found"
+msgstr ""
+
+#, php-format
 msgid "No price for product ID \"%1$s\" or product code \"%2$s\" available"
 msgstr ""
 
 #, php-format
 msgid "No product with code \"%1$s\" found"
+msgstr ""
+
+#, php-format
+msgid "No rebate for currency \"%1$s\" available"
+msgstr ""
+
+#, php-format
+msgid "No search keys available"
 msgstr ""
 
 #, php-format
@@ -359,6 +497,10 @@ msgid "Not a key/value map"
 msgstr ""
 
 #, php-format
+msgid "Not a list item"
+msgstr ""
+
+#, php-format
 msgid "Not a listed value"
 msgstr ""
 
@@ -368,6 +510,10 @@ msgstr ""
 
 #, php-format
 msgid "Not a string"
+msgstr ""
+
+#, php-format
+msgid "Not a time"
 msgstr ""
 
 #, php-format
@@ -387,7 +533,13 @@ msgid "Operation not supported"
 msgstr ""
 
 #, php-format
-msgid "Order ID \"%1$s\" in XML response of delivery provider differs from stored invoice ID \"%2$s\" of the order"
+msgid ""
+"Order ID \"%1$s\" in XML response of delivery provider differs from stored "
+"invoice ID \"%2$s\" of the order"
+msgstr ""
+
+#, php-format
+msgid "Order address position \"%1$s\" must be greater than 0"
 msgstr ""
 
 #, php-format
@@ -395,7 +547,9 @@ msgid "Order base item with order ID \"%1$s\" not found"
 msgstr ""
 
 #, php-format
-msgid "Order data sent to delivery provider was rejected with code \"%1$s\" according to XML response"
+msgid ""
+"Order data sent to delivery provider was rejected with code \"%1$s\" "
+"according to XML response"
 msgstr ""
 
 #, php-format
@@ -411,6 +565,10 @@ msgid "Order product position \"%1$s\" must be greater than 0"
 msgstr ""
 
 #, php-format
+msgid "Order service position \"%1$s\" must be greater than 0"
+msgstr ""
+
+#, php-format
 msgid "Order type \"%1$s\" not within allowed range"
 msgstr ""
 
@@ -420,6 +578,10 @@ msgstr ""
 
 #, php-format
 msgid "Parameter \"%1$s\" for configuration not available"
+msgstr ""
+
+#, php-format
+msgid "PayPal Express: Duplicate transaction with ID \"%1$s\" and status \"%2$s\""
 msgstr ""
 
 #, php-format
@@ -447,14 +609,16 @@ msgid "PayPal Express: Wrong receiver email \"%1$s\""
 msgstr ""
 
 msgid "Payment costs"
-msgstr ""
+msgstr "Вартість оплати"
 
 #, php-format
 msgid "Please have a look at the prices of the products in your basket"
 msgstr ""
 
 #, php-format
-msgid "Price can not be added. Currency ID \"%1$s\" of price item and currently used currency ID \"%2$s\" does not match."
+msgid ""
+"Price can not be added. Currency ID \"%1$s\" of price item and currently "
+"used currency ID \"%2$s\" does not match."
 msgstr ""
 
 #, php-format
@@ -466,11 +630,29 @@ msgid "Price item not available"
 msgstr ""
 
 #, php-format
-msgid "Product does not contain all required values. Product code for item not available."
+msgid "Process object not available"
+msgstr ""
+
+#, php-format
+msgid "Product  not available"
+msgstr ""
+
+#, php-format
+msgid ""
+"Product does not contain all required values. Product code for item not "
+"available."
+msgstr ""
+
+#, php-format
+msgid "Product does not contain the SKU code"
 msgstr ""
 
 #, php-format
 msgid "Product matching given properties not found"
+msgstr ""
+
+#, php-format
+msgid "Product not available"
 msgstr ""
 
 #, php-format
@@ -486,6 +668,10 @@ msgid "Products out of stock"
 msgstr ""
 
 #, php-format
+msgid "Property item for removal not found"
+msgstr ""
+
+#, php-format
 msgid "Property name \"%1$s\" not within allowed range"
 msgstr ""
 
@@ -495,6 +681,10 @@ msgstr ""
 
 #, php-format
 msgid "Quantity must be a positive integer and must not exceed %1$d"
+msgstr ""
+
+#, php-format
+msgid "Required parameter \"%1$s\" is missing"
 msgstr ""
 
 #, php-format
@@ -510,11 +700,19 @@ msgid "Search configuration not available"
 msgstr ""
 
 #, php-format
+msgid "Sending order failed: \"%1$s\""
+msgstr ""
+
+#, php-format
 msgid "Sending order to delivery provider failed with HTTP status \"%1$s\""
 msgstr ""
 
 #, php-format
 msgid "Sending order to delivery provider failed: \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Service not available"
 msgstr ""
 
 #, php-format
@@ -526,15 +724,27 @@ msgid "Session object not available"
 msgstr ""
 
 #, php-format
-msgid "Site can not be inserted. Site ID of site differs from site ID of parent site."
+msgid ""
+"Site can not be inserted. Site ID of site differs from site ID of parent "
+"site."
 msgstr ""
 
 #, php-format
-msgid "Site can not be moved. Site ID of site differs from present site id, site ID of existing parent site or site id of new parent site."
+msgid ""
+"Site can not be moved. Site ID of site differs from present site id, site ID"
+" of existing parent site or site id of new parent site."
 msgstr ""
 
 #, php-format
 msgid "Site for code \"%1$s\" not found"
+msgstr ""
+
+#, php-format
+msgid "Started order status import from \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Started order status import from file \"%1$s\""
 msgstr ""
 
 #, php-format
@@ -578,6 +788,14 @@ msgid "The type of the configuration option with key \"%1$s\" must be \"%2$s\""
 msgstr ""
 
 #, php-format
+msgid "Time value after \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Time value before \"%1$s\""
+msgstr ""
+
+#, php-format
 msgid "Total results value not found"
 msgstr ""
 
@@ -590,6 +808,18 @@ msgid "Type item with ID \"%1$s\" in \"%2$s\" not found"
 msgstr "Type item with ID \"%1$s\" in \"%2$s\" not found"
 
 #, php-format
+msgid "Unable to call method \"%1$s\""
+msgstr "Неможливо викликати метод \"%1$s\""
+
+#, php-format
+msgid "Unable to create order XML file \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Unable to move imported file \"%1$s\" to \"%2$s\""
+msgstr ""
+
+#, php-format
 msgid "Unable to sort public holidays: \"%1$s\""
 msgstr ""
 
@@ -598,7 +828,9 @@ msgid "Unknown search key \"%1$s\""
 msgstr ""
 
 #, php-format
-msgid "Validation of XML response from delivery provider against schema \"%1$s\" failed"
+msgid ""
+"Validation of XML response from delivery provider against schema \"%1$s\" "
+"failed"
 msgstr ""
 
 #, php-format

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Service
  */
@@ -12,7 +12,12 @@ namespace Aimeos\MShop\Service\Provider\Decorator;
 
 
 /**
- * Download check decorator for service providers.
+ * Download check decorator for service providers
+ *
+ * This decorator interacts with the ServiceUpdate and Autofill basket plugins!
+ * If the delivery/payment option isn't available any more, the ServiceUpdate
+ * plugin will remove it from the basket and the Autofill plugin will add one
+ * of the available options again.
  *
  * @package MShop
  * @subpackage Service
@@ -24,12 +29,12 @@ class Download
 	private $beConfig = array(
 		'download.all' => array(
 			'code' => 'download.all',
-			'internalcode'=> 'download.all',
-			'label'=> 'Check products: "1" = all must be downloads, "0" = at least one is no download',
-			'type'=> 'boolean',
-			'internaltype'=> 'boolean',
-			'default'=> null,
-			'required'=> false,
+			'internalcode' => 'download.all',
+			'label' => 'Check products: "1" = all must be downloads, "0" = at least one is no download',
+			'type' => 'boolean',
+			'internaltype' => 'boolean',
+			'default' => '',
+			'required' => true,
 		),
 	);
 
@@ -58,13 +63,7 @@ class Download
 	 */
 	public function getConfigBE()
 	{
-		$list = $this->getProvider()->getConfigBE();
-
-		foreach( $this->beConfig as $key => $config ) {
-			$list[$key] = new \Aimeos\MW\Criteria\Attribute\Standard( $config );
-		}
-
-		return $list;
+		return array_merge( $this->getProvider()->getConfigBE(), $this->getConfigItems( $this->beConfig ) );
 	}
 
 
@@ -81,15 +80,25 @@ class Download
 	 */
 	public function isAvailable( \Aimeos\MShop\Order\Item\Base\Iface $basket )
 	{
-		$val = (bool) $this->getConfigValue( array( 'download.all' ) );
+		if( (bool) $this->getConfigValue( 'download.all' ) === true )
+		{
+			foreach( $basket->getProducts() as $product )
+			{
+				if( $product->getAttribute( 'download', 'hidden' ) === null ) {
+					return false;
+				}
+			}
+
+			return $this->getProvider()->isAvailable( $basket );
+		}
 
 		foreach( $basket->getProducts() as $product )
 		{
-			if( ((bool) count( $product->getAttributes( 'download' ) )) !== $val ) {
-				return !$val;
+			if( $product->getAttribute( 'download', 'hidden' ) === null ) {
+				return $this->getProvider()->isAvailable( $basket );
 			}
 		}
 
-		return $this->getProvider()->isAvailable( $basket );
+		return false;
 	}
 }

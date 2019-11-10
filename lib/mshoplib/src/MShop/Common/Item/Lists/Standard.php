@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Common
  */
@@ -22,8 +22,11 @@ class Standard
 	extends \Aimeos\MShop\Common\Item\Base
 	implements \Aimeos\MShop\Common\Item\Lists\Iface
 {
+	use \Aimeos\MShop\Common\Item\Config\Traits;
+
+
+	private $date;
 	private $prefix;
-	private $values;
 	private $refItem;
 
 
@@ -33,12 +36,12 @@ class Standard
 	 * @param string $prefix Property prefix when converting to array
 	 * @param array $values Associative list of key/value pairs of the list item
 	 */
-	public function __construct( $prefix, array $values = array() )
+	public function __construct( $prefix, array $values = [] )
 	{
 		parent::__construct( $prefix, $values );
 
+		$this->date = isset( $values['.date'] ) ? $values['.date'] : date( 'Y-m-d H:i:s' );
 		$this->prefix = (string) $prefix;
-		$this->values = $values;
 	}
 
 
@@ -48,15 +51,11 @@ class Standard
 	 * Returns the parent ID of the common list item,
 	 * like the unique ID of a product or a tree node.
 	 *
-	 * @return integer|null Parent ID of the common list item
+	 * @return string|null Parent ID of the common list item
 	 */
 	public function getParentId()
 	{
-		if( isset( $this->values[$this->prefix . 'parentid'] ) ) {
-			return (int) $this->values[$this->prefix . 'parentid'];
-		}
-
-		return null;
+		return $this->get( $this->prefix . 'parentid' );
 	}
 
 
@@ -64,17 +63,23 @@ class Standard
 	 * Sets the parent ID of the common list item,
 	 * like the unique ID of a product or a tree node.
 	 *
-	 * @param integer $parentid New parent ID of the common list item
+	 * @param string $parentid New parent ID of the common list item
 	 * @return \Aimeos\MShop\Common\Item\Lists\Iface Lists item for chaining method calls
 	 */
 	public function setParentId( $parentid )
 	{
-		if( $parentid == $this->getParentId() ) { return $this; }
+		return $this->set( $this->prefix . 'parentid', (string) $parentid );
+	}
 
-		$this->values[$this->prefix . 'parentid'] = (int) $parentid;
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Returns the unique key of the list item
+	 *
+	 * @return string Unique key consisting of domain/type/refid
+	 */
+	public function getKey()
+	{
+		return $this->getDomain() . '|' . $this->getType() . '|' . $this->getRefId();
 	}
 
 
@@ -85,11 +90,7 @@ class Standard
 	 */
 	public function getDomain()
 	{
-		if( isset( $this->values[$this->prefix . 'domain'] ) ) {
-			return (string) $this->values[$this->prefix . 'domain'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'domain', '' );
 	}
 
 
@@ -101,12 +102,7 @@ class Standard
 	 */
 	public function setDomain( $domain )
 	{
-		if( $domain == $this->getDomain() ) { return $this; }
-
-		$this->values[$this->prefix . 'domain'] = (string) $domain;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'domain', (string) $domain );
 	}
 
 
@@ -118,11 +114,7 @@ class Standard
 	 */
 	public function getRefId()
 	{
-		if( isset( $this->values[$this->prefix . 'refid'] ) ) {
-			return (string) $this->values[$this->prefix . 'refid'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'refid', '' );
 	}
 
 
@@ -135,12 +127,7 @@ class Standard
 	 */
 	public function setRefId( $refid )
 	{
-		if( $refid == $this->getRefId() ) { return $this; }
-
-		$this->values[$this->prefix . 'refid'] = (string) $refid;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'refid', (string) $refid );
 	}
 
 
@@ -151,11 +138,7 @@ class Standard
 	 */
 	public function getDateStart()
 	{
-		if( isset( $this->values[$this->prefix . 'datestart'] ) ) {
-			return (string) $this->values[$this->prefix . 'datestart'];
-		}
-
-		return null;
+		return $this->get( $this->prefix . 'datestart' );
 	}
 
 
@@ -167,12 +150,7 @@ class Standard
 	 */
 	public function setDateStart( $date )
 	{
-		if( $date === $this->getDateStart() ) { return $this; }
-
-		$this->values[$this->prefix . 'datestart'] = $this->checkDateFormat( $date );
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'datestart', $this->checkDateFormat( $date ) );
 	}
 
 
@@ -183,11 +161,7 @@ class Standard
 	 */
 	public function getDateEnd()
 	{
-		if( isset( $this->values[$this->prefix . 'dateend'] ) ) {
-			return (string) $this->values[$this->prefix . 'dateend'];
-		}
-
-		return null;
+		return $this->get( $this->prefix . 'dateend' );
 	}
 
 
@@ -199,12 +173,7 @@ class Standard
 	 */
 	public function setDateEnd( $date )
 	{
-		if( $date === $this->getDateEnd() ) { return $this; }
-
-		$this->values[$this->prefix . 'dateend'] = $this->checkDateFormat( $date );
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'dateend', $this->checkDateFormat( $date ) );
 	}
 
 
@@ -215,58 +184,20 @@ class Standard
 	 */
 	public function getType()
 	{
-		if( isset( $this->values[$this->prefix . 'type'] ) ) {
-			return (string) $this->values[$this->prefix . 'type'];
-		}
-
-		return null;
+		return $this->get( $this->prefix . 'type', 'default' );
 	}
 
 
-	/**
-	 * Returns the localized name of the type
-	 *
-	 * @return string|null Localized name of the type
-	 */
-	public function getTypeName()
-	{
-		if( isset( $this->values[$this->prefix . 'typename'] ) ) {
-			return (string) $this->values[$this->prefix . 'typename'];
-		}
-
-		return null;
-	}
-
 
 	/**
-	 * Returns the type id of the list item.
+	 * Sets the new type of the list item.
 	 *
-	 * @return integer|null Type id of the list item
-	 */
-	public function getTypeId()
-	{
-		if( isset( $this->values[$this->prefix . 'typeid'] ) ) {
-			return (int) $this->values[$this->prefix . 'typeid'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Sets the new type id of the list item.
-	 *
-	 * @param integer|null $typeid type id of the list item
+	 * @param string $type type of the list item
 	 * @return \Aimeos\MShop\Common\Item\Lists\Iface Lists item for chaining method calls
 	 */
-	public function setTypeId( $typeid )
+	public function setType( $type )
 	{
-		if( $typeid == $this->getTypeId() ) { return $this; }
-
-		$this->values[$this->prefix . 'typeid'] = (int) $typeid;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'type', $this->checkCode( $type ) );
 	}
 
 
@@ -277,11 +208,7 @@ class Standard
 	 */
 	public function getPosition()
 	{
-		if( isset( $this->values[$this->prefix . 'position'] ) ) {
-			return (int) $this->values[$this->prefix . 'position'];
-		}
-
-		return 0;
+		return (int) $this->get( $this->prefix . 'position', 0 );
 	}
 
 
@@ -293,12 +220,7 @@ class Standard
 	 */
 	public function setPosition( $pos )
 	{
-		if( $pos == $this->getPosition() ) { return $this; }
-
-		$this->values[$this->prefix . 'position'] = (int) $pos;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'position', (int) $pos );
 	}
 
 
@@ -309,11 +231,7 @@ class Standard
 	 */
 	public function getStatus()
 	{
-		if( isset( $this->values[$this->prefix . 'status'] ) ) {
-			return (int) $this->values[$this->prefix . 'status'];
-		}
-
-		return 1;
+		return (int) $this->get( $this->prefix . 'status', 1 );
 	}
 
 
@@ -325,12 +243,7 @@ class Standard
 	 */
 	public function setStatus( $status )
 	{
-		if( $status == $this->getStatus() ) { return $this; }
-
-		$this->values[$this->prefix . 'status'] = (int) $status;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'status', (int) $status );
 	}
 
 
@@ -341,11 +254,7 @@ class Standard
 	 */
 	public function getConfig()
 	{
-		if( isset( $this->values[$this->prefix . 'config'] ) ) {
-			return (array) $this->values[$this->prefix . 'config'];
-		}
-
-		return array();
+		return (array) $this->get( $this->prefix . 'config', [] );
 	}
 
 
@@ -357,10 +266,7 @@ class Standard
 	 */
 	public function setConfig( array $config )
 	{
-		$this->values[$this->prefix . 'config'] = $config;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'config', $config );
 	}
 
 
@@ -378,10 +284,10 @@ class Standard
 	/**
 	 * Stores the item referenced by the list item.
 	 *
-	 * @param \Aimeos\MShop\Common\Item\Iface $refItem Item referenced by the list item
+	 * @param \Aimeos\MShop\Common\Item\Iface|null $refItem Item referenced by the list item or null for no reference
 	 * @return \Aimeos\MShop\Common\Item\Lists\Iface Lists item for chaining method calls
 	 */
-	public function setRefItem( \Aimeos\MShop\Common\Item\Iface $refItem )
+	public function setRefItem( \Aimeos\MShop\Common\Item\Iface $refItem = null )
 	{
 		$this->refItem = $refItem;
 
@@ -401,48 +307,62 @@ class Standard
 
 
 	/**
-	 * Sets the item values from the given array.
+	 * Tests if the item is available based on status, time, language and currency
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @return boolean True if available, false if not
 	 */
-	public function fromArray( array $list )
+	public function isAvailable()
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
+		return parent::isAvailable() && $this->getStatus() > 0
+			&& ( $this->getDateStart() === null || $this->getDateStart() < $this->date )
+			&& ( $this->getDateEnd() === null || $this->getDateEnd() > $this->date );
+	}
+
+
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
+	 *
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Common\Item\Lists\Iface List item for chaining method calls
+	 */
+	public function fromArray( array &$list, $private = false )
+	{
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case $this->prefix . 'parentid': $this->setParentId( $value ); break;
-				case $this->prefix . 'typeid': $this->setTypeId( $value ); break;
-				case $this->prefix . 'domain': $this->setDomain( $value ); break;
-				case $this->prefix . 'refid': $this->setRefId( $value ); break;
-				case $this->prefix . 'datestart': $this->setDateStart( $value ); break;
-				case $this->prefix . 'dateend': $this->setDateEnd( $value ); break;
-				case $this->prefix . 'config': $this->setConfig( $value ); break;
-				case $this->prefix . 'position': $this->setPosition( $value ); break;
-				case $this->prefix . 'status': $this->setStatus( $value ); break;
-				default: $unknown[$key] = $value;
+				case $this->prefix . 'parentid': !$private ?: $item = $item->setParentId( $value ); break;
+				case $this->prefix . 'type': $item = $item->setType( $value ); break;
+				case $this->prefix . 'domain': $item = $item->setDomain( $value ); break;
+				case $this->prefix . 'refid': $item = $item->setRefId( $value ); break;
+				case $this->prefix . 'datestart': $item = $item->setDateStart( $value ); break;
+				case $this->prefix . 'dateend': $item = $item->setDateEnd( $value ); break;
+				case $this->prefix . 'config': $item = $item->setConfig( $value ); break;
+				case $this->prefix . 'position': $item = $item->setPosition( $value ); break;
+				case $this->prefix . 'status': $item = $item->setStatus( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
-		$list[$this->prefix . 'parentid'] = $this->getParentId();
-		$list[$this->prefix . 'typeid'] = $this->getTypeId();
 		$list[$this->prefix . 'domain'] = $this->getDomain();
 		$list[$this->prefix . 'refid'] = $this->getRefId();
 		$list[$this->prefix . 'datestart'] = $this->getDateStart();
@@ -450,8 +370,13 @@ class Standard
 		$list[$this->prefix . 'config'] = $this->getConfig();
 		$list[$this->prefix . 'position'] = $this->getPosition();
 		$list[$this->prefix . 'status'] = $this->getStatus();
-		$list[$this->prefix . 'typename'] = $this->getTypeName();
 		$list[$this->prefix . 'type'] = $this->getType();
+
+		if( $private === true )
+		{
+			$list[$this->prefix . 'key'] = $this->getKey();
+			$list[$this->prefix . 'parentid'] = $this->getParentId();
+		}
 
 		return $list;
 	}

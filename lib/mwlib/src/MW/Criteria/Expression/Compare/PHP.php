@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Common
  */
@@ -74,6 +74,10 @@ class PHP extends \Aimeos\MW\Criteria\Expression\Compare\Base
 	 */
 	protected function createNullTerm( $name )
 	{
+		if( is_array( $name ) ) {
+			return '';
+		}
+
 		switch( $this->getOperator() )
 		{
 			case '==':
@@ -90,7 +94,7 @@ class PHP extends \Aimeos\MW\Criteria\Expression\Compare\Base
 	 * Creates a term from a list of values.
 	 *
 	 * @param string $name Translated name of the variable
-	 * @param string $type Type constant
+	 * @param integer $type Type constant
 	 * @return string Created term string
 	 */
 	protected function createListTerm( $name, $type )
@@ -99,7 +103,7 @@ class PHP extends \Aimeos\MW\Criteria\Expression\Compare\Base
 		{
 			case '==':
 
-				$list = array();
+				$list = [];
 				foreach( (array) $this->getValue() as $value ) {
 					$list[] = $this->createTerm( $name, $type, $value );
 				}
@@ -107,7 +111,7 @@ class PHP extends \Aimeos\MW\Criteria\Expression\Compare\Base
 
 			case '!=':
 
-				$list = array();
+				$list = [];
 				foreach( (array) $this->getValue() as $value ) {
 					$list[] = $this->createTerm( $name, $type, $value );
 				}

@@ -2,17 +2,14 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MW\View\Helper\Block;
 
 
-/**
- * Test class for \Aimeos\MW\View\Helper\Block\Standard.
- */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -32,7 +29,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testTransform()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MW\\View\\Helper\\Iface', $this->object->transform() );
+		$this->assertInstanceOf( \Aimeos\MW\View\Helper\Iface::class, $this->object->transform() );
 	}
 
 

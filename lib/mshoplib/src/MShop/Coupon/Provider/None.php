@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MShop
  * @subpackage Coupon
  */
@@ -19,19 +19,17 @@ namespace Aimeos\MShop\Coupon\Provider;
  */
 class None
 	extends \Aimeos\MShop\Coupon\Provider\Factory\Base
-	implements \Aimeos\MShop\Coupon\Provider\Factory\Iface
+	implements \Aimeos\MShop\Coupon\Provider\Iface, \Aimeos\MShop\Coupon\Provider\Factory\Iface
 {
 	/**
-	 * Adds the result of a coupon to the order base instance.
+	 * Updates the result of a coupon to the order base instance.
 	 *
 	 * @param \Aimeos\MShop\Order\Item\Base\Iface $base Basic order of the customer
+	 * @return \Aimeos\MShop\Coupon\Provider\Iface Provider object for method chaining
 	 */
-	public function addCoupon( \Aimeos\MShop\Order\Item\Base\Iface $base )
+	public function update( \Aimeos\MShop\Order\Item\Base\Iface $base )
 	{
-		if( $this->getObject()->isAvailable( $base ) === false ) {
-			return;
-		}
-
-		$base->addCoupon( $this->getCode(), array() );
+		$base->setCoupon( $this->getCode(), [] );
+		return $this;
 	}
 }

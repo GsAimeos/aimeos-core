@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Customer
  */
@@ -19,11 +19,22 @@ namespace Aimeos\MShop\Customer\Item;
  * @subpackage Customer
  */
 abstract class Base
-	extends \Aimeos\MShop\Common\Item\ListRef\Base
+	extends \Aimeos\MShop\Common\Item\Base
 	implements \Aimeos\MShop\Customer\Item\Iface
 {
+	use \Aimeos\MShop\Common\Item\ListRef\Traits {
+		__clone as __cloneList;
+	}
+	use \Aimeos\MShop\Common\Item\PropertyRef\Traits {
+		__clone as __cloneProperty;
+	}
+	use \Aimeos\MShop\Common\Item\AddressRef\Traits {
+		__clone as __cloneAddress;
+	}
+
+
 	private $billingaddress;
-	private $values;
+	private $data;
 
 
 	/**
@@ -31,46 +42,39 @@ abstract class Base
 	 *
 	 * @param \Aimeos\MShop\Common\Item\Address\Iface $address Payment address item object
 	 * @param array $values List of attributes that belong to the customer item
-	 * @param \Aimeos\MShop\Common\Lists\Item\Iface[] $listItems List of list items
+	 * @param \Aimeos\MShop\Common\Item\Lists\Iface[] $listItems List of list items
 	 * @param \Aimeos\MShop\Common\Item\Iface[] $refItems List of referenced items
+	 * @param \Aimeos\MShop\Common\Item\Address\Iface[] $addrItems List of referenced address items
+	 * @param \Aimeos\MShop\Common\Item\Property\Iface[] $propItems List of property items
 	 */
-	public function __construct( \Aimeos\MShop\Common\Item\Address\Iface $address, array $values = array(),
-		array $listItems = array(), array $refItems = array() )
+	public function __construct( \Aimeos\MShop\Common\Item\Address\Iface $address, array $values = [],
+		array $listItems = [], array $refItems = [], $addrItems = [], array $propItems = [] )
 	{
-		parent::__construct( 'customer.', $values, $listItems, $refItems );
+		parent::__construct( 'customer.', $values );
 
-		foreach( $values as $name => $value )
-		{
-			switch( $name )
-			{
-				case 'customer.salutation': $address->setSalutation( $value ); break;
-				case 'customer.company': $address->setCompany( $value ); break;
-				case 'customer.vatid': $address->setVatId( $value ); break;
-				case 'customer.title': $address->setTitle( $value ); break;
-				case 'customer.firstname': $address->setFirstname( $value ); break;
-				case 'customer.lastname': $address->setLastname( $value ); break;
-				case 'customer.address1': $address->setAddress1( $value ); break;
-				case 'customer.address2': $address->setAddress2( $value ); break;
-				case 'customer.address3': $address->setAddress3( $value ); break;
-				case 'customer.postal': $address->setPostal( $value ); break;
-				case 'customer.city': $address->setCity( $value ); break;
-				case 'customer.state': $address->setState( $value ); break;
-				case 'customer.languageid': $address->setLanguageId( $value ); break;
-				case 'customer.countryid': $address->setCountryId( $value ); break;
-				case 'customer.telephone': $address->setTelephone( $value ); break;
-				case 'customer.telefax': $address->setTelefax( $value ); break;
-				case 'customer.website': $address->setWebsite( $value ); break;
-				case 'customer.longitude': $address->setLongitude( $value ); break;
-				case 'customer.latitude': $address->setLatitude( $value ); break;
-				case 'customer.email': $address->setEmail( $value ); break;
-			}
-		}
+		$this->initAddressItems( $addrItems );
+		$this->initPropertyItems( $propItems );
+		$this->initListItems( $listItems, $refItems );
 
 		// set modified flag to false
 		$address->setId( $this->getId() );
 
 		$this->billingaddress = $address;
-		$this->values = $values;
+		$this->data = $values;
+	}
+
+
+	/**
+	 * Creates a deep clone of all objects
+	 */
+	public function __clone()
+	{
+		$this->billingaddress = clone $this->billingaddress;
+
+		parent::__clone();
+		$this->__cloneList();
+		$this->__cloneAddress();
+		$this->__cloneProperty();
 	}
 
 
@@ -124,58 +128,31 @@ abstract class Base
 	}
 
 
-	/**
-	 * Sets the item values from the given array.
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Customer\Item\Iface Customer item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
-		$addr = $this->getPaymentAddress();
+		$item = parent::fromArray( $list, $private );
+		$addr = $item->getPaymentAddress()->fromArray( $list, $private );
 
-		foreach( $list as $key => $value )
-		{
-			switch( $key )
-			{
-				case 'customer.salutation': $addr->setSalutation( $value ); break;
-				case 'customer.company': $addr->setCompany( $value ); break;
-				case 'customer.vatid': $addr->setVatID( $value ); break;
-				case 'customer.title': $addr->setTitle( $value ); break;
-				case 'customer.firstname': $addr->setFirstname( $value ); break;
-				case 'customer.lastname': $addr->setLastname( $value ); break;
-				case 'customer.address1': $addr->setAddress1( $value ); break;
-				case 'customer.address2': $addr->setAddress2( $value ); break;
-				case 'customer.address3': $addr->setAddress3( $value ); break;
-				case 'customer.postal': $addr->setPostal( $value ); break;
-				case 'customer.city': $addr->setCity( $value ); break;
-				case 'customer.state': $addr->setState( $value ); break;
-				case 'customer.languageid': $addr->setLanguageId( $value ); break;
-				case 'customer.countryid': $addr->setCountryId( $value ); break;
-				case 'customer.telephone': $addr->setTelephone( $value ); break;
-				case 'customer.email': $addr->setEmail( $value ); break;
-				case 'customer.telefax': $addr->setTelefax( $value ); break;
-				case 'customer.website': $addr->setWebsite( $value ); break;
-				case 'customer.longitude': $addr->setLongitude( $value ); break;
-				case 'customer.latitude': $addr->setLatitude( $value ); break;
-				default: $unknown[$key] = $value;
-			}
-		}
-
-		return $unknown;
+		return $item->setPaymentAddress( $addr );
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
 		$list['customer.salutation'] = $this->getPaymentAddress()->getSalutation();
 		$list['customer.company'] = $this->getPaymentAddress()->getCompany();
@@ -199,14 +176,5 @@ abstract class Base
 		$list['customer.latitude'] = $this->getPaymentAddress()->getLatitude();
 
 		return $list;
-	}
-
-
-	/**
-	 * Implements deep copies for clones.
-	 */
-	public function __clone()
-	{
-		$this->billingaddress = clone $this->billingaddress;
 	}
 }

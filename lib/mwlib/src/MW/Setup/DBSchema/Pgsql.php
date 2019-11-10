@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MW
  * @subpackage Setup
  */
@@ -35,15 +35,15 @@ class Pgsql extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 				AND TABLE_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $tablename );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( $result->fetch() !== false ) {
-			return true;
-		}
+		$this->release( $conn );
 
-		return false;
+		return $result !== false ? true : false;
 	}
 
 
@@ -62,15 +62,15 @@ class Pgsql extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 				AND SEQUENCE_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $seqname );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( $result->fetch() !== false ) {
-			return true;
-		}
+		$this->release( $conn );
 
-		return false;
+		return $result !== false ? true : false;
 	}
 
 
@@ -91,33 +91,32 @@ class Pgsql extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 				AND CONSTRAINT_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $tablename );
 		$stmt->bind( 2, $constraintname );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( $result->fetch() !== false ) {
-			return true;
+		if( $result === false )
+		{
+			$sql = "
+				SELECT indexname
+				FROM pg_indexes
+				WHERE schemaname = 'public'
+					AND tablename = ?
+					AND indexname = ?
+			";
+
+			$stmt = $conn->create( $sql );
+			$stmt->bind( 1, $tablename );
+			$stmt->bind( 2, $constraintname );
+			$result = $stmt->execute()->fetch();
 		}
 
-		$sql = "
-			SELECT indexname
-			FROM pg_indexes
-			WHERE schemaname = 'public'
-				AND tablename = ?
-				AND indexname = ?
-		";
+		$this->release( $conn );
 
-		$stmt = $this->getConnection()->create( $sql );
-		$stmt->bind( 1, $tablename );
-		$stmt->bind( 2, $constraintname );
-		$result = $stmt->execute();
-
-		if( $result->fetch() !== false ) {
-			return true;
-		}
-
-		return false;
+		return $result !== false ? true : false;
 	}
 
 
@@ -138,16 +137,16 @@ class Pgsql extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 				AND COLUMN_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $tablename );
 		$stmt->bind( 2, $columnname );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( $result->fetch() !== false ) {
-			return true;
-		}
+		$this->release( $conn );
 
-		return false;
+		return $result !== false ? true : false;
 	}
 
 
@@ -168,16 +167,16 @@ class Pgsql extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 				AND indexname = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $tablename );
 		$stmt->bind( 2, $indexname );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( $result->fetch() !== false ) {
-			return true;
-		}
+		$this->release( $conn );
 
-		return false;
+		return $result !== false ? true : false;
 	}
 
 
@@ -198,16 +197,20 @@ class Pgsql extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 				AND COLUMN_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $tablename );
 		$stmt->bind( 2, $columnname );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( ( $record = $result->fetch() ) === false ) {
+		$this->release( $conn );
+
+		if( $result === false ) {
 			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Unknown column "%1$s" in table "%2$s"', $columnname, $tablename ) );
 		}
 
-		return $this->createColumnItem( $record );
+		return $this->createColumnItem( $result );
 	}
 
 
@@ -217,7 +220,7 @@ class Pgsql extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 	 * @param array $record Associative array with column details
 	 * @return \Aimeos\MW\Setup\DBSchema\Column\Iface Column item
 	 */
-	protected function createColumnItem( array $record = array() )
+	protected function createColumnItem( array $record = [] )
 	{
 		switch( $record['data_type'] )
 		{
@@ -229,6 +232,6 @@ class Pgsql extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 		$default = ( preg_match( '/^\'(.*)\'::.+$/', $record['column_default'], $match ) === 1 ? $match[1] : $record['column_default'] );
 
 		return new \Aimeos\MW\Setup\DBSchema\Column\Item( $record['table_name'], $record['column_name'],
-			$type, $length, $default, $record['is_nullable'], $record['collation_name'] );
+			$type, $length, $default, $record['is_nullable'], $record['character_set_name'], $record['collation_name'] );
 	}
 }

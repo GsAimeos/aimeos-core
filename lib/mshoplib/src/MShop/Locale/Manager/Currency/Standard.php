@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Locale
  */
@@ -20,14 +20,14 @@ namespace Aimeos\MShop\Locale\Manager\Currency;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Base
-	implements \Aimeos\MShop\Locale\Manager\Currency\Iface
+	implements \Aimeos\MShop\Locale\Manager\Currency\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
 		'locale.currency.id' => array(
 			'code' => 'locale.currency.id',
 			'internalcode' => 'mloccu."id"',
 			'internaldeps' => array( 'LEFT JOIN "mshop_locale_currency" AS mloccu ON (mloc."currencyid" = mloccu."id")' ),
-			'label' => 'Locale currency ID',
+			'label' => 'Currency ID',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
@@ -35,7 +35,7 @@ class Standard
 		'locale.currency.siteid' => array(
 			'code' => 'locale.currency.siteid',
 			'internalcode' => 'mloccu."siteid"',
-			'label' => 'Locale currency site ID',
+			'label' => 'Currency site ID',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
@@ -43,44 +43,47 @@ class Standard
 		'locale.currency.label' => array(
 			'code' => 'locale.currency.label',
 			'internalcode' => 'mloccu."label"',
-			'label' => 'Locale currency label',
+			'label' => 'Currency label',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'locale.currency.code' => array(
 			'code' => 'locale.currency.code',
 			'internalcode' => 'mloccu."id"',
-			'label' => 'Locale currency code',
+			'label' => 'Currency code',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'locale.currency.status' => array(
 			'code' => 'locale.currency.status',
 			'internalcode' => 'mloccu."status"',
-			'label' => 'Locale currency status',
+			'label' => 'Currency status',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'locale.currency.ctime'=> array(
-			'code'=>'locale.currency.ctime',
-			'internalcode'=>'mloccu."ctime"',
-			'label'=>'Locale currency create date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR
+		'locale.currency.ctime' => array(
+			'code' => 'locale.currency.ctime',
+			'internalcode' => 'mloccu."ctime"',
+			'label' => 'Currency create date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'locale.currency.mtime'=> array(
-			'code'=>'locale.currency.mtime',
-			'internalcode'=>'mloccu."mtime"',
-			'label'=>'Locale currency modification date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR
+		'locale.currency.mtime' => array(
+			'code' => 'locale.currency.mtime',
+			'internalcode' => 'mloccu."mtime"',
+			'label' => 'Currency modify date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'locale.currency.editor'=> array(
-			'code'=>'locale.currency.editor',
-			'internalcode'=>'mloccu."editor"',
-			'label'=>'Locale currency editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR
+		'locale.currency.editor' => array(
+			'code' => 'locale.currency.editor',
+			'internalcode' => 'mloccu."editor"',
+			'label' => 'Currency editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
 
@@ -98,17 +101,17 @@ class Standard
 
 
 	/**
-	 * Creates new currency object.
+	 * Creates a new empty item instance
 	 *
-	 * @return \Aimeos\MShop\Locale\Item\Currency\Iface
-	 * @throws \Aimeos\MShop\Locale\Exception On failures with the language item object
+	 * @param array $values Values the item should be initialized with
+	 * @return \Aimeos\MShop\Locale\Item\Currency\Iface New locale currency item object
 	 */
-	public function createItem()
+	public function createItem( array $values = [] )
 	{
 		try {
-			$values = array( 'locale.currency.siteid' => $this->getContext()->getLocale()->getSiteId() );
-		} catch( \Exception $ex ) {
-			$values = array( 'locale.currency.siteid' => null );
+			$values['locale.currency.siteid'] = $this->getContext()->getLocale()->getSiteId();
+		} catch( \Exception $e ) {
+			$values['locale.currency.siteid'] = null;
 		}
 
 		return $this->createItemBase( $values );
@@ -118,20 +121,15 @@ class Standard
 	/**
 	 * Saves a currency item to the storage.
 	 *
-	 * @param \Aimeos\MShop\Common\Item\Iface $item Currency item to save in the storage
+	 * @param \Aimeos\MShop\Locale\Item\Currency\Iface $item Currency item to save in the storage
 	 * @param boolean $fetch True if the new ID should be returned in the item
-	 *
-	 * @throws \Aimeos\MW\DB\Exception If currency object couldn't be saved
-	 * @throws \Aimeos\MShop\Locale\Exception If failures with currency item object
+	 * @return \Aimeos\MShop\Locale\Item\Currency\Iface $item Updated item including the generated ID
 	 */
-	public function saveItem( \Aimeos\MShop\Common\Item\Iface $item, $fetch = true )
+	public function saveItem( \Aimeos\MShop\Locale\Item\Currency\Iface $item, $fetch = true )
 	{
-		$iface = '\\Aimeos\\MShop\\Locale\\Item\\Currency\\Iface';
-		if( !( $item instanceof $iface ) ) {
-			throw new \Aimeos\MShop\Locale\Exception( sprintf( 'Object is not of required type "%1$s"', $iface ) );
+		if( !$item->isModified() ) {
+			return $item;
 		}
-
-		if( !$item->isModified() ) { return; }
 
 		$context = $this->getContext();
 
@@ -143,6 +141,7 @@ class Standard
 		{
 			$id = $item->getId();
 			$date = date( 'Y-m-d H:i:s' );
+			$columns = $this->getObject()->getSaveAttributes();
 
 			if( $id === null )
 			{
@@ -177,6 +176,7 @@ class Standard
 				 * @see mshop/locale/manager/currency/standard/count/ansi
 				 */
 				$path = 'mshop/locale/manager/currency/standard/insert';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ) );
 			}
 			else
 			{
@@ -209,21 +209,27 @@ class Standard
 				 * @see mshop/locale/manager/currency/standard/count/ansi
 				 */
 				$path = 'mshop/locale/manager/currency/standard/update';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ), false );
 			}
 
-			$stmt = $this->getCachedStatement( $conn, $path );
+			$idx = 1;
+			$stmt = $this->getCachedStatement( $conn, $path, $sql );
 
-			$stmt->bind( 1, $item->getLabel() );
-			$stmt->bind( 2, $item->getStatus(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 3, $item->getSiteId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 4, $date ); // mtime
-			$stmt->bind( 5, $context->getEditor() );
+			foreach( $columns as $name => $entry ) {
+				$stmt->bind( $idx++, $item->get( $name ), $entry->getInternalType() );
+			}
+
+			$stmt->bind( $idx++, $item->getLabel() );
+			$stmt->bind( $idx++, $item->getStatus(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			$stmt->bind( $idx++, $item->getSiteId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			$stmt->bind( $idx++, $date ); // mtime
+			$stmt->bind( $idx++, $context->getEditor() );
 			// bind ID but code and id are identical after saveing the stuff
 			// id is the flag to detect updates or inserts!
-			$stmt->bind( 6, $item->getCode() );
+			$stmt->bind( $idx++, $item->getCode() );
 
 			if( $id === null ) {
-				$stmt->bind( 7, $date ); // ctime
+				$stmt->bind( $idx++, $date ); // ctime
 			}
 
 			$stmt->execute()->finish();
@@ -237,15 +243,18 @@ class Standard
 			$dbm->release( $conn, $dbname );
 			throw $e;
 		}
+
+		return $item;
 	}
 
 
 	/**
-	 * Removes multiple items specified by ids in the array.
+	 * Removes multiple items.
 	 *
-	 * @param array $ids List of IDs
+	 * @param \Aimeos\MShop\Common\Item\Iface[]|string[] $itemIds List of item objects or IDs of the items
+	 * @return \Aimeos\MShop\Locale\Manager\Currency\Iface Manager object for chaining method calls
 	 */
-	public function deleteItems( array $ids )
+	public function deleteItems( array $itemIds )
 	{
 		/** mshop/locale/manager/currency/standard/delete/mysql
 		 * Deletes the items matched by the given IDs from the database
@@ -277,7 +286,8 @@ class Standard
 		 * @see mshop/locale/manager/currency/standard/count/ansi
 		 */
 		$path = 'mshop/locale/manager/currency/standard/delete';
-		$this->deleteItemsBase( $ids, $path );
+
+		return $this->deleteItemsBase( $itemIds, $path );
 	}
 
 
@@ -286,12 +296,13 @@ class Standard
 	 *
 	 * @param string $id Currency ID indentifying the currency object
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
+	 * @param boolean $default Add default criteria
 	 * @return \Aimeos\MShop\Locale\Item\Currency\Iface Returns the currency item of the given id
 	 * @throws \Aimeos\MShop\Exception If item couldn't be found
 	 */
-	public function getItem( $id, array $ref = array() )
+	public function getItem( $id, array $ref = [], $default = false )
 	{
-		return $this->getItemBase( 'locale.currency.id', $id, $ref );
+		return $this->getItemBase( 'locale.currency.id', $id, $ref, $default );
 	}
 
 
@@ -299,13 +310,12 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/locale/manager/currency/submanagers';
-
-		return $this->getResourceTypeBase( 'locale/currency', $path, array(), $withsub );
+		return $this->getResourceTypeBase( 'locale/currency', $path, [], $withsub );
 	}
 
 
@@ -313,7 +323,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array List of attribute items implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -336,7 +346,7 @@ class Standard
 		 */
 		$path = 'mshop/locale/manager/currency/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -346,9 +356,9 @@ class Standard
 	 * @param \Aimeos\MW\Criteria\Iface $search Search criteria object
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
 	 * @param integer|null &$total Number of items that are available in total
-	 * @return array List of items implementing \Aimeos\MShop\Locale\Item\Currency\Iface
+	 * @return \Aimeos\MShop\Locale\Item\Currency\Iface[] List of locale currency items
 	 */
-	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = array(), &$total = null )
+	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = [], &$total = null )
 	{
 		$context = $this->getContext();
 
@@ -356,20 +366,26 @@ class Standard
 		$dbname = $this->getResourceName();
 		$conn = $dbm->acquire( $dbname );
 
-		$items = array( );
+		$items = [];
 
 		try
 		{
-			$attributes = $this->getSearchAttributes();
-			$types = $this->getSearchTypes( $attributes );
+			$attributes = $this->getObject()->getSearchAttributes();
 			$translations = $this->getSearchTranslations( $attributes );
-			$columns = $search->getColumnString( $search->getSortations(), $translations );
+			$types = $this->getSearchTypes( $attributes );
+			$columns = $this->getObject()->getSaveAttributes();
+			$sortcols = $search->translate( $search->getSortations(), $translations );
 
-			$find = array( ':cond', ':order', ':columns', ':start', ':size' );
+			$colstring = '';
+			foreach( $columns as $name => $entry ) {
+				$colstring .= $entry->getInternalCode() . ', ';
+			}
+
+			$find = array( ':columns', ':cond', ':order', ':start', ':size' );
 			$replace = array(
-				$search->getConditionString( $types, $translations ),
-				$search->getSortationString( $types, $translations ),
-				( $columns ? ', ' . $columns : '' ),
+				$colstring . ( $sortcols ? join( ', ', $sortcols ) . ', ' : '' ),
+				$search->getConditionSource( $types, $translations ),
+				$search->getSortationSource( $types, $translations ),
 				$search->getSliceStart(),
 				$search->getSliceSize(),
 			);
@@ -438,7 +454,7 @@ class Standard
 			try
 			{
 				while( ( $row = $results->fetch() ) !== false ) {
-					$items[$row['locale.currency.id']] = $this->createItemBase( $row );
+					$items[(string) $row['locale.currency.id']] = $this->createItemBase( $row );
 				}
 			}
 			catch( \Exception $e )
@@ -541,12 +557,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap global decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the locale currency manager.
+		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the locale currency
+		 * manager.
 		 *
 		 *  mshop/locale/manager/currency/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the locale controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the locale
+		 * currency manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2014.03
@@ -565,13 +583,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the locale currency manager.
+		 * ("\Aimeos\MShop\Locale\Manager\Currency\Decorator\*") around the locale
+		 * currency manager.
 		 *
 		 *  mshop/locale/manager/currency/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the locale
-		 * controller.
+		 * "\Aimeos\MShop\Locale\Manager\Currency\Decorator\Decorator2" only to the
+		 * locale currency manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2014.03
@@ -586,10 +605,26 @@ class Standard
 
 
 	/**
-	 * Creates a search object and sets base criteria.
+	 * Returns the item specified by its code and domain/type if necessary
 	 *
-	 * @param boolean $default
-	 * @return \Aimeos\MW\Criteria\Iface
+	 * @param string $code Code of the item
+	 * @param string[] $ref List of domains to fetch list items and referenced items for
+	 * @param string|null $domain Domain of the item if necessary to identify the item uniquely
+	 * @param string|null $type Type code of the item if necessary to identify the item uniquely
+	 * @param boolean $default True to add default criteria
+	 * @return \Aimeos\MShop\Common\Item\Iface Item object
+	 */
+	public function findItem( $code, array $ref = [], $domain = null, $type = null, $default = false )
+	{
+		return $this->findItemBase( array( 'locale.currency.id' => $code ), $ref, $default );
+	}
+
+
+	/**
+	 * Creates a search critera object
+	 *
+	 * @param boolean $default Add default criteria (optional)
+	 * @return \Aimeos\MW\Criteria\Iface New search criteria object
 	 */
 	public function createSearch( $default = false )
 	{
@@ -605,17 +640,24 @@ class Standard
 	 * Returns the search results for the given SQL statement.
 	 *
 	 * @param \Aimeos\MW\DB\Connection\Iface $conn Database connection
-	 * @param $sql SQL statement
+	 * @param string $sql SQL statement
 	 * @return \Aimeos\MW\DB\Result\Iface Search result object
 	 */
 	protected function getSearchResults( \Aimeos\MW\DB\Connection\Iface $conn, $sql )
 	{
-		$statement = $conn->create( $sql );
-		$this->getContext()->getLogger()->log( __METHOD__ . ': SQL statement: ' . $statement, \Aimeos\MW\Logger\Base::DEBUG );
+		$time = microtime( true );
 
-		$results = $statement->execute();
+		$stmt = $conn->create( $sql );
+		$result = $stmt->execute();
 
-		return $results;
+		$msg = [
+			'time' => ( microtime( true ) - $time ) * 1000,
+			'class' => get_class( $this ),
+			'stmt' => (string) $stmt,
+		];
+		$this->getContext()->getLogger()->log( $msg, \Aimeos\MW\Logger\Base::DEBUG, 'core/sql' );
+
+		return $result;
 	}
 
 
@@ -623,9 +665,9 @@ class Standard
 	 * Create new item object initialized with given parameters.
 	 *
 	 * @param array $data Associative list of item key/value pairs
-	 * @return \Aimeos\MShop\Locale\Item\Currency\Iface Locale currency item object
+	 * @return \Aimeos\MShop\Locale\Item\Currency\Iface Currency item object
 	 */
-	protected function createItemBase( array $data = array() )
+	protected function createItemBase( array $data = [] )
 	{
 		return new \Aimeos\MShop\Locale\Item\Currency\Standard( $data );
 	}
@@ -635,8 +677,8 @@ class Standard
 	 * Returns the total number of items found for the conditions
 	 *
 	 * @param \Aimeos\MW\DB\Connection\Iface $conn Database connection
-	 * @param array $find List of markers that should be replaced in the SQL statement
-	 * @param array $replace List of replacements for the markers in the SQL statement
+	 * @param string[] $find List of markers that should be replaced in the SQL statement
+	 * @param string[] $replace List of replacements for the markers in the SQL statement
 	 * @throws \Aimeos\MShop\Locale\Exception If no total value was found
 	 * @return integer Total number of found items
 	 */

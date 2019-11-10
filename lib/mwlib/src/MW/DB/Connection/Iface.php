@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage DB
  */
@@ -20,6 +20,14 @@ namespace Aimeos\MW\DB\Connection;
  */
 interface Iface
 {
+	/**
+	 * Connects (or reconnects) to the database server
+	 *
+	 * @return \Aimeos\MW\DB\Connection\Iface Connection instance for method chaining
+	 */
+	public function connect();
+
+
 	/**
 	 * Creates a database statement.
 	 *
@@ -48,24 +56,36 @@ interface Iface
 
 
 	/**
+	 * Checks if a transaction is currently running
+	 *
+	 * @return boolean True if transaction is currently running, false if not
+	 */
+	public function inTransaction();
+
+
+	/**
 	 * Starts a transaction for this connection.
+	 *
 	 * Transactions can't be nested and a new transaction can only be started
 	 * if the previous transaction was committed or rolled back before.
-	 * @return void
+	 *
+	 * @return \Aimeos\MW\DB\Connection\Iface Connection instance for method chaining
 	 */
 	public function begin();
 
 
 	/**
 	 * Commits the changes done inside of the transaction to the storage.
-	 * @return void
+	 *
+	 * @return \Aimeos\MW\DB\Connection\Iface Connection instance for method chaining
 	 */
 	public function commit();
 
 
 	/**
 	 * Discards the changes done inside of the transaction.
-	 * @return void
+	 *
+	 * @return \Aimeos\MW\DB\Connection\Iface Connection instance for method chaining
 	 */
 	public function rollback();
 }

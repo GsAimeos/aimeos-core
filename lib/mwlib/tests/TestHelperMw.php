@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -62,11 +62,7 @@ class TestHelperMw
 	 */
 	public static function getDBManager()
 	{
-		if( !isset( self::$dbm ) ) {
-			self::$dbm = self::createDBManager();
-		}
-
-		return self::$dbm;
+		return \Aimeos\MW\DB\Factory::create( self::getConfig(), 'DBAL' );
 	}
 
 
@@ -80,20 +76,9 @@ class TestHelperMw
 		$path = dirname( dirname( dirname( __DIR__ ) ) ) . DIRECTORY_SEPARATOR . 'config';
 		$file = __DIR__ . DIRECTORY_SEPARATOR . 'confdoc.ser';
 
-		$object = new \Aimeos\MW\Config\PHPArray( array(), $path );
+		$object = new \Aimeos\MW\Config\PHPArray( [], $path );
 		$object = new \Aimeos\MW\Config\Decorator\Documentor( $object, $file );
 
 		return $object;
-	}
-
-
-	/**
-	 * Creates a new database manager object
-	 *
-	 * @return \Aimeos\MW\DB\Manager\Iface Database manager object
-	 */
-	private static function createDBManager()
-	{
-		return \Aimeos\MW\DB\Factory::createManager( self::getConfig(), 'DBAL' );
 	}
 }

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Cache
  */
@@ -25,10 +25,11 @@ abstract class Base
 	/**
 	 * Removes all expired cache entries.
 	 *
-	 * @throws \Aimeos\MW\Cache\Exception If the cache server doesn't respond
+	 * @return bool True on success and false on failure
 	 */
-	public function cleanup()
+	public function cleanup() : bool
 	{
+		return true;
 	}
 
 
@@ -36,11 +37,12 @@ abstract class Base
 	 * Removes the cache entry identified by the given key.
 	 *
 	 * @param string $key Key string that identifies the single cache entry
-	 * @throws \Aimeos\MW\Cache\Exception If the cache server doesn't respond
+	 * @return bool True if the item was successfully removed. False if there was an error
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	public function delete( $key )
+	public function delete( string $key ) : bool
 	{
-		$this->deleteMultiple( array( $key ) );
+		return $this->deleteMultiple( [$key] );
 	}
 
 
@@ -50,14 +52,14 @@ abstract class Base
 	 * @param string $key Path to the requested value like product/id/123
 	 * @param mixed $default Value returned if requested key isn't found
 	 * @return mixed Value associated to the requested key. If no value for the
-	 * key is found in the cache, the given default value is returned
-	 * @throws \Aimeos\MW\Cache\Exception If the cache server doesn't respond
+	 *	key is found in the cache, the given default value is returned
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	public function get( $key, $default = null )
+	public function get( string $key, $default = null )
 	{
-		$list = $this->getMultiple( array( $key ) );
+		$list = $this->getMultiple( [$key] );
 
-		if( ( $value = reset( $list ) ) !== false ) {
+		if( ( $value = current( $list ) ) !== false ) {
 			return $value;
 		}
 
@@ -70,18 +72,15 @@ abstract class Base
 	 *
 	 * @param string $key Key string for the given value like product/id/123
 	 * @param mixed $value Value string that should be stored for the given key
-	 * @param int|string|null $expires Date/time string in "YYYY-MM-DD HH:mm:ss"
-	 * 	format or as TTL value when the cache entry expires
-	 * @param array $tags List of tag strings that should be assoicated to the
-	 * 	given value in the cache
-	 * @throws \Aimeos\MW\Cache\Exception If the cache server doesn't respond
+	 * @param \DateInterval|int|string|null $expires Date interval object,
+	 *  date/time string in "YYYY-MM-DD HH:mm:ss" format or as integer TTL value
+	 *  when the cache entry will expiry
+	 * @param iterable $tags List of tag strings that should be assoicated to the cache entry
+	 * @return bool True on success and false on failure.
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	public function set( $key, $value, $expires = null, array $tags = array() )
+	public function set( string $key, $value, $expires = null, iterable $tags = [] ) : bool
 	{
-		if( !is_string( $key ) ) {
-			throw new \Aimeos\MW\Cache\Exception( 'Key is not a string' );
-		}
-
-		$this->setMultiple( array( $key => $value ), $expires, array( $key => $tags ) );
+		return $this->setMultiple( [$key => $value], $expires, $tags );
 	}
 }

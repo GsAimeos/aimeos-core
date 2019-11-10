@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aimeos-core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-03 12:04+0100\n"
-"PO-Revision-Date: 2017-01-03 11:14+0000\n"
-"Last-Translator: Aimeos <aimeos@aimeos.org>\n"
+"POT-Creation-Date: 2019-10-03 10:00+0200\n"
+"PO-Revision-Date: 2019-10-03 08:03+0000\n"
+"Last-Translator: Aimeos\n"
 "Language-Team: Russian (http://www.transifex.com/aimeos/aimeos-core/language/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,9 +18,51 @@ msgstr ""
 "Language: ru\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
+#. / Supplier address format with label (%1$s), company (%2$s),
+#. / address part one (%3$s, e.g street), address part two (%4$s, e.g house
+#. number), address part three (%5$s, e.g additional information),
+#. / postal/zip code (%6$s), city (%7$s), state (%8$s), country ID (%9$s),
+#. / e-mail (%10$s), phone (%11$s), facsimile/telefax (%12$s), web site
+#. (%13$s)
+#, php-format
+msgid ""
+"%1$s\n"
+"%2$s\n"
+"%3$s %4$s\n"
+"%5$s\n"
+"%6$s %7$s\n"
+"%8$s %9$s\n"
+"%10$s\n"
+"%11$s\n"
+"%12$s\n"
+"%13$s\n"
+msgstr ""
+
+#. / Supplier address format with label (%1$s), company (%2$s),
+#. / address part one (%3$s, e.g street), address part two (%4$s, e.g house
+#. number), address part three (%5$s, e.g additional information),
+#. / postal/zip code (%6$s), city (%7$s), state (%8$s), country ID (%9$s),
+#. / e-mail (%10$s), phone (%11$s), facsimile/telefax (%12$s), web site
+#. (%13$s)
+#, php-format
+msgid "%1$s, %2$s, %3$s %4$s, %6$s %7$s"
+msgstr ""
+
 #, php-format
 msgid "Address for domain \"%1$s\" not available"
 msgstr "Недопустим адрес для домена \"%1$s\""
+
+#, php-format
+msgid "Address for type \"%1$s\" not available"
+msgstr ""
+
+#, php-format
+msgid "Address item for removal not found"
+msgstr ""
+
+#, php-format
+msgid "Address not available"
+msgstr ""
 
 #, php-format
 msgid "Address salutation \"%1$s\" not within allowed range"
@@ -37,6 +79,10 @@ msgstr "Тип адреса \"%1$s\" вне допусимого диапазо�
 #, php-format
 msgid "Basket empty"
 msgstr "Корзина пуста"
+
+#, php-format
+msgid "Bought voucher is in currency \"%1$s\", basket uses \"%2$s\""
+msgstr ""
 
 #, php-format
 msgid "Cache object not available"
@@ -69,6 +115,14 @@ msgstr "Класс \"%1$s\" не реализует интерфейс \"%2$s\""
 #, php-format
 msgid "Class \"%1$s\" not available"
 msgstr "Недоступен класс \"%1$s\""
+
+#, php-format
+msgid "Code \"%1$s\" must not be longer than %2$d characters"
+msgstr ""
+
+#, php-format
+msgid "Code \"%1$s\" must not be longer than 32 characters"
+msgstr ""
 
 #, php-format
 msgid "Code must not be longer than 255 characters"
@@ -107,20 +161,52 @@ msgid "Curl could not be initialized"
 msgstr "Ошибка при инициализации curl"
 
 #, php-format
+msgid "Curl error: \"%1$s\" - \"%2$s\""
+msgstr ""
+
+#, php-format
 msgid "Database manager object not available"
 msgstr "Недоступен модуль управления объектами базы данных"
+
+#, php-format
+msgid "Date value before \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Duplicate coupon code"
+msgstr ""
 
 #, php-format
 msgid "Duplicate coupon code \"%1$s\""
 msgstr "Дубликат в коде купона \"%1$s\""
 
 #, php-format
+msgid "Expanding \"%1$s\" node failed"
+msgstr ""
+
+#, php-format
+msgid "File or directory \"%1$s\" doesn't exist"
+msgstr ""
+
+#, php-format
 msgid "File system manager object not available"
+msgstr ""
+
+#, php-format
+msgid "Finished order status import from \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Finished order status import from file \"%1$s\""
 msgstr ""
 
 #, php-format
 msgid "Flags \"%1$s\" not within allowed range"
 msgstr "Состояния \"%1$s\" вне допустимого диапазона"
+
+#, php-format
+msgid "Flags not within allowed range"
+msgstr ""
 
 #, php-format
 msgid "ID of last inserted database record not available"
@@ -130,6 +216,10 @@ msgstr "Недоступен ID последней вставленной зап
 #, php-format
 msgid "Internationalization object not available for \"%1$s\""
 msgstr "Недоступен объект интернационализации для \"%1$s\""
+
+#, php-format
+msgid "Invalid ISO country code \"%1$s\""
+msgstr ""
 
 #, php-format
 msgid "Invalid ISO currency code \"%1$s\""
@@ -201,6 +291,9 @@ msgstr "Недопустимые символы в названии типа \"%
 msgid "Invalid configuration for coupon provider \"%1$s\", needs \"%2$s\""
 msgstr "Недопустимая настройка для поставщика купонов \"%1$s\", необходимо \"%2$s\""
 
+msgid "Invalid delivery type"
+msgstr ""
+
 #, php-format
 msgid "Invalid factory \"%1$s\""
 msgstr "Недопустимая фабрика \"%1$s\""
@@ -210,8 +303,16 @@ msgid "Invalid mime type \"%1$s\""
 msgstr "Недопустимый mime тип \"%1$s\""
 
 #, php-format
+msgid "Invalid provider name \"%1$s\""
+msgstr ""
+
+#, php-format
 msgid "Invalid serialized basket. \"%1$s\" returns \"%2$s\"."
 msgstr "Недопустимая сериализованная корзина. \"%1$s\" возвращает \"%2$s\"."
+
+#, php-format
+msgid "Invalid time interval format \"%1$s\""
+msgstr ""
 
 #, php-format
 msgid "Invalid type \"%1$s\""
@@ -245,6 +346,10 @@ msgstr "Не найден элемент с ID \"%2$s\" в \"%1$s\""
 #, php-format
 msgid "Job with ID \"%1$s\" not found"
 msgstr "Не найдена задача с ID \"%1$s\""
+
+#, php-format
+msgid "List item for removal from domain \"%1$s\" not found"
+msgstr ""
 
 #, php-format
 msgid "List item with ID \"%2$s\" in \"%1$s\" not found"
@@ -325,11 +430,31 @@ msgid ""
 msgstr "Вновь созданный сайт невозможно сохранить, используя метод \"saveItem()\". Вместо этого попробуйте использовать метод \"insertItem()\"."
 
 #, php-format
+msgid "No XML file \"%1$s\" found"
+msgstr ""
+
+#, php-format
+msgid "No bought voucher for code \"%1$s\" available"
+msgstr ""
+
+#, php-format
+msgid "No catalog node for ID \"%1$s\""
+msgstr ""
+
+#, php-format
 msgid "No item found for conditions: %1$s"
 msgstr ""
 
 #, php-format
 msgid "No item with \"%2$s\" in \"%1$s\" found"
+msgstr ""
+
+#, php-format
+msgid "No more credit available for voucher \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "No order for ID \"%1$s\" found"
 msgstr ""
 
 #, php-format
@@ -339,6 +464,14 @@ msgstr "Недоступна цена на товар с ID \"%1$s\" или то
 #, php-format
 msgid "No product with code \"%1$s\" found"
 msgstr "Не найден товар с кодом \"%1$s\""
+
+#, php-format
+msgid "No rebate for currency \"%1$s\" available"
+msgstr ""
+
+#, php-format
+msgid "No search keys available"
+msgstr ""
 
 #, php-format
 msgid "No stock type for code \"%1$s\" found"
@@ -365,6 +498,10 @@ msgid "Not a key/value map"
 msgstr "Не пара ключ/значение"
 
 #, php-format
+msgid "Not a list item"
+msgstr ""
+
+#, php-format
 msgid "Not a listed value"
 msgstr "Не указанное значение"
 
@@ -375,6 +512,10 @@ msgstr "Не номер"
 #, php-format
 msgid "Not a string"
 msgstr "Не строка"
+
+#, php-format
+msgid "Not a time"
+msgstr ""
 
 #, php-format
 msgid "Not a true/false value"
@@ -399,6 +540,10 @@ msgid ""
 msgstr "ID заказа \"%1$s\" в ответе XML поставщика доставки отличается от хранящегося в счёте ID \"%2$s\" заказа"
 
 #, php-format
+msgid "Order address position \"%1$s\" must be greater than 0"
+msgstr ""
+
+#, php-format
 msgid "Order base item with order ID \"%1$s\" not found"
 msgstr "Не найден базовый элемент заказа с ID заказа \"%1$s\""
 
@@ -421,6 +566,10 @@ msgid "Order product position \"%1$s\" must be greater than 0"
 msgstr "Позиция товара \"%1$s\" должна быть больше 0"
 
 #, php-format
+msgid "Order service position \"%1$s\" must be greater than 0"
+msgstr ""
+
+#, php-format
 msgid "Order type \"%1$s\" not within allowed range"
 msgstr "Тип заказа \"%1$s\" находится вне допустимого диапазона"
 
@@ -431,6 +580,10 @@ msgstr "Заказ с ID \"%1$s\" отвергнут с кодом \"%2$s\": %3$
 #, php-format
 msgid "Parameter \"%1$s\" for configuration not available"
 msgstr "Недоступен параметр \"%1$s\" для настройки"
+
+#, php-format
+msgid "PayPal Express: Duplicate transaction with ID \"%1$s\" and status \"%2$s\""
+msgstr ""
 
 #, php-format
 msgid "PayPal Express: Duplicate transaction with ID \"%1$s\" and status \"%2$s\" "
@@ -478,14 +631,30 @@ msgid "Price item not available"
 msgstr "Недоступен элемент цены"
 
 #, php-format
+msgid "Process object not available"
+msgstr ""
+
+#, php-format
+msgid "Product  not available"
+msgstr ""
+
+#, php-format
 msgid ""
 "Product does not contain all required values. Product code for item not "
 "available."
 msgstr "Товар не содержит всех требуемых значений. Недоступен код товара для элемента."
 
 #, php-format
+msgid "Product does not contain the SKU code"
+msgstr ""
+
+#, php-format
 msgid "Product matching given properties not found"
 msgstr "Не найден товар, соответствующий заданным свойствам"
+
+#, php-format
+msgid "Product not available"
+msgstr ""
 
 #, php-format
 msgid "Product with array key \"%1$d\" not available"
@@ -500,6 +669,10 @@ msgid "Products out of stock"
 msgstr "Товаров нет в наличии"
 
 #, php-format
+msgid "Property item for removal not found"
+msgstr ""
+
+#, php-format
 msgid "Property name \"%1$s\" not within allowed range"
 msgstr "Свойство \"%1$s\" в названии вне допустимого диапазона"
 
@@ -510,6 +683,10 @@ msgstr "Недоступен поставщик в \"%1$s\""
 #, php-format
 msgid "Quantity must be a positive integer and must not exceed %1$d"
 msgstr "Количество должно быть положительным числом, не выше %1$d"
+
+#, php-format
+msgid "Required parameter \"%1$s\" is missing"
+msgstr "Отсутствует обязательный параметр \"%1$s\""
 
 #, php-format
 msgid "Required value for \"%1$s\" is missing"
@@ -524,12 +701,20 @@ msgid "Search configuration not available"
 msgstr "Недоступна настройка поиска"
 
 #, php-format
+msgid "Sending order failed: \"%1$s\""
+msgstr ""
+
+#, php-format
 msgid "Sending order to delivery provider failed with HTTP status \"%1$s\""
 msgstr "Ошибка при отсылке заказа поставщику доставки со статусом HTTP \"%1$s\""
 
 #, php-format
 msgid "Sending order to delivery provider failed: \"%1$s\""
 msgstr "Ошибка при отсылке заказа поставщику доставки: \"%1$s\""
+
+#, php-format
+msgid "Service not available"
+msgstr ""
 
 #, php-format
 msgid "Service of type \"%1$s\" not available"
@@ -554,6 +739,14 @@ msgstr "Невозможно переместить сайт. ID сайта от
 #, php-format
 msgid "Site for code \"%1$s\" not found"
 msgstr "Не найден сайт для кода \"%1$s\""
+
+#, php-format
+msgid "Started order status import from \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Started order status import from file \"%1$s\""
+msgstr ""
 
 #, php-format
 msgid "The algorithm \"%1$s\" is not supported"
@@ -596,6 +789,14 @@ msgid "The type of the configuration option with key \"%1$s\" must be \"%2$s\""
 msgstr "Тип параметра настроек с ключом \"%1$s\" должен быть \"%2$s\""
 
 #, php-format
+msgid "Time value after \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Time value before \"%1$s\""
+msgstr ""
+
+#, php-format
 msgid "Total results value not found"
 msgstr "Не найдено общее количество результатов"
 
@@ -606,6 +807,18 @@ msgstr "Не найден корень дерева с кодом \"%1$s\" в \"
 #, php-format
 msgid "Type item with ID \"%1$s\" in \"%2$s\" not found"
 msgstr "Не найден тип элемента с ID \"%1$s\" в \"%2$s\""
+
+#, php-format
+msgid "Unable to call method \"%1$s\""
+msgstr "Невозможно вызвать метод \"%1$s\""
+
+#, php-format
+msgid "Unable to create order XML file \"%1$s\""
+msgstr ""
+
+#, php-format
+msgid "Unable to move imported file \"%1$s\" to \"%2$s\""
+msgstr ""
 
 #, php-format
 msgid "Unable to sort public holidays: \"%1$s\""

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Context
  */
@@ -22,18 +22,20 @@ class Standard implements \Aimeos\MShop\Context\Item\Iface
 {
 	private $cache;
 	private $config;
+	private $date;
 	private $dbm;
 	private $fsm;
 	private $locale;
 	private $logger;
 	private $mail;
 	private $mqueue;
+	private $process;
 	private $session;
 	private $view;
 	private $user;
 	private $groups;
 	private $editor = '';
-	private $i18n = array();
+	private $i18n = [];
 
 
 	/**
@@ -49,9 +51,10 @@ class Standard implements \Aimeos\MShop\Context\Item\Iface
 		$this->logger = null;
 		$this->mail = null;
 		$this->mqueue = null;
+		$this->process = null;
 		$this->session = null;
 		$this->view = null;
-		$this->i18n = array();
+		$this->i18n = [];
 	}
 
 
@@ -62,16 +65,39 @@ class Standard implements \Aimeos\MShop\Context\Item\Iface
 	{
 		$this->cache = ( isset( $this->cache ) ? clone $this->cache : null );
 		$this->config = ( isset( $this->config ) ? clone $this->config : null );
+		$this->fsm = ( isset( $this->fsm ) ? clone $this->fsm : null );
 		$this->locale = ( isset( $this->locale ) ? clone $this->locale : null );
 		$this->logger = ( isset( $this->logger ) ? clone $this->logger : null );
 		$this->mail = ( isset( $this->mail ) ? clone $this->mail : null );
 		$this->mqueue = ( isset( $this->mqueue ) ? clone $this->mqueue : null );
+		$this->process = ( isset( $this->process ) ? clone $this->process : null );
 		$this->session = ( isset( $this->session ) ? clone $this->session : null );
 		// view is always cloned
 
 		foreach( $this->i18n as $locale => $object ) {
 			$this->i18n[$locale] = clone $this->i18n[$locale];
 		}
+	}
+
+
+	/**
+	 * Cleans up internal objects of the context item
+	 */
+	public function __sleep()
+	{
+		$objects = array(
+			$this->cache, $this->config, $this->dbm, $this->fsm, $this->locale, $this->logger,
+			$this->mail, $this->mqueue, $this->process, $this->session, $this->view
+		);
+
+		foreach( $objects as $object )
+		{
+			if( method_exists( $object, '__sleep' ) ) {
+				$object->__sleep();
+			}
+		}
+
+		return get_object_vars( $this );
 	}
 
 
@@ -84,7 +110,7 @@ class Standard implements \Aimeos\MShop\Context\Item\Iface
 	{
 		$objects = array(
 			$this, $this->cache, $this->config, $this->dbm, $this->fsm, $this->locale,
-			$this->logger, $this->mail, $this->mqueue, $this->session, $this->view
+			$this->logger, $this->mail, $this->mqueue, $this->process, $this->session, $this->view
 		);
 
 		return md5( $this->hash( $objects ) );
@@ -137,7 +163,7 @@ class Standard implements \Aimeos\MShop\Context\Item\Iface
 	/**
 	 * Returns the configuration object.
 	 *
-	 * @return \Aimeos\MShop\Config\Iface Configuration object
+	 * @return \Aimeos\MW\Config\Iface Configuration object
 	 */
 	public function getConfig()
 	{
@@ -175,6 +201,42 @@ class Standard implements \Aimeos\MShop\Context\Item\Iface
 		}
 
 		return $this->dbm;
+	}
+
+
+	/**
+	 * Returns the current date and time
+	 * This is especially useful to share the same request time or if applications
+	 * allow to travel in time.
+	 *
+	 * @return string Current date and time as ISO string (YYYY-MM-DD HH:mm:ss)
+	 */
+	public function getDateTime()
+	{
+		if( $this->date === null ) {
+			$this->date = date( 'Y-m-d H:i:00' );
+		}
+
+		return $this->date;
+	}
+
+
+	/**
+	 * Sets the current date and time
+	 *
+	 * @param string $datetime Date and time as ISO string (YYYY-MM-DD HH:mm:ss)
+	 */
+	public function setDateTime( $datetime )
+	{
+		$regex = '/^[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9]$/';
+
+		if( preg_match( $regex, (string) $datetime ) !== 1 ) {
+			throw new \Aimeos\MShop\Exception( sprintf( 'Invalid characters in date "%1$s". ISO format "YYYY-MM-DD hh:mm:ss" expected.', $datetime ) );
+		}
+
+		$this->date = $datetime;
+
+		return $this;
 	}
 
 
@@ -372,7 +434,7 @@ class Standard implements \Aimeos\MShop\Context\Item\Iface
 	 * Returns the message queue manager object.
 	 *
 	 * @return \Aimeos\MW\MQueue\Manager\Iface Message queue manager object
-	*/
+	 */
 	public function getMessageQueueManager()
 	{
 		if( !isset( $this->mqueue ) ) {
@@ -387,9 +449,9 @@ class Standard implements \Aimeos\MShop\Context\Item\Iface
 	 * Returns the message queue object.
 	 *
 	 * @param string $resource Resource name, e.g. "mq-email"
-	 * @apram string $queue Message queue name, e.g. "order/email/payment"
-	 * @return \Aimeos\MW\Queue\Manager\Iface Message queue object
-	*/
+	 * @param string $queue Message queue name, e.g. "order/email/payment"
+	 * @return \Aimeos\MW\MQueue\Manager\Iface Message queue object
+	 */
 	public function getMessageQueue( $resource, $queue )
 	{
 		if( !isset( $this->mqueue ) ) {
@@ -397,6 +459,35 @@ class Standard implements \Aimeos\MShop\Context\Item\Iface
 		}
 
 		return $this->mqueue->get( $resource )->getQueue( $queue );
+	}
+
+
+	/**
+	 * Sets the process object.
+	 *
+	 * @param \Aimeos\MW\Process\Iface $process Process object
+	 * @return \Aimeos\MShop\Context\Item\Iface Context item for chaining method calls
+	 */
+	public function setProcess( \Aimeos\MW\Process\Iface $process )
+	{
+		$this->process = $process;
+
+		return $this;
+	}
+
+
+	/**
+	 * Returns the process object.
+	 *
+	 * @return \Aimeos\MW\Process\Iface Process object
+	 */
+	public function getProcess()
+	{
+		if( !isset( $this->process ) ) {
+			throw new \Aimeos\MShop\Exception( sprintf( 'Process object not available' ) );
+		}
+
+		return $this->process;
 	}
 
 
@@ -500,7 +591,7 @@ class Standard implements \Aimeos\MShop\Context\Item\Iface
 	/**
 	 * Returns the user ID of the logged in user.
 	 *
-	 * @return string User ID of the logged in user
+	 * @return string|null User ID of the logged in user
 	 */
 	public function getUserId()
 	{

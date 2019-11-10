@@ -5,9 +5,9 @@ namespace Aimeos\MShop\Customer\Item\Group;
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $values;
@@ -45,7 +45,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setId( null );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Customer\Item\Group\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Customer\Item\Group\Iface::class, $return );
 		$this->assertTrue( $this->object->isModified() );
 		$this->assertNull( $this->object->getId() );
 	}
@@ -67,7 +67,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setCode( 'unitgroup2' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Customer\Item\Group\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Customer\Item\Group\Iface::class, $return );
 		$this->assertEquals( 'unitgroup2', $this->object->getCode() );
 		$this->assertTrue( $this->object->isModified() );
 	}
@@ -83,7 +83,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setLabel( 'unittest2' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Customer\Item\Group\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Customer\Item\Group\Iface::class, $return );
 		$this->assertEquals( 'unittest2', $this->object->getLabel() );
 		$this->assertTrue( $this->object->isModified() );
 	}
@@ -105,15 +105,15 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$item = new \Aimeos\MShop\Customer\Item\Group\Standard();
 
-		$list = array(
+		$list = $entries = array(
 			'customer.group.id' => 12,
 			'customer.group.code' => 'unitgroup',
 			'customer.group.label' => 'unittest12',
 		);
 
-		$unknown = $item->fromArray( $list );
+		$item = $item->fromArray( $entries, true );
 
-		$this->assertEquals( array(), $unknown );
+		$this->assertEquals( [], $entries );
 		$this->assertEquals( $list['customer.group.id'], $item->getId() );
 		$this->assertEquals( $list['customer.group.code'], $item->getCode() );
 		$this->assertEquals( $list['customer.group.label'], $item->getLabel() );
@@ -122,7 +122,8 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testToArray()
 	{
-		$list = $this->object->toArray();
+		$list = $this->object->toArray( true );
+
 		$this->assertEquals( count( $this->values ), count( $list ) );
 
 		$this->assertEquals( $this->object->getId(), $list['customer.group.id'] );

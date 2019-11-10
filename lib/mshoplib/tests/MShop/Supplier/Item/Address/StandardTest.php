@@ -2,14 +2,14 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MShop\Supplier\Item\Address;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $values;
@@ -42,7 +42,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 			'supplier.address.longitude' => '10.0',
 			'supplier.address.latitude' => '50.0',
 			'supplier.address.position' => 1,
-			'supplier.address.flag' => 2,
 			'supplier.address.mtime' => '2011-01-01 00:00:02',
 			'supplier.address.ctime' => '2011-01-01 00:00:01',
 			'supplier.address.editor' => 'unitTestUser',
@@ -51,290 +50,331 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->object = new \Aimeos\MShop\Supplier\Item\Address\Standard( 'supplier.address.', $this->values );
 	}
 
+
 	protected function tearDown()
 	{
 		$this->object = null;
 	}
+
 
 	public function testGetId()
 	{
 		$this->assertEquals( 23, $this->object->getId() );
 	}
 
+
 	public function testSetId()
 	{
 		$return = $this->object->setId( null );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertNull( $this->object->getId() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetParentId()
 	{
 		$this->assertEquals( 'referenceid', $this->object->getParentId() );
 	}
 
+
 	public function testSetParentId()
 	{
 		$return = $this->object->setParentId( 'unitreference' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'unitreference', $this->object->getParentId() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetCompany()
 	{
 		$this->assertEquals( 'unitCompany', $this->object->getCompany() );
 	}
 
+
 	public function testSetCompany()
 	{
 		$return = $this->object->setCompany( 'company' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'company', $this->object->getCompany() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetVatID()
 	{
 		$this->assertEquals( 'DE999999999', $this->object->getVatID() );
 	}
 
+
 	public function testSetVatID()
 	{
 		$return = $this->object->setVatID( 'vatid' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'vatid', $this->object->getVatID() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetSalutation()
 	{
 		$this->assertEquals( \Aimeos\MShop\Common\Item\Address\Base::SALUTATION_MR, $this->object->getSalutation() );
 	}
 
+
 	public function testSetSalutation()
 	{
 		$return = $this->object->setSalutation( \Aimeos\MShop\Common\Item\Address\Base::SALUTATION_COMPANY );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( \Aimeos\MShop\Common\Item\Address\Base::SALUTATION_COMPANY, $this->object->getSalutation() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetTitle()
 	{
 		$this->assertEquals( 'Herr', $this->object->getTitle() );
 	}
 
+
 	public function testSetTitle()
 	{
 		$return = $this->object->setTitle( 'Dr.' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'Dr.', $this->object->getTitle() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetFirstname()
 	{
 		$this->assertEquals( 'firstunit', $this->object->getFirstname() );
 	}
 
+
 	public function testSetFirstname()
 	{
 		$return = $this->object->setFirstname( 'hans' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'hans', $this->object->getFirstname() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetLastname()
 	{
 		$this->assertEquals( 'lastunit', $this->object->getLastname() );
 	}
 
+
 	public function testSetLastname()
 	{
 		$return = $this->object->setLastname( 'im Glueck' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'im Glueck', $this->object->getLastname() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetAddress1()
 	{
 		$this->assertEquals( 'unit str.', $this->object->getAddress1() );
 	}
 
+
 	public function testSetAddress1()
 	{
 		$return = $this->object->setAddress1( 'unitallee' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'unitallee', $this->object->getAddress1() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetAddress2()
 	{
 		$this->assertEquals( '166', $this->object->getAddress2() );
 	}
 
+
 	public function testSetAddress2()
 	{
 		$return = $this->object->setAddress2( '12' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( '12', $this->object->getAddress2() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetAddress3()
 	{
 		$this->assertEquals( '4.OG', $this->object->getAddress3() );
 	}
 
+
 	public function testSetAddress3()
 	{
 		$return = $this->object->setAddress3( 'EG' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'EG', $this->object->getAddress3() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetPostal()
 	{
 		$this->assertEquals( '22769', $this->object->getPostal() );
 	}
 
+
 	public function testSetPostal()
 	{
 		$return = $this->object->setPostal( '11111' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( '11111', $this->object->getPostal() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetCity()
 	{
 		$this->assertEquals( 'Hamburg', $this->object->getCity() );
 	}
 
+
 	public function testSetCity()
 	{
 		$return = $this->object->setCity( 'unitCity' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'unitCity', $this->object->getCity() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetState()
 	{
 		$this->assertEquals( 'Hamburg', $this->object->getState() );
 	}
 
+
 	public function testSetState()
 	{
 		$return = $this->object->setState( 'unitState' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'unitState', $this->object->getState() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetCountryId()
 	{
 		$this->assertEquals( 'DE', $this->object->getCountryId() );
 	}
 
+
 	public function testSetCountryId()
 	{
 		$return = $this->object->setCountryId( 'uk' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'UK', $this->object->getCountryId() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetLanguageId()
 	{
 		$this->assertEquals( 'de', $this->object->getLanguageId() );
 	}
 
+
 	public function testSetLanguageId()
 	{
 		$return = $this->object->setLanguageId( 'en' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'en', $this->object->getLanguageId() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetTelephone()
 	{
 		$this->assertEquals( '05554433221', $this->object->getTelephone() );
 	}
 
+
 	public function testSetTelephone()
 	{
 		$return = $this->object->setTelephone( '55512345' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( '55512345', $this->object->getTelephone() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetEmail()
 	{
 		$this->assertEquals( 'test@example.com', $this->object->getEmail() );
 	}
 
+
 	public function testSetEmail()
 	{
 		$return = $this->object->setEmail( 'unit@test.de' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'unit@test.de', $this->object->getEmail() );
 		$this->assertTrue( $this->object->isModified() );
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->setEmail( 'unittest.de' );
 	}
+
 
 	public function testGetTelefax()
 	{
 		$this->assertEquals( '05554433222', $this->object->getTelefax() );
 	}
 
+
 	public function testSetTelefax()
 	{
 		$return = $this->object->setTelefax( '55512345' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( '55512345', $this->object->getTelefax() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetWebsite()
 	{
 		$this->assertEquals( 'www.example.com', $this->object->getWebsite() );
 	}
 
+
 	public function testSetWebsite()
 	{
 		$return = $this->object->setWebsite( 'www.test.de' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 'www.test.de', $this->object->getWebsite() );
 		$this->assertTrue( $this->object->isModified() );
 
@@ -342,86 +382,83 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->object->setWebsite( 'http://www.test.de:443' );
 		$this->object->setWebsite( 'https://www.test.de:8080/abc?123' );
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->setWebsite( '_test:de' );
 	}
 
+
 	public function testSetWebsiteHostException()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->setWebsite( 'localhost' );
 	}
+
 
 	public function testGetLongitude()
 	{
 		$this->assertEquals( '10.0', $this->object->getLongitude() );
 	}
 
+
 	public function testSetLongitude()
 	{
 		$return = $this->object->setLongitude( '10.5' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( '10.5', $this->object->getLongitude() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetLatitude()
 	{
 		$this->assertEquals( '50.0', $this->object->getLatitude() );
 	}
 
+
 	public function testSetLatitude()
 	{
 		$return = $this->object->setLatitude( '53.5' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( '53.5', $this->object->getLatitude() );
 		$this->assertTrue( $this->object->isModified() );
 	}
+
 
 	public function testGetPosition()
 	{
 		$this->assertEquals( 1, $this->object->getPosition() );
 	}
 
+
 	public function testSetPosition()
 	{
 		$return = $this->object->setPosition( 555 );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 		$this->assertEquals( 555, $this->object->getPosition() );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
-	public function testGetFlag()
-	{
-		$this->assertEquals( 2, $this->object->getFlag() );
-	}
-
-	public function testSetFlag()
-	{
-		$return = $this->object->setFlag( 5 );
-
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
-		$this->assertEquals( 5, $this->object->getFlag() );
-		$this->assertTrue( $this->object->isModified() );
-	}
 
 	public function testGetTimeModified()
 	{
 		$this->assertEquals( '2011-01-01 00:00:02', $this->object->getTimeModified() );
 	}
 
+
 	public function testGetTimeCreated()
 	{
 		$this->assertEquals( '2011-01-01 00:00:01', $this->object->getTimeCreated() );
 	}
 
+
 	public function testGetEditor()
 	{
 		$this->assertEquals( 'unitTestUser', $this->object->getEditor() );
 	}
+
 
 	public function testGetResourceType()
 	{
@@ -434,12 +471,12 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$address = new \Aimeos\MShop\Order\Item\Base\Address\Standard();
 		$return = $this->object->copyFrom( $address );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Supplier\Item\Address\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Supplier\Item\Address\Iface::class, $return );
 	}
 
 	public function testFromArray()
 	{
-		$list = array(
+		$list = $entries = array(
 			'supplier.address.id' => 1,
 			'supplier.address.parentid' => 2,
 			'supplier.address.salutation' => 'mr',
@@ -462,15 +499,13 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 			'supplier.address.website' => 'example.com',
 			'supplier.address.longitude' => '10.0',
 			'supplier.address.latitude' => '53.5',
-			'supplier.address.flag' => 3,
 			'supplier.address.position' => 4,
 		);
 
 		$object = new \Aimeos\MShop\Common\Item\Address\Standard( 'supplier.address.' );
-		$unknown = $object->fromArray( $list );
+		$object = $object->fromArray( $entries, true );
 
-		$this->assertEquals( array(), $unknown );
-
+		$this->assertEquals( [], $entries );
 		$this->assertEquals( $list['supplier.address.id'], $object->getId() );
 		$this->assertEquals( $list['supplier.address.parentid'], $object->getParentId() );
 		$this->assertEquals( $list['supplier.address.salutation'], $object->getSalutation() );
@@ -493,13 +528,13 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $list['supplier.address.website'], $object->getWebsite() );
 		$this->assertEquals( $list['supplier.address.longitude'], $object->getLongitude() );
 		$this->assertEquals( $list['supplier.address.latitude'], $object->getLatitude() );
-		$this->assertEquals( $list['supplier.address.flag'], $object->getFlag() );
 		$this->assertEquals( $list['supplier.address.position'], $object->getPosition() );
 	}
 
 	public function testToArray()
 	{
-		$arrayObject = $this->object->toArray();
+		$arrayObject = $this->object->toArray( true );
+
 		$this->assertEquals( count( $this->values ), count( $arrayObject ) );
 
 		$this->assertEquals( $this->object->getId(), $arrayObject['supplier.address.id'] );
@@ -526,7 +561,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $this->object->getWebsite(), $arrayObject['supplier.address.website'] );
 		$this->assertEquals( $this->object->getLongitude(), $arrayObject['supplier.address.longitude'] );
 		$this->assertEquals( $this->object->getLatitude(), $arrayObject['supplier.address.latitude'] );
-		$this->assertEquals( $this->object->getFlag(), $arrayObject['supplier.address.flag'] );
 		$this->assertEquals( $this->object->getTimeCreated(), $arrayObject['supplier.address.ctime'] );
 		$this->assertEquals( $this->object->getTimeModified(), $arrayObject['supplier.address.mtime'] );
 		$this->assertEquals( $this->object->getEditor(), $arrayObject['supplier.address.editor'] );

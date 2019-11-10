@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Tag
  */
@@ -20,75 +20,79 @@ namespace Aimeos\MShop\Tag\Manager;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Base
-	implements \Aimeos\MShop\Tag\Manager\Iface
+	implements \Aimeos\MShop\Tag\Manager\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
-		'tag.id'=> array(
-			'code'=>'tag.id',
-			'internalcode'=>'mtag."id"',
-			'label'=>'Tag ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'tag.id' => array(
+			'code' => 'tag.id',
+			'internalcode' => 'mtag."id"',
+			'label' => 'ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'tag.siteid'=> array(
-			'code'=>'tag.siteid',
-			'internalcode'=>'mtag."siteid"',
-			'label'=>'Tag site ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
-			'public' => false,
-		),
-		'tag.typeid' => array(
-			'code'=>'tag.typeid',
-			'internalcode'=>'mtag."typeid"',
-			'label'=>'Tag type id',
-			'type'=> 'integer',
+		'tag.siteid' => array(
+			'code' => 'tag.siteid',
+			'internalcode' => 'mtag."siteid"',
+			'label' => 'Site ID',
+			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		'tag.domain' => array(
-			'code'=>'tag.domain',
-			'internalcode'=>'mtag."domain"',
-			'label'=>'Tag domain',
-			'type'=> 'string',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
-		),
-		'tag.languageid' => array(
-			'code'=>'tag.languageid',
-			'internalcode'=>'mtag."langid"',
-			'label'=>'Tag language id',
-			'type'=> 'string',
+		'tag.type' => array(
+			'code' => 'tag.type',
+			'internalcode' => 'mtag."type"',
+			'label' => 'Type',
+			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'tag.label' => array(
-			'code'=>'tag.label',
-			'internalcode'=>'mtag."label"',
-			'label'=>'Tag label',
-			'type'=> 'string',
+			'code' => 'tag.label',
+			'internalcode' => 'mtag."label"',
+			'label' => 'Label',
+			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'tag.mtime'=> array(
-			'code'=>'tag.mtime',
-			'internalcode'=>'mtag."mtime"',
-			'label'=>'Tag modification date',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'tag.domain' => array(
+			'code' => 'tag.domain',
+			'internalcode' => 'mtag."domain"',
+			'label' => 'Domain',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'tag.ctime'=> array(
-			'code'=>'tag.ctime',
-			'internalcode'=>'mtag."ctime"',
-			'label'=>'Tag creation date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'tag.languageid' => array(
+			'code' => 'tag.languageid',
+			'internalcode' => 'mtag."langid"',
+			'label' => 'Language id',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'tag.editor'=> array(
-			'code'=>'tag.editor',
-			'internalcode'=>'mtag."editor"',
-			'label'=>'Tag editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'tag.ctime' => array(
+			'code' => 'tag.ctime',
+			'internalcode' => 'mtag."ctime"',
+			'label' => 'Creation date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
+		),
+		'tag.mtime' => array(
+			'code' => 'tag.mtime',
+			'internalcode' => 'mtag."mtime"',
+			'label' => 'Modify date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
+		),
+		'tag.editor' => array(
+			'code' => 'tag.editor',
+			'internalcode' => 'mtag."editor"',
+			'label' => 'Editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
+
+	private $languageId;
 
 
 	/**
@@ -100,33 +104,37 @@ class Standard
 	{
 		parent::__construct( $context );
 		$this->setResourceName( 'db-tag' );
+
+		$this->languageId = $context->getLocale()->getLanguageId();
 	}
 
 
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param integer[] $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Tag\Manager\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/tag/manager/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array( 'type' ) ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, ['type'] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/tag/manager/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/tag/manager/standard/delete' );
 	}
 
 
 	/**
-	 * Creates new tag item object.
+	 * Creates a new empty item instance
 	 *
+	 * @param array $values Values the item should be initialized with
 	 * @return \Aimeos\MShop\Tag\Item\Iface New tag item object
 	 */
-	public function createItem()
+	public function createItem( array $values = [] )
 	{
-		$values = array( 'tag.siteid' => $this->getContext()->getLocale()->getSiteId() );
+		$values['tag.siteid'] = $this->getContext()->getLocale()->getSiteId();
 		return $this->createItemBase( $values );
 	}
 
@@ -136,15 +144,13 @@ class Standard
 	 *
 	 * @param \Aimeos\MShop\Tag\Item\Iface $item Tag item which should be saved
 	 * @param boolean $fetch True if the new ID should be returned in the item
+	 * @return \Aimeos\MShop\Tag\Item\Iface Updated item including the generated ID
 	 */
-	public function saveItem( \Aimeos\MShop\Common\Item\Iface $item, $fetch = true )
+	public function saveItem( \Aimeos\MShop\Tag\Item\Iface $item, $fetch = true )
 	{
-		$iface = '\\Aimeos\\MShop\\Tag\\Item\\Iface';
-		if( !( $item instanceof $iface ) ) {
-			throw new \Aimeos\MShop\Tag\Exception( sprintf( 'Object is not of required type "%1$s"', $iface ) );
+		if( !$item->isModified() ) {
+			return $item;
 		}
-
-		if( !$item->isModified() ) { return; }
 
 		$context = $this->getContext();
 
@@ -156,6 +162,7 @@ class Standard
 		{
 			$id = $item->getId();
 			$date = date( 'Y-m-d H:i:s' );
+			$columns = $this->getObject()->getSaveAttributes();
 
 			if( $id === null )
 			{
@@ -195,6 +202,7 @@ class Standard
 				 * @see mshop/tag/manager/standard/count/ansi
 				 */
 				$path = 'mshop/tag/manager/standard/insert';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ) );
 			}
 			else
 			{
@@ -231,22 +239,29 @@ class Standard
 				 * @see mshop/tag/manager/standard/count/ansi
 				 */
 				$path = 'mshop/tag/manager/standard/update';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ), false );
 			}
 
-			$stmt = $this->getCachedStatement( $conn, $path );
-			$stmt->bind( 1, $context->getLocale()->getSiteId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 2, $item->getLanguageId() );
-			$stmt->bind( 3, $item->getTypeId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 4, $item->getDomain() );
-			$stmt->bind( 5, $item->getLabel() );
-			$stmt->bind( 6, $date ); //mtime
-			$stmt->bind( 7, $context->getEditor() );
+			$idx = 1;
+			$stmt = $this->getCachedStatement( $conn, $path, $sql );
+
+			foreach( $columns as $name => $entry ) {
+				$stmt->bind( $idx++, $item->get( $name ), $entry->getInternalType() );
+			}
+
+			$stmt->bind( $idx++, $item->getLanguageId() );
+			$stmt->bind( $idx++, $item->getType() );
+			$stmt->bind( $idx++, $item->getDomain() );
+			$stmt->bind( $idx++, $item->getLabel() );
+			$stmt->bind( $idx++, $date ); //mtime
+			$stmt->bind( $idx++, $context->getEditor() );
+			$stmt->bind( $idx++, $context->getLocale()->getSiteId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 
 			if( $id !== null ) {
-				$stmt->bind( 8, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+				$stmt->bind( $idx++, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 				$item->setId( $id ); //is not modified anymore
 			} else {
-				$stmt->bind( 8, $date ); //ctime
+				$stmt->bind( $idx++, $date ); //ctime
 			}
 
 			$stmt->execute()->finish();
@@ -300,15 +315,18 @@ class Standard
 			$dbm->release( $conn, $dbname );
 			throw $e;
 		}
+
+		return $item;
 	}
 
 
 	/**
-	 * Removes multiple items specified by ids in the array.
+	 * Removes multiple items.
 	 *
-	 * @param array $ids List of IDs
+	 * @param \Aimeos\MShop\Common\Item\Iface[]|string[] $itemIds List of item objects or IDs of the items
+	 * @return \Aimeos\MShop\Tag\Manager\Iface Manager object for chaining method calls
 	 */
-	public function deleteItems( array $ids )
+	public function deleteItems( array $itemIds )
 	{
 		/** mshop/tag/manager/standard/delete/mysql
 		 * Deletes the items matched by the given IDs from the database
@@ -341,21 +359,23 @@ class Standard
 		 * @see mshop/tag/manager/standard/count/ansi
 		 */
 		$path = 'mshop/tag/manager/standard/delete';
-		$this->deleteItemsBase( $ids, $path );
+
+		return $this->deleteItemsBase( $itemIds, $path );
 	}
 
 
 	/**
 	 * Returns tag tag item with given Id.
 	 *
-	 * @param integer $id Id of the tag tag item
+	 * @param string $id Id of the tag tag item
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
+	 * @param boolean $default Add default criteria
 	 * @return \Aimeos\MShop\Tag\Item\Iface Returns the tag tag item of the given id
 	 * @throws \Aimeos\MShop\Exception If item couldn't be found
 	 */
-	public function getItem( $id, array $ref = array() )
+	public function getItem( $id, array $ref = [], $default = false )
 	{
-		return $this->getItemBase( 'tag.id', $id, $ref );
+		return $this->getItemBase( 'tag.id', $id, $ref, $default );
 	}
 
 
@@ -363,13 +383,12 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/tag/manager/submanagers';
-
-		return $this->getResourceTypeBase( 'tag', $path, array( 'type' ), $withsub );
+		return $this->getResourceTypeBase( 'tag', $path, [], $withsub );
 	}
 
 
@@ -377,7 +396,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array Returns a list of attribtes implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -400,7 +419,7 @@ class Standard
 		 */
 		$path = 'mshop/tag/manager/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array( 'type' ), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -412,9 +431,9 @@ class Standard
 	 * @param integer|null &$total Number of items that are available in total
 	 * @return array List of tag items implementing \Aimeos\MShop\Tag\Item\Iface
 	 */
-	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = array(), &$total = null )
+	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = [], &$total = null )
 	{
-		$items = $map = $typeIds = array();
+		$items = [];
 		$context = $this->getContext();
 
 		$dbm = $context->getDatabaseManager();
@@ -424,7 +443,38 @@ class Standard
 		try
 		{
 			$required = array( 'tag' );
+
+			/** mshop/tag/manager/sitemode
+			 * Mode how items from levels below or above in the site tree are handled
+			 *
+			 * By default, only items from the current site are fetched from the
+			 * storage. If the ai-sites extension is installed, you can create a
+			 * tree of sites. Then, this setting allows you to define for the
+			 * whole tag domain if items from parent sites are inherited,
+			 * sites from child sites are aggregated or both.
+			 *
+			 * Available constants for the site mode are:
+			 * * 0 = only items from the current site
+			 * * 1 = inherit items from parent sites
+			 * * 2 = aggregate items from child sites
+			 * * 3 = inherit and aggregate items at the same time
+			 *
+			 * You also need to set the mode in the locale manager
+			 * (mshop/locale/manager/standard/sitelevel) to one of the constants.
+			 * If you set it to the same value, it will work as described but you
+			 * can also use different modes. For example, if inheritance and
+			 * aggregation is configured the locale manager but only inheritance
+			 * in the domain manager because aggregating items makes no sense in
+			 * this domain, then items wil be only inherited. Thus, you have full
+			 * control over inheritance and aggregation in each domain.
+			 *
+			 * @param integer Constant from Aimeos\MShop\Locale\Manager\Base class
+			 * @category Developer
+			 * @since 2018.01
+			 * @see mshop/locale/manager/standard/sitelevel
+			 */
 			$level = \Aimeos\MShop\Locale\Manager\Base::SITE_ALL;
+			$level = $context->getConfig()->get( 'mshop/tag/manager/sitemode', $level );
 
 			/** mshop/tag/manager/standard/search/mysql
 			 * Retrieves the records matched by the given criteria in the database
@@ -539,10 +589,8 @@ class Standard
 			$cfgPathCount = 'mshop/tag/manager/standard/count';
 
 			$results = $this->searchItemsBase( $conn, $search, $cfgPathSearch, $cfgPathCount, $required, $total, $level );
-			while( ( $row = $results->fetch() ) !== false )
-			{
-				$map[$row['tag.id']] = $row;
-				$typeIds[$row['tag.typeid']] = null;
+			while( ( $row = $results->fetch() ) !== false ) {
+				$items[(string) $row['tag.id']] = $this->createItemBase( $row );
 			}
 
 			$dbm->release( $conn, $dbname );
@@ -553,26 +601,6 @@ class Standard
 			throw $e;
 		}
 
-		if( !empty( $typeIds ) )
-		{
-			$typeManager = $this->getSubManager( 'type' );
-			$typeSearch = $typeManager->createSearch();
-			$typeSearch->setConditions( $typeSearch->compare( '==', 'tag.type.id', array_keys( $typeIds ) ) );
-			$typeSearch->setSlice( 0, $search->getSliceSize() );
-			$typeItems = $typeManager->searchItems( $typeSearch );
-
-			foreach( $map as $id => $row )
-			{
-				if( isset( $typeItems[$row['tag.typeid']] ) )
-				{
-					$row['tag.type'] = $typeItems[$row['tag.typeid']]->getCode();
-					$row['tag.typename'] = $typeItems[$row['tag.typeid']]->getName();
-				}
-
-				$items[$id] = $this->createItemBase( $row );
-			}
-		}
-
 		return $items;
 	}
 
@@ -581,8 +609,7 @@ class Standard
 	 * Returns a new manager for tag extensions
 	 *
 	 * @param string $manager Name of the sub manager type in lower case
-	 * @param string|null $name Name of the implementation, will be from
-	 * configuration (or Default) if null
+	 * @param string|null $name Name of the implementation, will be from configuration (or Standard) if null
 	 * @return \Aimeos\MShop\Common\Manager\Iface Manager for different extensions, e.g tag types, tag lists etc.
 	 */
 	public function getSubManager( $manager, $name = null )
@@ -704,11 +731,12 @@ class Standard
 	 * Creates new tag item object.
 	 *
 	 * @see \Aimeos\MShop\Tag\Item\Standard Default tag item
-	 * @param array $values Possible optional array keys can be given: id, typeid, langid, type, label
+	 * @param array $values Possible optional array keys can be given: id, type, langid, type, label
 	 * @return \Aimeos\MShop\Tag\Item\Standard New tag item object
 	 */
-	protected function createItemBase( array $values = array() )
+	protected function createItemBase( array $values = [] )
 	{
+		$values['.languageid'] = $this->languageId;
 		return new \Aimeos\MShop\Tag\Item\Standard( $values );
 	}
 }

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MW
  * @subpackage MQueue
  */
@@ -23,7 +23,7 @@ interface Iface
 	 * Adds a new message to the message queue
 	 *
 	 * @param string $msg Message, e.g. JSON encoded data
-	 * @return null
+	 * @return \Aimeos\MW\MQueue\Iface MQueue instance for method chaining
 	 */
 	public function add( $msg );
 
@@ -48,7 +48,7 @@ interface Iface
 	 *  $queue->del( $msg );
 	 *
 	 * @param \Aimeos\MW\MQueue\Message\Iface $msg Message object
-	 * @return null
+	 * @return \Aimeos\MW\MQueue\Iface MQueue instance for method chaining
 	 */
 	public function del( \Aimeos\MW\MQueue\Message\Iface $msg );
 }

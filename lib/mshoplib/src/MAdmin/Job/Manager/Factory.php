@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MAdmin
  * @subpackage Job
  */
@@ -29,7 +29,7 @@ class Factory
 	 * @param string|null $name Manager name
 	 * @return \Aimeos\MAdmin\Job\Manager\Iface Job manager object
 	 */
-	public static function createManager( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
+	public static function create( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
 	{
 		/** madmin/job/manager/name
 		 * Class name of the used job manager implementation
@@ -70,14 +70,14 @@ class Factory
 
 		if( ctype_alnum( $name ) === false )
 		{
-			$classname = is_string( $name ) ? '\\Aimeos\\MAdmin\\Job\\Manager\\' . $name : '<not a string>';
+			$classname = is_string( $name ) ? '\Aimeos\MAdmin\Job\Manager\\' . $name : '<not a string>';
 			throw new \Aimeos\MAdmin\Job\Exception( sprintf( 'Invalid characters in class name "%1$s"', $classname ) );
 		}
 
-		$iface = '\\Aimeos\\MAdmin\\Job\\Manager\\Iface';
-		$classname = '\\Aimeos\\MAdmin\\Job\\Manager\\' . $name;
+		$iface = \Aimeos\MAdmin\Job\Manager\Iface::class;
+		$classname = '\Aimeos\MAdmin\Job\Manager\\' . $name;
 
-		$manager = self::createManagerBase( $context, $classname, $iface );
+		$manager = self::createManager( $context, $classname, $iface );
 
 		/** madmin/job/manager/decorators/excludes
 		 * Excludes decorators added by the "common" option from the job manager

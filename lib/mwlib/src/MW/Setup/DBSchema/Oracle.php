@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MW
  * @subpackage Setup
  */
@@ -33,15 +33,15 @@ class Oracle extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 			WHERE TABLE_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $tablename );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( $result->fetch() !== false ) {
-			return true;
-		}
+		$this->release( $conn );
 
-		return false;
+		return $result !== false ? true : false;
 	}
 
 
@@ -59,15 +59,15 @@ class Oracle extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 			WHERE SEQUENCE_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $seqname );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( $result->fetch() !== false ) {
-			return true;
-		}
+		$this->release( $conn );
 
-		return false;
+		return $result !== false ? true : false;
 	}
 
 
@@ -87,16 +87,16 @@ class Oracle extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 				AND CONSTRAINT_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $tablename );
 		$stmt->bind( 2, $constraintname );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( $result->fetch() !== false ) {
-			return true;
-		}
+		$this->release( $conn );
 
-		return false;
+		return $result !== false ? true : false;
 	}
 
 
@@ -116,16 +116,16 @@ class Oracle extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 				AND COLUMN_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $tablename );
 		$stmt->bind( 2, $columnname );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( $result->fetch() !== false ) {
-			return true;
-		}
+		$this->release( $conn );
 
-		return false;
+		return $result !== false ? true : false;
 	}
 
 
@@ -145,16 +145,16 @@ class Oracle extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 				AND INDEX_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $tablename );
 		$stmt->bind( 2, $indexname );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( $result->fetch() !== false ) {
-			return true;
-		}
+		$this->release( $conn );
 
-		return false;
+		return $result !== false ? true : false;
 	}
 
 
@@ -174,16 +174,20 @@ class Oracle extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 				AND COLUMN_NAME = ?
 		";
 
-		$stmt = $this->getConnection()->create( $sql );
+		$conn = $this->acquire();
+
+		$stmt = $conn->create( $sql );
 		$stmt->bind( 1, $tablename );
 		$stmt->bind( 2, $columnname );
-		$result = $stmt->execute();
+		$result = $stmt->execute()->fetch();
 
-		if( ( $record = $result->fetch() ) === false ) {
+		$this->release( $conn );
+
+		if( $result === false ) {
 			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Unknown column "%1$s" in table "%2$s"', $columnname, $tablename ) );
 		}
 
-		return $this->createColumnItem( $record );
+		return $this->createColumnItem( $result );
 	}
 
 
@@ -193,11 +197,11 @@ class Oracle extends \Aimeos\MW\Setup\DBSchema\InformationSchema
 	 * @param array $record Associative array with column details
 	 * @return \Aimeos\MW\Setup\DBSchema\Column\Iface Column item
 	 */
-	protected function createColumnItem( array $record = array() )
+	protected function createColumnItem( array $record = [] )
 	{
 		$length = ( isset( $record['CHAR_COL_DECL_LENGTH'] ) ? $record['CHAR_COL_DECL_LENGTH'] : $record['DATA_PRECISION'] );
 
-		return new \Aimeos\MW\Setup\DBSchema\Column\Item( $record['TABLE_NAME'], $record['COLUMN_NAME'],
-			$record['DATA_TYPE'], $length, $record['DATA_DEFAULT'], $record['NULLABLE'], null );
+		return new \Aimeos\MW\Setup\DBSchema\Column\Item( $record['TABLE_NAME'], $record['COLUMN_NAME'], $record['DATA_TYPE'],
+			$length, $record['DATA_DEFAULT'], $record['NULLABLE'], $record['CHARACTER_SET_NAME'], $record['COLLATION_NAME'] );
 	}
 }

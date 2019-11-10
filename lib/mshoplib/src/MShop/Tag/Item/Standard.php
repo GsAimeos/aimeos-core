@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Tag
  */
@@ -22,7 +22,7 @@ class Standard
 	extends \Aimeos\MShop\Common\Item\Base
 	implements \Aimeos\MShop\Tag\Item\Iface
 {
-	private $values;
+	private $langid;
 
 
 	/**
@@ -30,11 +30,11 @@ class Standard
 	 *
 	 * @param array $values Associative list of item key/value pairs
 	 */
-	public function __construct( array $values = array( ) )
+	public function __construct( array $values = [] )
 	{
 		parent::__construct( 'tag.', $values );
 
-		$this->values = $values;
+		$this->langid = ( isset( $values['.languageid'] ) ? $values['.languageid'] : null );
 	}
 
 
@@ -45,11 +45,7 @@ class Standard
 	 */
 	public function getDomain()
 	{
-		if( isset( $this->values['tag.domain'] ) ) {
-			return (string) $this->values['tag.domain'];
-		}
-
-		return '';
+		return (string) $this->get( 'tag.domain', '' );
 	}
 
 
@@ -61,12 +57,7 @@ class Standard
 	 */
 	public function setDomain( $domain )
 	{
-		if( $domain == $this->getDomain() ) { return $this; }
-
-		$this->values['tag.domain'] = (string) $domain;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'tag.domain', (string) $domain );
 	}
 
 
@@ -77,11 +68,7 @@ class Standard
 	 */
 	public function getLanguageId()
 	{
-		if( isset( $this->values['tag.languageid'] ) ) {
-			return (string) $this->values['tag.languageid'];
-		}
-
-		return null;
+		return $this->get( 'tag.languageid' );
 	}
 
 
@@ -93,12 +80,7 @@ class Standard
 	 */
 	public function setLanguageId( $id )
 	{
-		if( $id == $this->getLanguageId() ) { return $this; }
-
-		$this->values['tag.languageid'] = $this->checkLanguageId( $id );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'tag.languageid', $this->checkLanguageId( $id ) );
 	}
 
 
@@ -109,58 +91,19 @@ class Standard
 	 */
 	public function getType()
 	{
-		if( isset( $this->values['tag.type'] ) ) {
-			return (string) $this->values['tag.type'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Returns the localized name of the type
-	 *
-	 * @return string|null Localized name of the type
-	 */
-	public function getTypeName()
-	{
-		if( isset( $this->values['tag.typename'] ) ) {
-			return (string) $this->values['tag.typename'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Returns the type id of the product tag item
-	 *
-	 * @return integer|null Type of the product tag item
-	 */
-	public function getTypeId()
-	{
-		if( isset( $this->values['tag.typeid'] ) ) {
-			return (int) $this->values['tag.typeid'];
-		}
-
-		return null;
+		return $this->get( 'tag.type' );
 	}
 
 
 	/**
 	 * Sets the new type of the product tag item
 	 *
-	 * @param integer|null $id Type of the product tag item
+	 * @param string $type Type of the product tag item
 	 * @return \Aimeos\MShop\Tag\Item\Iface Tag item for chaining method calls
 	 */
-	public function setTypeId( $id )
+	public function setType( $type )
 	{
-		if( $id == $this->getTypeId() ) { return $this; }
-
-		$this->values['tag.typeid'] = (int) $id;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'tag.type', $this->checkCode( $type ) );
 	}
 
 
@@ -171,11 +114,7 @@ class Standard
 	 */
 	public function getLabel()
 	{
-		if( isset( $this->values['tag.label'] ) ) {
-			return (string) $this->values['tag.label'];
-		}
-
-		return '';
+		return (string) $this->get( 'tag.label', '' );
 	}
 
 
@@ -187,12 +126,7 @@ class Standard
 	 */
 	public function setLabel( $label )
 	{
-		if( $label == $this->getLabel() ) { return $this; }
-
-		$this->values['tag.label'] = (string) $label;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'tag.label', (string) $label );
 	}
 
 
@@ -208,48 +142,59 @@ class Standard
 
 
 	/**
-	 * Sets the item values from the given array.
+	 * Tests if the item is available based on status, time, language and currency
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @return boolean True if available, false if not
 	 */
-	public function fromArray( array $list )
+	public function isAvailable()
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
-		unset( $list['tag.type'], $list['tag.typename'] );
+		return parent::isAvailable() && $this->getLanguageId() === $this->langid;
+	}
+
+
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
+	 *
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Tag\Item\Iface Tag item for chaining method calls
+	 */
+	public function fromArray( array &$list, $private = false )
+	{
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'tag.domain': $this->setDomain( $value ); break;
-				case 'tag.typeid': $this->setTypeId( $value ); break;
-				case 'tag.languageid': $this->setLanguageId( $value ); break;
-				case 'tag.label': $this->setLabel( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'tag.languageid': $item = $item->setLanguageId( $value ); break;
+				case 'tag.domain': $item = $item->setDomain( $value ); break;
+				case 'tag.label': $item = $item->setLabel( $value ); break;
+				case 'tag.type': $item = $item->setType( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
-		$list['tag.domain'] = $this->getDomain();
 		$list['tag.languageid'] = $this->getLanguageId();
+		$list['tag.domain'] = $this->getDomain();
 		$list['tag.label'] = $this->getLabel();
 		$list['tag.type'] = $this->getType();
-		$list['tag.typeid'] = $this->getTypeId();
-		$list['tag.typename'] = $this->getTypeName();
 
 		return $list;
 	}

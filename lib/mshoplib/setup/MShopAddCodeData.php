@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -33,14 +33,14 @@ class MShopAddCodeData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPostDependencies()
 	{
-		return array();
+		return [];
 	}
 
 
 	/**
 	 * Executes the task for MySQL databases.
 	 */
-	protected function mysql()
+	public function migrate()
 	{
 		// executed by tasks in sub-directories for specific sites
 	}
@@ -49,47 +49,37 @@ class MShopAddCodeData extends \Aimeos\MW\Setup\Task\Base
 	/**
 	 * Adds the default codes
 	 */
-	protected function process()
+	protected function process( array $data )
 	{
-		$iface = '\\Aimeos\\MShop\\Context\\Item\\Iface';
-		if( !( $this->additional instanceof $iface ) ) {
-			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Additionally provided object is not of type "%1$s"', $iface ) );
-		}
-
-		$site = $this->additional->getLocale()->getSite()->getCode();
-		$this->msg( sprintf( 'Adding default code data for site "%1$s"', $site ), 0 ); $this->status( '' );
-
-		$ds = DIRECTORY_SEPARATOR;
-		$path = __DIR__ . $ds . 'default' . $ds . 'data' . $ds . 'code.php';
-
-		if( ( $data = include( $path ) ) == false ) {
-			throw new \Aimeos\MShop\Exception( sprintf( 'No file "%1$s" found for default codes', $path ) );
-		}
-
 		foreach( $data as $domain => $datasets )
 		{
 			$this->msg( sprintf( 'Checking "%1$s" codes', $domain ), 1 );
 
-			$domainManager = \Aimeos\MShop\Factory::createManager( $this->additional, $domain );
-			$type = $domainManager->createItem();
+			$domainManager = \Aimeos\MShop::create( $this->additional, $domain );
 			$num = $total = 0;
 
 			foreach( $datasets as $dataset )
 			{
 				$total++;
 
-				$type->setId( null );
-				$type->setCode( $dataset['code'] );
-				$type->setLabel( $dataset['label'] );
+				try
+				{
+					$item = $domainManager->findItem( $dataset['code'] );
+				}
+				catch( \Exception $e )
+				{
+					$item = $domainManager->createItem();
+					$item->setCode( $dataset['code'] );
+					$item->setLabel( $dataset['label'] );
 
-				if( isset( $dataset['status'] ) ) {
-					$type->setStatus( $dataset['status'] );
+					if( isset( $dataset['status'] ) ) {
+						$item->setStatus( $dataset['status'] );
+					}
+
+					$num++;
 				}
 
-				try {
-					$domainManager->saveItem( $type );
-					$num++;
-				} catch( \Exception $e ) {; } // if type was already available
+				$domainManager->saveItem( $item );
 			}
 
 			$this->status( $num > 0 ? $num . '/' . $total : 'OK' );

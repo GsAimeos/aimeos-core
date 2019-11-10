@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Catalog
  */
@@ -18,11 +18,14 @@ namespace Aimeos\MShop\Catalog\Manager;
  * @package MShop
  * @subpackage Catalog
  */
-abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
+abstract class Base extends \Aimeos\MShop\Common\Manager\Base
 {
+	use \Aimeos\MShop\Common\Manager\ListRef\Traits;
+
+
 	private $searchConfig;
-	private $filter = array();
-	private $treeManagers = array();
+	private $filter = [];
+	private $treeManagers = [];
 
 
 	/**
@@ -67,11 +70,13 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 	 * @param array $itemMap Associative list of catalog ID / tree node pairs
 	 * @param array $domains List of domains (e.g. text, media) whose items should be attached to the catalog items
 	 * @param string $prefix Domain prefix
+	 * @param array $local Associative list of IDs as keys and the associative array of items as values
+	 * @param array $local2 Associative list of IDs as keys and the associative array of items as values
 	 * @return array List of items implementing \Aimeos\MShop\Catalog\Item\Iface
 	 */
-	protected function buildItems( array $itemMap, array $domains, $prefix )
+	protected function buildItems( array $itemMap, $domains, $prefix, array $local = [], array $local2 = [] )
 	{
-		$items = $listItemMap = $refItemMap = $refIdMap = array();
+		$items = $listItemMap = $refItemMap = $refIdMap = [];
 
 		if( count( $domains ) > 0 )
 		{
@@ -91,17 +96,17 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 
 		foreach( $itemMap as $id => $node )
 		{
-			$listItems = array();
+			$listItems = [];
 			if( isset( $listItemMap[$id] ) ) {
 				$listItems = $listItemMap[$id];
 			}
 
-			$refItems = array();
+			$refItems = [];
 			if( isset( $refItemMap[$id] ) ) {
 				$refItems = $refItemMap[$id];
 			}
 
-			$items[$id] = $this->createItemBase( array(), $listItems, $refItems, array(), $node );
+			$items[$id] = $this->createItemBase( [], $listItems, $refItems, [], $node );
 		}
 
 		return $items;
@@ -118,8 +123,8 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 	 * @param \Aimeos\MW\Tree\Node\Iface|null $node Tree node object
 	 * @return \Aimeos\MShop\Catalog\Item\Iface New catalog item
 	 */
-	protected function createItemBase( array $values = array(), array $listItems = array(), array $refItems = array(),
-			array $children = array(), \Aimeos\MW\Tree\Node\Iface $node = null )
+	protected function createItemBase( array $values = [], array $listItems = [], array $refItems = [],
+			array $children = [], \Aimeos\MW\Tree\Node\Iface $node = null )
 	{
 		if( $node === null )
 		{
@@ -131,8 +136,10 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 			$node->siteid = $values['siteid'];
 		}
 
-		if( isset( $node->config ) && ( $result = json_decode( $node->config, true ) ) !== null ) {
-			$node->config = $result;
+		if( isset( $node->config ) && ( $node->config = json_decode( $config = $node->config, true ) ) === null )
+		{
+			$msg = sprintf( 'Invalid JSON as result of search for ID "%2$s" in "%1$s": %3$s', 'mshop_catalog.config', $values['id'], $config );
+			$this->getContext()->getLogger()->log( $msg, \Aimeos\MW\Logger\Base::WARN );
 		}
 
 		return new \Aimeos\MShop\Catalog\Item\Standard( $node, $children, $listItems, $refItems );
@@ -152,17 +159,17 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 	{
 		foreach( $node->getChildren() as $idx => $child )
 		{
-			$listItems = array();
+			$listItems = [];
 			if( array_key_exists( $child->getId(), $listItemMap ) ) {
 				$listItems = $listItemMap[$child->getId()];
 			}
 
-			$refItems = array();
+			$refItems = [];
 			if( array_key_exists( $child->getId(), $refItemMap ) ) {
 				$refItems = $refItemMap[$child->getId()];
 			}
 
-			$newItem = $this->createItemBase( array(), $listItems, $refItems, array(), $child );
+			$newItem = $this->createItemBase( [], $listItems, $refItems, [], $child );
 
 			$result = true;
 			foreach( $this->filter as $fcn ) {
@@ -181,7 +188,7 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 	/**
 	 * Creates an object for managing the nested set.
 	 *
-	 * @param integer $siteid Site ID for the specific tree
+	 * @param string $siteid Site ID for the specific tree
 	 * @return \Aimeos\MW\Tree\Manager\Iface Tree manager
 	 */
 	protected function createTreeManager( $siteid )
@@ -191,6 +198,11 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 			$context = $this->getContext();
 			$dbm = $context->getDatabaseManager();
 
+
+			$colstring = '';
+			foreach( $this->getObject()->getSaveAttributes() as $name => $entry ) {
+				$colstring .= $entry->getInternalCode() . ', ';
+			}
 
 			$treeConfig = array(
 				'search' => $this->searchConfig,
@@ -280,7 +292,7 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 					 * @see mshop/catalog/manager/standard/insert-usage/ansi
 					 * @see mshop/catalog/manager/standard/update-usage/ansi
 					 */
-					'get' => str_replace( ':siteid', $siteid, $this->getSqlConfig( 'mshop/catalog/manager/standard/get' ) ),
+					'get' => str_replace( [':columns', ':siteid'], [$colstring, $siteid], $this->getSqlConfig( 'mshop/catalog/manager/standard/get' ) ),
 
 					/** mshop/catalog/manager/standard/insert/mysql
 					 * Inserts a new catalog node into the database table
@@ -456,7 +468,7 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 					 * @see mshop/catalog/manager/standard/insert-usage/ansi
 					 * @see mshop/catalog/manager/standard/update-usage/ansi
 					 */
-					'search' => str_replace( ':siteid', $siteid, $this->getSqlConfig( 'mshop/catalog/manager/standard/search' ) ),
+					'search' => str_replace( [':columns', ':siteid'], [$colstring, $siteid], $this->getSqlConfig( 'mshop/catalog/manager/standard/search' ) ),
 
 					/** mshop/catalog/manager/standard/update/mysql
 					 * Updates an existing catalog node in the database
@@ -587,7 +599,7 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 				),
 			);
 
-			$this->treeManagers[$siteid] = \Aimeos\MW\Tree\Factory::createManager( 'DBNestedSet', $treeConfig, $dbm );
+			$this->treeManagers[$siteid] = \Aimeos\MW\Tree\Factory::create( 'DBNestedSet', $treeConfig, $dbm );
 		}
 
 		return $this->treeManagers[$siteid];
@@ -602,7 +614,7 @@ abstract class Base extends \Aimeos\MShop\Common\Manager\ListRef\Base
 	 */
 	protected function getNodeMap( \Aimeos\MW\Tree\Node\Iface $node )
 	{
-		$map = array();
+		$map = [];
 
 		$map[(string) $node->getId()] = $node;
 

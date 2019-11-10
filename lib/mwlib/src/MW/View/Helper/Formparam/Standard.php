@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage View
  */
@@ -31,7 +31,7 @@ class Standard
 	 * @param \Aimeos\MW\View\Iface $view View instance with registered view helpers
 	 * @param string[] $names Prefix names when generating form parameters (will be "name1[name2][name3]..." )
 	 */
-	public function __construct( $view, array $names = array() )
+	public function __construct( $view, array $names = [] )
 	{
 		parent::__construct( $view );
 

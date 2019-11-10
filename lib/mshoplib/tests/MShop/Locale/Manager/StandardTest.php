@@ -3,16 +3,13 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 namespace Aimeos\MShop\Locale\Manager;
 
 
-/**
- * Test class for \Aimeos\MShop\Locale\Manager\Standard.
- */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $editor = '';
@@ -21,7 +18,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	protected function setUp()
 	{
 		$this->editor = \TestHelperMShop::getContext()->getEditor();
-		$this->object = \Aimeos\MShop\Locale\Manager\Factory::createManager( \TestHelperMShop::getContext() );
+		$this->object = \Aimeos\MShop\Locale\Manager\Factory::create( \TestHelperMShop::getContext() );
 	}
 
 
@@ -34,11 +31,11 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testBootstrapMatch()
 	{
 		$item = $this->object->bootstrap( 'unittest', 'en', 'EUR', false );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Iface', $item );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Iface::class, $item );
 		$this->assertEquals( 'en', $item->getLanguageId() );
 		$this->assertEquals( 'EUR', $item->getCurrencyId() );
 		$this->assertEquals( 1, count( $item->getSitePath() ) );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Site\\Iface', $item->getSite() );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Site\Iface::class, $item->getSite() );
 		$this->assertEquals( 'unittest', $item->getSite()->getCode() );
 	}
 
@@ -46,11 +43,11 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testBootstrapMatchNoCurrency()
 	{
 		$item = $this->object->bootstrap( 'unittest', 'en', '', false );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Iface', $item );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Iface::class, $item );
 		$this->assertEquals( 'en', $item->getLanguageId() );
 		$this->assertEquals( 'EUR', $item->getCurrencyId() );
 		$this->assertEquals( 1, count( $item->getSitePath() ) );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Site\\Iface', $item->getSite() );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Site\Iface::class, $item->getSite() );
 		$this->assertEquals( 'unittest', $item->getSite()->getCode() );
 	}
 
@@ -58,18 +55,18 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testBootstrapMatchSiteOnly()
 	{
 		$item = $this->object->bootstrap( 'unittest', '', '', false );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Iface', $item );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Iface::class, $item );
 		$this->assertEquals( 'de', $item->getLanguageId() );
 		$this->assertEquals( 'EUR', $item->getCurrencyId() );
 		$this->assertEquals( 1, count( $item->getSitePath() ) );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Site\\Iface', $item->getSite() );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Site\Iface::class, $item->getSite() );
 		$this->assertEquals( 'unittest', $item->getSite()->getCode() );
 	}
 
 
 	public function testBootstrapNoMatch()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Locale\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->bootstrap( '', '', '', true );
 	}
 
@@ -77,10 +74,10 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testBootstrapClosest()
 	{
 		$item = $this->object->bootstrap( 'unittest', 'en', 'USD', false );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Iface', $item );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Iface::class, $item );
 		$this->assertEquals( 'en', $item->getLanguageId() );
 		$this->assertEquals( 'EUR', $item->getCurrencyId() );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Site\\Iface', $item->getSite() );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Site\Iface::class, $item->getSite() );
 		$this->assertEquals( 'unittest', $item->getSite()->getCode() );
 		$this->assertEquals( 1, count( $item->getSitePath() ) );
 	}
@@ -89,10 +86,10 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testBootstrapClosestLangid()
 	{
 		$item = $this->object->bootstrap( 'unittest', 'de', 'CHF', false );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Iface', $item );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Iface::class, $item );
 		$this->assertEquals( 'de', $item->getLanguageId() );
 		$this->assertEquals( 'EUR', $item->getCurrencyId() );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Site\\Iface', $item->getSite() );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Site\Iface::class, $item->getSite() );
 		$this->assertEquals( 'unittest', $item->getSite()->getCode() );
 		$this->assertEquals( 1, count( $item->getSitePath() ) );
 	}
@@ -101,58 +98,70 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testBootstrapClosestSiteid()
 	{
 		$item = $this->object->bootstrap( 'unittest', 'it', 'CHF', false );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Iface', $item );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Iface::class, $item );
 		$this->assertEquals( 'de', $item->getLanguageId() );
 		$this->assertEquals( 'EUR', $item->getCurrencyId() );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Site\\Iface', $item->getSite() );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Site\Iface::class, $item->getSite() );
 		$this->assertEquals( 'unittest', $item->getSite()->getCode() );
 		$this->assertEquals( 1, count( $item->getSitePath() ) );
 	}
 
 
+	public function testClear()
+	{
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->clear( [-1] ) );
+	}
+
+
+	public function testDeleteItems()
+	{
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->deleteItems( [-1] ) );
+	}
+
+
 	public function testCreateItem()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Locale\\Item\\Iface', $this->object->createItem() );
+		$this->assertInstanceOf( \Aimeos\MShop\Locale\Item\Iface::class, $this->object->createItem() );
 	}
 
 
 	public function testCreateSearch()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\Iface', $this->object->createSearch() );
-		$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\Iface', $this->object->createSearch( true ) );
+		$this->assertInstanceOf( \Aimeos\MW\Criteria\Iface::class, $this->object->createSearch() );
+		$this->assertInstanceOf( \Aimeos\MW\Criteria\Iface::class, $this->object->createSearch( true ) );
 	}
 
 
 	public function testGetSubManager()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager( 'site' ) );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager( 'site', 'Standard' ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->getSubManager( 'site' ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->getSubManager( 'site', 'Standard' ) );
 
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager( 'language' ) );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager( 'language', 'Standard' ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->getSubManager( 'language' ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->getSubManager( 'language', 'Standard' ) );
 
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager( 'currency' ) );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager( 'currency', 'Standard' ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->getSubManager( 'currency' ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->getSubManager( 'currency', 'Standard' ) );
 	}
 
 
 	public function testGetSubManagerInvalidType()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getSubManager( 'unknown' );
 	}
 
 
 	public function testGetSubManagerInvalidName()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getSubManager( 'site', 'unknown' );
 	}
 
 
 	public function testGetItem()
 	{
-		$search = $this->object->createSearch();
+		$search = $this->object->createSearch()->setSlice( 0, 1 );
 		$search->setConditions( $search->compare( '==', 'locale.site.code', 'unittest' ) );
 		$items = $this->object->searchItems( $search );
 
@@ -174,7 +183,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$search = $this->object->createSearch();
 
-		$expr = array();
+		$expr = [];
 		$expr[] = $search->compare( '!=', 'locale.id', null );
 		$expr[] = $search->compare( '!=', 'locale.siteid', null );
 		$expr[] = $search->compare( '==', 'locale.languageid', 'de' );
@@ -215,7 +224,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$total = 0;
 		$search->setConditions( $search->combine( '&&', $expr ) );
 		$search->setSlice( 0, 1 );
-		$results = $this->object->searchItems( $search, array(), $total );
+		$results = $this->object->searchItems( $search, [], $total );
 
 		$this->assertEquals( 1, count( $results ) );
 		$this->assertEquals( 1, $total );
@@ -223,13 +232,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		foreach( $results as $itemId => $item ) {
 			$this->assertEquals( $itemId, $item->getId() );
 		}
-	}
-
-
-	public function testSaveInvalid()
-	{
-		$this->setExpectedException( '\Aimeos\MShop\Locale\Exception' );
-		$this->object->saveItem( new \Aimeos\MShop\Locale\Item\Site\Standard() );
 	}
 
 
@@ -246,12 +248,12 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$item->setId( null );
 		$item->setLanguageId( 'es' );
 		$item->setCurrencyId( 'USD' );
-		$this->object->saveItem( $item );
+		$resultSaved = $this->object->saveItem( $item );
 		$itemSaved = $this->object->getItem( $item->getId() );
 
 		$itemExp = clone $itemSaved;
 		$itemExp->setLanguageId( 'it' );
-		$this->object->saveItem( $itemExp );
+		$resultUpd = $this->object->saveItem( $itemExp );
 		$itemUpd = $this->object->getItem( $itemExp->getId() );
 
 		$this->object->deleteItem( $item->getId() );
@@ -281,7 +283,10 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $itemExp->getTimeCreated(), $itemUpd->getTimeCreated() );
 		$this->assertRegExp( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemUpd->getTimeModified() );
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultSaved );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultUpd );
+
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getItem( $item->getId() );
 	}
 
@@ -300,7 +305,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testGetSearchAttributes()
 	{
 		foreach( $this->object->getSearchAttributes() as $attribute ) {
-			$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\Attribute\\Iface', $attribute );
+			$this->assertInstanceOf( \Aimeos\MW\Criteria\Attribute\Iface::class, $attribute );
 		}
 	}
 

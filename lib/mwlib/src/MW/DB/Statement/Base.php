@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage DB
  */
@@ -51,11 +51,25 @@ abstract class Base
 	const PARAM_LOB = 5;
 
 
+	private $conn;
+
+
+	/**
+	 * Initializes the base object
+	 *
+	 * @param \Aimeos\MW\DB\Connection\Iface $conn Database connection object
+	 */
+	public function __construct( \Aimeos\MW\DB\Connection\Iface $conn )
+	{
+		$this->conn = $conn;
+	}
+
+
 	/**
 	 * Creates the SQL string with bound parameters.
 	 *
-	 * @param array $parts List of SQL statement parts
-	 * @param array $binds List of values for the markers
+	 * @param string[] $parts List of SQL statement parts
+	 * @param string[] $binds List of values for the markers
 	 * @return string SQL statement
 	 */
 	protected function buildSQL( array $parts, array $binds )
@@ -72,6 +86,17 @@ abstract class Base
 		}
 
 		return $stmt;
+	}
+
+
+	/**
+	 * Returns the connection object
+	 *
+	 * @return \Aimeos\MW\DB\Connection\Iface Connection object
+	 */
+	protected function getConnection()
+	{
+		return $this->conn;
 	}
 
 
@@ -120,19 +145,23 @@ abstract class Base
 	 */
 	protected function getSqlParts( $sql )
 	{
-		$result = array();
+		$result = [];
 		$parts = explode( '?', $sql );
+
+		if( count( $parts ) === 1 ) {
+			return $parts;
+		}
 
 		if( ( $part = reset( $parts ) ) !== false )
 		{
 			do
 			{
 				$count = 0; $temp = $part;
-				while( ( $pr = str_replace( array( '\'\'', '\\\'' ), '', $part ) ) !== false
+				while( ( $pr = str_replace( ['\\\'', '\'\''], '', $part ) ) !== false
 					&& ( $count += substr_count( $pr, '\'' ) ) % 2 !== 0 )
 				{
 					if( ( $part = next( $parts ) ) === false ) {
-						throw new \Aimeos\MW\DB\Exception( 'Number of apostrophes don\'t match' );
+						throw new \Aimeos\MW\DB\Exception( 'Number of apostrophes don\'t match: ' . $sql );
 					}
 					$temp .= '?' . $part;
 				}

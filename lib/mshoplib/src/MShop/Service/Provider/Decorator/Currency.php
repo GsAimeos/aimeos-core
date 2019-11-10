@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MShop
  * @subpackage Service
  */
@@ -12,7 +12,12 @@ namespace Aimeos\MShop\Service\Provider\Decorator;
 
 
 /**
- * Currency-limiting decorator for service providers.
+ * Currency-limiting decorator for service providers
+ *
+ * This decorator interacts with the ServiceUpdate and Autofill basket plugins!
+ * If the delivery/payment option isn't available any more, the ServiceUpdate
+ * plugin will remove it from the basket and the Autofill plugin will add one
+ * of the available options again.
  *
  * @package MShop
  * @subpackage Service
@@ -24,21 +29,21 @@ class Currency
 	private $beConfig = array(
 		'currency.include' => array(
 			'code' => 'currency.include',
-			'internalcode'=> 'currency.include',
-			'label'=> 'List of currencies allowed for the service item',
-			'type'=> 'string',
-			'internaltype'=> 'string',
-			'default'=> '',
-			'required'=> false,
+			'internalcode' => 'currency.include',
+			'label' => 'List of currencies allowed for the service item',
+			'type' => 'string',
+			'internaltype' => 'string',
+			'default' => '',
+			'required' => false,
 		),
 		'currency.exclude' => array(
 			'code' => 'currency.exclude',
-			'internalcode'=> 'currency.exclude',
-			'label'=> 'List of currencies not allowed for the service item',
-			'type'=> 'string',
-			'internaltype'=> 'string',
-			'default'=> '',
-			'required'=> false,
+			'internalcode' => 'currency.exclude',
+			'label' => 'List of currencies not allowed for the service item',
+			'type' => 'string',
+			'internaltype' => 'string',
+			'default' => '',
+			'required' => false,
 		),
 	);
 
@@ -67,13 +72,7 @@ class Currency
 	 */
 	public function getConfigBE()
 	{
-		$list = $this->getProvider()->getConfigBE();
-
-		foreach( $this->beConfig as $key => $config ) {
-			$list[$key] = new \Aimeos\MW\Criteria\Attribute\Standard( $config );
-		}
-
-		return $list;
+		return array_merge( $this->getProvider()->getConfigBE(), $this->getConfigItems( $this->beConfig ) );
 	}
 
 

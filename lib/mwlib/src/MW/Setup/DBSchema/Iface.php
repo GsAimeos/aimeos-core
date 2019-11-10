@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Setup
  */
@@ -23,14 +23,14 @@ interface Iface
 	const HAS_SEQUENCES = 'seqence';
 
 	/**
-	 * Initializes the database schema object.
+	 * Initializes the database schema object
 	 *
-	 * @param \Aimeos\MW\DB\Connection\Iface $conn Database connection
+	 * @param \Aimeos\MW\DB\Manager\Iface $dbm Database manager
+	 * @param string $rname Resource name
 	 * @param string $dbname Database name
 	 * @param string $name Adapter name
-	 * @return null
 	 */
-	public function __construct( \Aimeos\MW\DB\Connection\Iface $conn, $dbname, $name );
+	public function __construct( \Aimeos\MW\DB\Manager\Iface $dbm, $rname, $dbname, $name );
 
 	/**
 	 * Checks if the given table exists for the specified table in the database.
@@ -83,13 +83,6 @@ interface Iface
 	 * @return \Aimeos\MW\Setup\DBSchema\Column\Iface Object which contains the details
 	 */
 	public function getColumnDetails( $tablename, $columnname );
-
-	/**
-	 * Returns the database name.
-	 *
-	 * @return string Database name
-	 */
-	public function getDBName();
 
 	/**
 	 * Returns the name of the database adapter

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Catalog
  */
@@ -19,6 +19,6 @@ namespace Aimeos\MShop\Catalog\Manager\Lists\Type;
  * @subpackage Catalog
  */
 interface Iface
-	extends \Aimeos\MShop\Common\Manager\Factory\Iface
+	extends \Aimeos\MShop\Common\Manager\Iface
 {
 }

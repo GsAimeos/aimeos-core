@@ -3,72 +3,55 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MShop\Attribute\Manager\Type;
 
 
-/**
- * Test class for \Aimeos\MShop\Attribute\Manager\Type\Standard.
- */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $editor = '';
 
 
-	/**
-	 * Sets up the fixture, for example, opens a network connection.
-	 * This method is called before a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function setUp()
 	{
 		$this->editor = \TestHelperMShop::getContext()->getEditor();
-		$manager = \Aimeos\MShop\Attribute\Manager\Factory::createManager( \TestHelperMShop::getContext() );
+		$manager = \Aimeos\MShop\Attribute\Manager\Factory::create( \TestHelperMShop::getContext() );
 		$this->object = $manager->getSubManager( 'type' );
 	}
 
 
-	/**
-	 * Tears down the fixture, for example, closes a network connection.
-	 * This method is called after a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function tearDown()
 	{
 		unset( $this->object );
 	}
 
 
-	public function testCleanup()
+	public function testClear()
 	{
-		$this->object->cleanup( array( -1 ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->clear( [-1] ) );
 	}
 
 
 	public function testCreateItem()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Item\\Type\\Iface', $this->object->createItem() );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Type\Iface::class, $this->object->createItem() );
 	}
 
 
 	public function testGetResourceType()
 	{
-		$result = $this->object->getResourceType();
-
-		$this->assertContains( 'attribute/type', $result );
+		$this->assertContains( 'attribute/type', $this->object->getResourceType() );
 	}
 
 
 	public function testGetSearchAttributes()
 	{
 		foreach( $this->object->getSearchAttributes() as $attribute ) {
-			$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\Attribute\\Iface', $attribute );
+			$this->assertInstanceOf( \Aimeos\MW\Criteria\Attribute\Iface::class, $attribute );
 		}
 	}
 
@@ -77,12 +60,13 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$search = $this->object->createSearch();
 
-		$expr = array();
+		$expr = [];
 		$expr[] = $search->compare( '!=', 'attribute.type.id', null );
 		$expr[] = $search->compare( '!=', 'attribute.type.siteid', null );
 		$expr[] = $search->compare( '==', 'attribute.type.domain', 'product' );
 		$expr[] = $search->compare( '==', 'attribute.type.code', 'size' );
 		$expr[] = $search->compare( '==', 'attribute.type.label', 'Size' );
+		$expr[] = $search->compare( '>=', 'attribute.type.position', 0 );
 		$expr[] = $search->compare( '==', 'attribute.type.status', 1 );
 		$expr[] = $search->compare( '>=', 'attribute.type.mtime', '1970-01-01 00:00:00' );
 		$expr[] = $search->compare( '>=', 'attribute.type.ctime', '1970-01-01 00:00:00' );
@@ -90,7 +74,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$total = 0;
 		$search->setConditions( $search->combine( '&&', $expr ) );
-		$results = $this->object->searchItems( $search, array(), $total );
+		$results = $this->object->searchItems( $search, [], $total );
 
 		$this->assertEquals( 1, count( $results ) );
 		$this->assertEquals( 1, $total );
@@ -104,6 +88,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 			$search->getConditions(),
 		);
 		$search->setConditions( $search->combine( '&&', $expr ) );
+		$search->setSortations( [$search->sort( '-', 'attribute.type.position' )] );
 		$results = $this->object->searchItems( $search );
 		$this->assertEquals( 1, count( $results ) );
 
@@ -115,7 +100,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testFindItem()
 	{
-		$item = $this->object->findItem( 'size', array(), 'product' );
+		$item = $this->object->findItem( 'size', [], 'product' );
 
 		$this->assertEquals( 'size', $item->getCode() );
 		$this->assertEquals( 'product', $item->getDomain() );
@@ -124,7 +109,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testGetItem()
 	{
-		$search = $this->object->createSearch();
+		$search = $this->object->createSearch()->setSlice( 0, 1 );
 		$results = $this->object->searchItems( $search );
 
 		if( ( $expected = reset( $results ) ) === false ) {
@@ -133,13 +118,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$actual = $this->object->getItem( $expected->getId() );
 		$this->assertEquals( $expected, $actual );
-	}
-
-
-	public function testSaveInvalid()
-	{
-		$this->setExpectedException( '\Aimeos\MShop\Exception' );
-		$this->object->saveItem( new \Aimeos\MShop\Locale\Item\Standard() );
 	}
 
 
@@ -154,12 +132,12 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$item->setId( null );
 		$item->setCode( 'unitTestSave' );
-		$this->object->saveItem( $item );
+		$resultSaved = $this->object->saveItem( $item );
 		$itemSaved = $this->object->getItem( $item->getId() );
 
 		$itemExp = clone $itemSaved;
 		$itemExp->setCode( 'unitTestSave2' );
-		$this->object->saveItem( $itemExp );
+		$resultUpd = $this->object->saveItem( $itemExp );
 		$itemUpd = $this->object->getItem( $itemExp->getId() );
 
 		$this->object->deleteItem( $itemSaved->getId() );
@@ -189,14 +167,17 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $itemExp->getTimeCreated(), $itemUpd->getTimeCreated() );
 		$this->assertRegExp( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemUpd->getTimeModified() );
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultSaved );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultUpd );
+
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getItem( $itemSaved->getId() );
 	}
 
 
 	public function testGetSubManager()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getSubManager( 'unknown' );
 	}
 }

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Text
  */
@@ -19,74 +19,83 @@ namespace Aimeos\MShop\Text\Manager\Type;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Type\Base
-	implements \Aimeos\MShop\Text\Manager\Type\Iface
+	implements \Aimeos\MShop\Text\Manager\Type\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
-		'text.type.id'=> array(
-			'code'=>'text.type.id',
-			'internalcode'=>'mtexty."id"',
-			'internaldeps' => array( 'LEFT JOIN "mshop_text_type" AS mtexty ON ( mtex."typeid" = mtexty."id" )' ),
-			'label'=>'Text type ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'text.type.id' => array(
+			'code' => 'text.type.id',
+			'internalcode' => 'mtexty."id"',
+			'label' => 'Type ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		'text.type.siteid'=> array(
-			'code'=>'text.type.siteid',
-			'internalcode'=>'mtexty."siteid"',
-			'label'=>'Text type site ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'text.type.siteid' => array(
+			'code' => 'text.type.siteid',
+			'internalcode' => 'mtexty."siteid"',
+			'label' => 'Type site ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
+		),
+		'text.type.label' => array(
+			'code' => 'text.type.label',
+			'internalcode' => 'mtexty."label"',
+			'label' => 'Type label',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'text.type.code' => array(
-			'code'=>'text.type.code',
-			'internalcode'=>'mtexty."code"',
-			'label'=>'Text type code',
-			'type'=> 'string',
+			'code' => 'text.type.code',
+			'internalcode' => 'mtexty."code"',
+			'label' => 'Type code',
+			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'text.type.domain' => array(
-			'code'=>'text.type.domain',
-			'internalcode'=>'mtexty."domain"',
-			'label'=>'Text type domain',
-			'type'=> 'string',
+			'code' => 'text.type.domain',
+			'internalcode' => 'mtexty."domain"',
+			'label' => 'Type domain',
+			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'text.type.label' => array(
-			'code'=>'text.type.label',
-			'internalcode'=>'mtexty."label"',
-			'label'=>'Text type label',
-			'type'=> 'string',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
-		),
-		'text.type.status' => array(
-			'code'=>'text.type.status',
-			'internalcode'=>'mtexty."status"',
-			'label'=>'Text type status',
-			'type'=> 'integer',
+		'text.type.position' => array(
+			'code' => 'text.type.position',
+			'internalcode' => 'mtexty."pos"',
+			'label' => 'Type position',
+			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'text.type.ctime'=> array(
-			'code'=>'text.type.ctime',
-			'internalcode'=>'mtexty."ctime"',
-			'label'=>'Text type create date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'text.type.status' => array(
+			'code' => 'text.type.status',
+			'internalcode' => 'mtexty."status"',
+			'label' => 'Type status',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'text.type.mtime'=> array(
-			'code'=>'text.type.mtime',
-			'internalcode'=>'mtexty."mtime"',
-			'label'=>'Text type modification date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'text.type.ctime' => array(
+			'code' => 'text.type.ctime',
+			'internalcode' => 'mtexty."ctime"',
+			'label' => 'Type create date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'text.type.editor'=> array(
-			'code'=>'text.type.editor',
-			'internalcode'=>'mtexty."editor"',
-			'label'=>'Text type editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'text.type.mtime' => array(
+			'code' => 'text.type.mtime',
+			'internalcode' => 'mtexty."mtime"',
+			'label' => 'Type modify date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
+		),
+		'text.type.editor' => array(
+			'code' => 'text.type.editor',
+			'internalcode' => 'mtexty."editor"',
+			'label' => 'Type editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
 
@@ -106,16 +115,17 @@ class Standard
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param array $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Text\Manager\Type\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/text/manager/type/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array() ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, [] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/text/manager/type/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/text/manager/type/standard/delete' );
 	}
 
 
@@ -123,13 +133,12 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/text/manager/type/submanagers';
-
-		return $this->getResourceTypeBase( 'text/type', $path, array(), $withsub );
+		return $this->getResourceTypeBase( 'text/type', $path, [], $withsub );
 	}
 
 
@@ -137,7 +146,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array List of attribute items implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -160,7 +169,7 @@ class Standard
 		 */
 		$path = 'mshop/text/manager/type/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -247,7 +256,8 @@ class Standard
 		 *  mshop/text/manager/type/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the text controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the text
+		 * type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2014.03
@@ -266,13 +276,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the text type manager.
+		 * ("\Aimeos\MShop\Text\Manager\Type\Decorator\*") around the text type
+		 * manager.
 		 *
 		 *  mshop/text/manager/type/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the text
-		 * controller.
+		 * "\Aimeos\MShop\Text\Manager\Type\Decorator\Decorator2" only to the text
+		 * type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2014.03

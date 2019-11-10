@@ -1,14 +1,16 @@
 <?php
 
-namespace Aimeos\MW\View\Helper\Content;
-
-
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+
+
+namespace Aimeos\MW\View\Helper\Content;
+
+
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -39,8 +41,8 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testTransformAbsoluteUrl()
 	{
-		$output = $this->object->transform( 'https://host:443/path/to/resource' );
-		$this->assertEquals( 'https://host:443/path/to/resource', $output );
+		$output = $this->object->transform( '/path/to/resource' );
+		$this->assertEquals( '/path/to/resource', $output );
 	}
 
 
@@ -48,5 +50,12 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$output = $this->object->transform( 'data:image/gif;base64,R0lGODdhAQABAIAAAAAAAAAAACwAAAAAAQABAAACAkQBADs=' );
 		$this->assertEquals( 'data:image/gif;base64,R0lGODdhAQABAIAAAAAAAAAAACwAAAAAAQABAAACAkQBADs=', $output );
+	}
+
+
+	public function testTransformHttpUrl()
+	{
+		$output = $this->object->transform( 'https://host:443/path/to/resource' );
+		$this->assertEquals( 'https://host:443/path/to/resource', $output );
 	}
 }

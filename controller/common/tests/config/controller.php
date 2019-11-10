@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 return array(
@@ -12,6 +12,14 @@ return array(
 			'standard' => array(
 				'mimeicon' => array(
 					'directory' => dirname( __DIR__ ) . '/tmp/media/mimeicons',
+				),
+				'previews' => array(
+					0 => array(
+						'maxwidth' => 32
+					),
+					1 => array(
+						'maxwidth' => 50
+					),
 				),
 			),
 		),

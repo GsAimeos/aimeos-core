@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -22,18 +22,7 @@ class CouponAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPreDependencies()
 	{
-		return array( 'TablesCreateMShop', 'MShopSetLocale', 'OrderAddTestData' );
-	}
-
-
-	/**
-	 * Returns the list of task names which depends on this task.
-	 *
-	 * @return string[] List of task names
-	 */
-	public function getPostDependencies()
-	{
-		return array( 'CatalogRebuildTestIndex' );
+		return ['OrderAddTestData'];
 	}
 
 
@@ -66,10 +55,10 @@ class CouponAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	private function addCouponData( array $testdata )
 	{
-		$couponManager = \Aimeos\MShop\Coupon\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$couponManager = \Aimeos\MShop\Coupon\Manager\Factory::create( $this->additional, 'Standard' );
 		$couponCodeManager = $couponManager->getSubmanager( 'code' );
 
-		$couponIds = array();
+		$couponIds = [];
 		$coupon = $couponManager->createItem();
 		foreach( $testdata['coupon'] as $key => $dataset )
 		{
@@ -113,15 +102,15 @@ class CouponAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	private function addOrderCouponTestData( array $testdata )
 	{
-		$order = \Aimeos\MShop\Order\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$order = \Aimeos\MShop\Order\Manager\Factory::create( $this->additional, 'Standard' );
 		$orderBase = $order->getSubManager( 'base', 'Standard' );
 		$orderBaseProd = $orderBase->getSubManager( 'product', 'Standard' );
 		$orderBaseCoupon = $orderBase->getSubManager( 'coupon', 'Standard' );
 
-		$orderBaseIds = array();
-		$orderBasePrices = array();
-		$ordProdIds = array();
-		$prodcode = $quantity = $pos = array();
+		$orderBaseIds = [];
+		$orderBasePrices = [];
+		$ordProdIds = [];
+		$prodcode = $quantity = $pos = [];
 		foreach( $testdata['order/base/coupon'] as $key => $dataset ) {
 			$exp = explode( '/', $dataset['ordprodid'] );
 

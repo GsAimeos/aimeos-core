@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MAdmin
  * @subpackage Job
  */
@@ -29,26 +29,11 @@ class Standard
 	 *
 	 * @param array $values Associative list of key/value pairs
 	 */
-	public function __construct( array $values = array( ) )
+	public function __construct( array $values = [] )
 	{
 		parent::__construct( 'job.', $values );
 
 		$this->values = $values;
-	}
-
-
-	/**
-	 * Returns the status (enabled/disabled) of the job item.
-	 *
-	 * @return integer Returns the status of the item
-	 */
-	public function getStatus()
-	{
-		if( isset( $this->values['job.status'] ) ) {
-			return (int) $this->values['job.status'];
-		}
-
-		return 0;
 	}
 
 
@@ -71,13 +56,17 @@ class Standard
 	 * Sets the new label of the job item.
 	 *
 	 * @param string $label Type label of the job item
+	 * @return \Aimeos\MAdmin\Job\Item\Iface Job item for chaining method calls
 	 */
 	public function setLabel( $label )
 	{
-		if( $label == $this->getLabel() ) { return; }
+		if( (string) $label !== $this->getLabel() )
+		{
+			$this->values['job.label'] = (string) $label;
+			$this->setModified();
+		}
 
-		$this->values['job.label'] = (string) $label;
-		$this->setModified();
+		return $this;
 	}
 
 
@@ -100,13 +89,17 @@ class Standard
 	 * Sets the new method for the job.
 	 *
 	 * @param string $method Method (object/methodname) to call
+	 * @return \Aimeos\MAdmin\Job\Item\Iface Job item for chaining method calls
 	 */
 	public function setMethod( $method )
 	{
-		if( $method == $this->getMethod() ) { return; }
+		if( (string) $method !== $this->getMethod() )
+		{
+			$this->values['job.method'] = (string) $method;
+			$this->setModified();
+		}
 
-		$this->values['job.method'] = (string) $method;
-		$this->setModified();
+		return $this;
 	}
 
 
@@ -121,7 +114,7 @@ class Standard
 			return (array) $this->values['job.parameter'];
 		}
 
-		return array();
+		return [];
 	}
 
 
@@ -129,11 +122,14 @@ class Standard
 	 * Sets the new parameter for the job.
 	 *
 	 * @param array $param Parameter for the job
+	 * @return \Aimeos\MAdmin\Job\Item\Iface Job item for chaining method calls
 	 */
 	public function setParameter( array $param )
 	{
 		$this->values['job.parameter'] = $param;
 		$this->setModified();
+
+		return $this;
 	}
 
 
@@ -148,7 +144,7 @@ class Standard
 			return (array) $this->values['job.result'];
 		}
 
-		return array();
+		return [];
 	}
 
 
@@ -156,11 +152,29 @@ class Standard
 	 * Sets the new result of the job.
 	 *
 	 * @param array $result Associative list of result key/value pairs or list thereof
+	 * @return \Aimeos\MAdmin\Job\Item\Iface Job item for chaining method calls
 	 */
 	public function setResult( array $result )
 	{
 		$this->values['job.result'] = $result;
 		$this->setModified();
+
+		return $this;
+	}
+
+
+	/**
+	 * Returns the status (enabled/disabled) of the job item.
+	 *
+	 * @return integer Returns the status of the item
+	 */
+	public function getStatus()
+	{
+		if( isset( $this->values['job.status'] ) ) {
+			return (int) $this->values['job.status'];
+		}
+
+		return 1;
 	}
 
 
@@ -168,13 +182,17 @@ class Standard
 	 * Sets the new status of the job item.
 	 *
 	 * @param integer $status Status of the item
+	 * @return \Aimeos\MAdmin\Job\Item\Iface Job item for chaining method calls
 	 */
 	public function setStatus( $status )
 	{
-		if( $status == $this->getStatus() ) { return; }
+		if( (int) $status !== $this->getStatus() )
+		{
+			$this->values['job.status'] = (int) $status;
+			$this->setModified();
+		}
 
-		$this->values['job.status'] = (int) $status;
-		$this->setModified();
+		return $this;
 	}
 
 
@@ -190,41 +208,44 @@ class Standard
 
 
 	/**
-	 * Sets the item values from the given array.
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MAdmin\Job\Item\Iface Job item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'job.label': $this->setLabel( $value ); break;
-				case 'job.method': $this->setMethod( $value ); break;
-				case 'job.parameter': $this->setParameter( $value ); break;
-				case 'job.result': $this->setResult( $value ); break;
-				case 'job.status': $this->setStatus( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'job.label': $item = $item->setLabel( $value ); break;
+				case 'job.method': $item = $item->setMethod( $value ); break;
+				case 'job.parameter': $item = $item->setParameter( $value ); break;
+				case 'job.result': $item = $item->setResult( $value ); break;
+				case 'job.status': $item = $item->setStatus( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
 		$list['job.label'] = $this->getLabel();
 		$list['job.method'] = $this->getMethod();

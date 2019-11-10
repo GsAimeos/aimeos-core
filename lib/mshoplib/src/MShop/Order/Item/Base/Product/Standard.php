@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Order
  */
@@ -19,101 +19,86 @@ namespace Aimeos\MShop\Order\Item\Base\Product;
  */
 class Standard extends Base implements Iface
 {
-	private $price;
-	private $products;
-	private $values;
-
-
 	/**
 	 * Initializes the order product instance.
 	 *
 	 * @param \Aimeos\MShop\Price\Item\Iface $price Price item
 	 * @param array $values Associative list of order product values
-	 * @param array $attributes List of order attributes implementing \Aimeos\MShop\Order\Item\Base\Product\Attribute\Iface
-	 * @param array $products List of ordered subproducts implementing \Aimeos\MShop\Order\Item\Base\Product\Iface
+	 * @param \Aimeos\MShop\Order\Item\Base\Product\Attribute\Iface[] $attributes List of order product attribute items
+	 * @param \Aimeos\MShop\Order\Item\Base\Product\Iface[] $products List of ordered subproduct items
 	 */
-	public function __construct( \Aimeos\MShop\Price\Item\Iface $price, array $values = array(), array $attributes = array(), array $products = array() )
+	public function __construct( \Aimeos\MShop\Price\Item\Iface $price, array $values = [], array $attributes = [], array $products = [] )
 	{
-		parent::__construct( $price, $values, $attributes );
-
-		$this->price = $price;
-		$this->values = $values;
-
-		\Aimeos\MW\Common\Base::checkClassList( '\Aimeos\MShop\Order\Item\Base\Product\Iface', $products );
-		$this->products = $products;
-	}
-
-
-	/**
-	 * Clones internal objects of the order base product item.
-	 */
-	public function __clone()
-	{
-		$this->price = clone $this->price;
+		parent::__construct( $price, $values, $attributes, $products );
 	}
 
 
 	/**
 	 * Returns the ID of the site the item is stored
 	 *
-	 * @return integer|null Site ID (or null if not available)
+	 * @return string|null Site ID (or null if not available)
 	 */
 	public function getSiteId()
 	{
-		if( isset( $this->values['order.base.product.siteid'] ) ) {
-			return (int) $this->values['order.base.product.siteid'];
-		}
-
-		return null;
+		return $this->get( 'order.base.product.siteid' );
 	}
 
 
 	/**
 	 * Sets the site ID of the item.
 	 *
-	 * @param integer $value Unique site ID of the item
+	 * @param string $value Unique site ID of the item
 	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
 	 */
 	public function setSiteId( $value )
 	{
-		if( $value == $this->getSiteId() ) { return $this; }
-
-		$this->values['order.base.product.siteid'] = (int) $value;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.siteid', (string) $value );
 	}
 
 
 	/**
 	 * Returns the base ID.
 	 *
-	 * @return integer|null Base ID
+	 * @return string|null Base ID
 	 */
 	public function getBaseId()
 	{
-		if( isset( $this->values['order.base.product.baseid'] ) ) {
-			return (int) $this->values['order.base.product.baseid'];
-		}
-
-		return null;
+		return $this->get( 'order.base.product.baseid' );
 	}
 
 
 	/**
 	 * Sets the base order ID the product belongs to.
 	 *
-	 * @param integer $value New order base ID
+	 * @param string $value New order base ID
 	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
 	 */
 	public function setBaseId( $value )
 	{
-		if( $value == $this->getBaseId() ) { return $this; }
+		return $this->set( 'order.base.product.baseid', (string) $value );
+	}
 
-		$this->values['order.base.product.baseid'] = ( $value !== null ? (int) $value : null );
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Returns the order address ID the product should be shipped to
+	 *
+	 * @return string|null Order address ID
+	 */
+	public function getOrderAddressId()
+	{
+		return $this->get( 'order.base.product.orderaddressid' );
+	}
+
+
+	/**
+	 * Sets the order address ID the product should be shipped to
+	 *
+	 * @param string|null $value Order address ID
+	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
+	 */
+	public function setOrderAddressId( $value )
+	{
+		return $this->set( 'order.base.product.orderaddressid', ( $value !== null ? (string) $value : null ) );
 	}
 
 
@@ -121,15 +106,11 @@ class Standard extends Base implements Iface
 	 * Returns the parent ID of the ordered product if there is one.
 	 * This ID relates to another product of the same order and provides a relation for e.g. sub-products in bundles.
 	 *
-	 * @return integer|null Order product ID
+	 * @return string|null Order product ID
 	 */
 	public function getOrderProductId()
 	{
-		if( isset( $this->values['order.base.product.ordprodid'] ) ) {
-			return (int) $this->values['order.base.product.ordprodid'];
-		}
-
-		return null;
+		return $this->get( 'order.base.product.orderproductid' );
 	}
 
 
@@ -137,17 +118,12 @@ class Standard extends Base implements Iface
 	 * Sets the parent ID of the ordered product.
 	 * This ID relates to another product of the same order and provides a relation for e.g. sub-products in bundles.
 	 *
-	 * @param integer|null $orderProductId Order product ID
+	 * @param string|null $value Order product ID
 	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
 	 */
-	public function setOrderProductId( $orderProductId )
+	public function setOrderProductId( $value )
 	{
-		if( $orderProductId == $this->getOrderProductId() ) { return $this; }
-
-		$this->values['order.base.product.ordprodid'] = ( $orderProductId !== null ? (int) $orderProductId : null );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.orderproductid', ( $value !== null ? (string) $value : null ) );
 	}
 
 
@@ -158,55 +134,19 @@ class Standard extends Base implements Iface
 	 */
 	public function getType()
 	{
-		if( isset( $this->values['order.base.product.type'] ) ) {
-			return (string) $this->values['order.base.product.type'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.type', '' );
 	}
 
 
 	/**
 	 * Sets the type of the ordered product.
 	 *
-	 * @param string Type of the order product
+	 * @param string $type Type of the order product
 	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
 	 */
 	public function setType( $type )
 	{
-		if( $type == $this->getType() ) { return $this; }
-
-		$this->values['order.base.product.type'] = (string) $type;
-		$this->setModified();
-
-		return $this;
-	}
-
-
-	/**
-	 * Returns a array of order base product items
-	 *
-	 * @return array Associative list of product items that implements \Aimeos\MShop\Order\Item\Base\Product\Iface
-	 */
-	public function getProducts()
-	{
-		return $this->products;
-	}
-
-	/**
-	 * Sets a array of order base product items
-	 *
-	 * @param array Associative list of product items which must implement the \Aimeos\MShop\Order\Item\Base\Product\Iface
-	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
-	 */
-	public function setProducts( array $products )
-	{
-		\Aimeos\MW\Common\Base::checkClassList( '\Aimeos\MShop\Order\Item\Base\Product\Iface', $products );
-
-		$this->products = $products;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.type', $this->checkCode( $type ) );
 	}
 
 
@@ -217,11 +157,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getSupplierCode()
 	{
-		if( isset( $this->values['order.base.product.suppliercode'] ) ) {
-			return (string) $this->values['order.base.product.suppliercode'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.suppliercode', '' );
 	}
 
 
@@ -233,12 +169,7 @@ class Standard extends Base implements Iface
 	 */
 	public function setSupplierCode( $suppliercode )
 	{
-		if( $suppliercode == $this->getSupplierCode() ) { return $this; }
-
-		$this->values['order.base.product.suppliercode'] = (string) $this->checkCode( $suppliercode );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.suppliercode', $this->checkCode( $suppliercode ) );
 	}
 
 
@@ -249,28 +180,19 @@ class Standard extends Base implements Iface
 	 */
 	public function getProductId()
 	{
-		if( isset( $this->values['order.base.product.productid'] ) ) {
-			return (string) $this->values['order.base.product.productid'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.productid', '' );
 	}
 
 
 	/**
 	 * Sets the ID of a product the customer has selected.
 	 *
-	 * @param string Product Code ID
+	 * @param string $id Product Code ID
 	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
 	 */
 	public function setProductId( $id )
 	{
-		if( $id == $this->getProductId() ) { return $this; }
-
-		$this->values['order.base.product.productid'] = (string) $id;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.productid', (string) $id );
 	}
 
 
@@ -281,11 +203,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getProductCode()
 	{
-		if( isset( $this->values['order.base.product.prodcode'] ) ) {
-			return (string) $this->values['order.base.product.prodcode'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.prodcode', '' );
 	}
 
 
@@ -297,12 +215,7 @@ class Standard extends Base implements Iface
 	 */
 	public function setProductCode( $code )
 	{
-		if( $code == $this->getProductCode() ) { return $this; }
-
-		$this->values['order.base.product.prodcode'] = (string) $this->checkCode( $code );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.prodcode', $this->checkCode( $code ) );
 	}
 
 
@@ -313,11 +226,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getStockType()
 	{
-		if( isset( $this->values['order.base.stocktype'] ) ) {
-			return (string) $this->values['order.base.stocktype'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.stocktype', '' );
 	}
 
 
@@ -329,12 +238,7 @@ class Standard extends Base implements Iface
 	 */
 	public function setStockType( $code )
 	{
-		if( $code == $this->getStockType() ) { return $this; }
-
-		$this->values['order.base.stocktype'] = (string) $this->checkCode( $code );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.stocktype', $this->checkCode( $code ) );
 	}
 
 
@@ -345,11 +249,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getName()
 	{
-		if( isset( $this->values['order.base.product.name'] ) ) {
-			return (string) $this->values['order.base.product.name'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.name', '' );
 	}
 
 
@@ -361,12 +261,30 @@ class Standard extends Base implements Iface
 	 */
 	public function setName( $value )
 	{
-		if( $value == $this->getName() ) { return $this; }
+		return $this->set( 'order.base.product.name', (string) $value );
+	}
 
-		$this->values['order.base.product.name'] = (string) $value;
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Returns the localized description of the product.
+	 *
+	 * @return string Returns the localized description of the product
+	 */
+	public function getDescription()
+	{
+		return (string) $this->get( 'order.base.product.description', '' );
+	}
+
+
+	/**
+	 * Sets the localized description of the product.
+	 *
+	 * @param string $value Localized description of the product
+	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
+	 */
+	public function setDescription( $value )
+	{
+		return $this->set( 'order.base.product.description', (string) $value );
 	}
 
 
@@ -377,11 +295,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getMediaUrl()
 	{
-		if( isset( $this->values['order.base.product.mediaurl'] ) ) {
-			return (string) $this->values['order.base.product.mediaurl'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.mediaurl', '' );
 	}
 
 
@@ -393,12 +307,53 @@ class Standard extends Base implements Iface
 	 */
 	public function setMediaUrl( $value )
 	{
-		if( $value == $this->getMediaUrl() ) { return $this; }
+		return $this->set( 'order.base.product.mediaurl', (string) $value );
+	}
 
-		$this->values['order.base.product.mediaurl'] = (string) $value;
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Returns the URL target specific for that product
+	 *
+	 * @return string URL target specific for that product
+	 */
+	public function getTarget()
+	{
+		return (string) $this->get( 'order.base.product.target', '' );
+	}
+
+
+	/**
+	 * Sets the URL target specific for that product
+	 *
+	 * @param string $value New URL target specific for that product
+	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
+	 */
+	public function setTarget( $value )
+	{
+		return $this->set( 'order.base.product.target', (string) $value );
+	}
+
+
+	/**
+	 * Returns the expected delivery time frame
+	 *
+	 * @return string Expected delivery time frame
+	 */
+	public function getTimeframe()
+	{
+		return (string) $this->get( 'order.base.product.timeframe', '' );
+	}
+
+
+	/**
+	 * Sets the expected delivery time frame
+	 *
+	 * @param string $timeframe Expected delivery time frame
+	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
+	 */
+	public function setTimeframe( $timeframe )
+	{
+		return $this->set( 'order.base.product.timeframe', (string) $timeframe );
 	}
 
 
@@ -409,11 +364,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getQuantity()
 	{
-		if( isset( $this->values['order.base.product.quantity'] ) ) {
-			return (int) $this->values['order.base.product.quantity'];
-		}
-
-		return 1;
+		return (int) $this->get( 'order.base.product.quantity', 1 );
 	}
 
 
@@ -425,57 +376,11 @@ class Standard extends Base implements Iface
 	 */
 	public function setQuantity( $quantity )
 	{
-		if( $quantity == $this->getQuantity() ) { return $this; }
-
 		if( $quantity < 1 || $quantity > 2147483647 ) {
 			throw new \Aimeos\MShop\Order\Exception( sprintf( 'Quantity must be a positive integer and must not exceed %1$d', 2147483647 ) );
 		}
 
-		$this->values['order.base.product.quantity'] = (int) $quantity;
-		$this->setModified();
-
-		return $this;
-	}
-
-
-	/**
-	 * Returns the price item for the product.
-	 *
-	 * @return \Aimeos\MShop\Price\Item\Iface Price item with price, costs and rebate
-	 */
-	public function getPrice()
-	{
-		return $this->price;
-	}
-
-
-	/**
-	 * Sets the price item for the product.
-	 *
-	 * @param \Aimeos\MShop\Price\Item\Iface $price Price item containing price and additional costs
-	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
-	 */
-	public function setPrice( \Aimeos\MShop\Price\Item\Iface $price )
-	{
-		if( $price === $this->price ) { return $this; }
-
-		$this->price = $price;
-		$this->setModified();
-
-		return $this;
-	}
-
-
-	/**
-	 * Returns the price item for the product whose values are multiplied with the quantity.
-	 *
-	 * @return \Aimeos\MShop\Price\Item\Iface Price item with price, additional costs and rebate
-	 * @deprecated Will be removed in 2017.01
-	 */
-	public function getSumPrice()
-	{
-		$price = clone $this->price;
-		return $price->addItem( $price, $this->getQuantity() - 1 );
+		return $this->set( 'order.base.product.quantity', (int) $quantity );
 	}
 
 
@@ -486,11 +391,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getFlags()
 	{
-		if( isset( $this->values['order.base.product.flags'] ) ) {
-			return (int) $this->values['order.base.product.flags'];
-		}
-
-		return \Aimeos\MShop\Order\Item\Base\Product\Base::FLAG_NONE;
+		return (int) $this->get( 'order.base.product.flags', \Aimeos\MShop\Order\Item\Base\Product\Base::FLAG_NONE );
 	}
 
 
@@ -502,54 +403,41 @@ class Standard extends Base implements Iface
 	 */
 	public function setFlags( $value )
 	{
-		if( $value == $this->getFlags() ) { return $this; }
-
-		$this->values['order.base.product.flags'] = $this->checkFlags( $value );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.flags', (int) $this->checkFlags( $value ) );
 	}
 
 
 	/**
 	 * Returns the position of the product in the order.
 	 *
-	 * @return integer|null Product position in the order from 1-n
+	 * @return integer|null Product position in the order from 0-n
 	 */
 	public function getPosition()
 	{
-		if( isset( $this->values['order.base.product.position'] ) ) {
-			return (int) $this->values['order.base.product.position'];
-		}
-
-		return null;
+		return $this->get( 'order.base.product.position' );
 	}
 
 
 	/**
 	 * Sets the position of the product within the list of ordered products.
 	 *
-	 * @param integer|null $value Product position in the order from 1-n or null for resetting the position
+	 * @param integer|null $value Product position in the order from 0-n or null for resetting the position
 	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order base product item for chaining method calls
-	 * @throws \Aimeos\MShop\Order\Exception If there's already a position set
+	 * @throws \Aimeos\MShop\Order\Exception If the position is invalid
 	 */
 	public function setPosition( $value )
 	{
-		if( $value == $this->getPosition() ) { return $this; }
-
-		if( $value !== null && $value < 1 ) {
+		if( $value < 0 ) {
 			throw new \Aimeos\MShop\Order\Exception( sprintf( 'Order product position "%1$s" must be greater than 0', $value ) );
 		}
 
-		$this->values['order.base.product.position'] = ( $value !== null ? (int) $value : null );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.position', ( $value !== null ? (int) $value : null ) );
 	}
 
 
 	/**
 	 * Returns the current delivery status of the order product item.
+	 *
 	 * The returned status values are the STAT_* constants from the
 	 * \Aimeos\MShop\Order\Item\Base class
 	 *
@@ -557,11 +445,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getStatus()
 	{
-		if( isset( $this->values['order.base.product.status'] ) ) {
-			return (int) $this->values['order.base.product.status'];
-		}
-
-		return \Aimeos\MShop\Order\Item\Base::STAT_UNFINISHED;
+		return (int) $this->get( 'order.base.product.status', \Aimeos\MShop\Order\Item\Base::STAT_UNFINISHED );
 	}
 
 
@@ -576,87 +460,84 @@ class Standard extends Base implements Iface
 	 */
 	public function setStatus( $value )
 	{
-		if( $value == $this->getStatus() ) { return $this; }
-
-		$this->values['order.base.product.status'] = (int) $value;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.status', (int) $value );
 	}
 
 
-	/**
-	 * Sets the item values from the given array.
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Order\Item\Base\Product\Iface Order product item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-
-		if( isset( $list['order.base.product.siteid'] ) ) { // set siteid in this class too
-			$this->setSiteId( $list['order.base.product.siteid'] );
-		}
-
-		$list = parent::fromArray( $list );
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'order.base.product.baseid': $this->setBaseId( $value ); break;
-				case 'order.base.product.ordprodid': $this->setOrderProductId( $value ); break;
-				case 'order.base.product.type': $this->setType( $value ); break;
-				case 'order.base.stocktype': $this->setStockType( $value ); break;
-				case 'order.base.product.suppliercode': $this->setSupplierCode( $value ); break;
-				case 'order.base.product.productid': $this->setProductId( $value ); break;
-				case 'order.base.product.prodcode': $this->setProductCode( $value ); break;
-				case 'order.base.product.name': $this->setName( $value ); break;
-				case 'order.base.product.mediaurl': $this->setMediaUrl( $value ); break;
-				case 'order.base.product.position': $this->setPosition( $value ); break;
-				case 'order.base.product.quantity': $this->setQuantity( $value ); break;
-				case 'order.base.product.status': $this->setStatus( $value ); break;
-				case 'order.base.product.flags': $this->setFlags( $value ); break;
-				case 'order.base.product.price': $this->price->setValue( $value ); break;
-				case 'order.base.product.costs': $this->price->setCosts( $value ); break;
-				case 'order.base.product.rebate': $this->price->setRebate( $value ); break;
-				case 'order.base.product.taxrate': $this->price->setTaxRate( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'order.base.product.siteid': !$private ?: $item = $item->setSiteId( $value ); break;
+				case 'order.base.product.baseid': !$private ?: $item = $item->setBaseId( $value ); break;
+				case 'order.base.product.orderproductid': !$private ?: $item = $item->setOrderProductId( $value ); break;
+				case 'order.base.product.orderaddressid': !$private ?: $item = $item->setOrderAddressId( $value ); break;
+				case 'order.base.product.flags': !$private ?: $item = $item->setFlags( $value ); break;
+				case 'order.base.product.type': $item = $item->setType( $value ); break;
+				case 'order.base.product.stocktype': $item = $item->setStockType( $value ); break;
+				case 'order.base.product.suppliercode': $item = $item->setSupplierCode( $value ); break;
+				case 'order.base.product.productid': $item = $item->setProductId( $value ); break;
+				case 'order.base.product.prodcode': $item = $item->setProductCode( $value ); break;
+				case 'order.base.product.name': $item = $item->setName( $value ); break;
+				case 'order.base.product.description': $item = $item->setDescription( $value ); break;
+				case 'order.base.product.mediaurl': $item = $item->setMediaUrl( $value ); break;
+				case 'order.base.product.timeframe': $item = $item->setTimeFrame( $value ); break;
+				case 'order.base.product.target': !$private ?: $item = $item->setTarget( $value ); break;
+				case 'order.base.product.position': !$private ?: $item = $item->setPosition( $value ); break;
+				case 'order.base.product.quantity': $item = $item->setQuantity( $value ); break;
+				case 'order.base.product.status': $item = $item->setStatus( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as associative list.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
-		$list['order.base.product.baseid'] = $this->getBaseId();
-		$list['order.base.product.siteid'] = $this->getSiteId();
-		$list['order.base.product.ordprodid'] = $this->getOrderProductId();
 		$list['order.base.product.type'] = $this->getType();
-		$list['order.base.stocktype'] = $this->getStockType();
+		$list['order.base.product.stocktype'] = $this->getStockType();
 		$list['order.base.product.suppliercode'] = $this->getSupplierCode();
-		$list['order.base.product.productid'] = $this->getProductId();
 		$list['order.base.product.prodcode'] = $this->getProductCode();
-		$list['order.base.product.name'] = $this->getName();
-		$list['order.base.product.mediaurl'] = $this->getMediaUrl();
-		$list['order.base.product.position'] = $this->getPosition();
-		$list['order.base.product.price'] = $this->price->getValue();
-		$list['order.base.product.costs'] = $this->price->getCosts();
-		$list['order.base.product.rebate'] = $this->price->getRebate();
-		$list['order.base.product.taxrate'] = $this->price->getTaxRate();
+		$list['order.base.product.productid'] = $this->getProductId();
 		$list['order.base.product.quantity'] = $this->getQuantity();
+		$list['order.base.product.name'] = $this->getName();
+		$list['order.base.product.description'] = $this->getDescription();
+		$list['order.base.product.mediaurl'] = $this->getMediaUrl();
+		$list['order.base.product.timeframe'] = $this->getTimeFrame();
+		$list['order.base.product.position'] = $this->getPosition();
 		$list['order.base.product.status'] = $this->getStatus();
-		$list['order.base.product.flags'] = $this->getFlags();
+
+		if( $private === true )
+		{
+			$list['order.base.product.baseid'] = $this->getBaseId();
+			$list['order.base.product.orderproductid'] = $this->getOrderProductId();
+			$list['order.base.product.orderaddressid'] = $this->getOrderAddressId();
+			$list['order.base.product.target'] = $this->getTarget();
+			$list['order.base.product.flags'] = $this->getFlags();
+		}
 
 		return $list;
 	}
@@ -676,7 +557,7 @@ class Standard extends Base implements Iface
 			&& $this->getStockType() === $item->getStockType()
 			&& $this->getProductCode() === $item->getProductCode()
 			&& $this->getSupplierCode() === $item->getSupplierCode()
-			&& $this->getPrice()->compare( $item->getPrice() ) === true
+			&& $this->getOrderAddressId() === $item->getOrderAddressId()
 		) {
 			return true;
 		}
@@ -696,11 +577,12 @@ class Standard extends Base implements Iface
 		$this->setProductCode( $product->getCode() );
 		$this->setProductId( $product->getId() );
 		$this->setType( $product->getType() );
+		$this->setTarget( $product->getTarget() );
 		$this->setName( $product->getName() );
 
-		$items = $product->getRefItems( 'supplier', 'default', 'default' );
+		$items = $product->getRefItems( 'text', 'basket', 'default' );
 		if( ( $item = reset( $items ) ) !== false ) {
-			$this->setSupplierCode( $item->getCode() );
+			$this->setDescription( $item->getContent() );
 		}
 
 		$items = $product->getRefItems( 'media', 'default', 'default' );
@@ -708,8 +590,6 @@ class Standard extends Base implements Iface
 			$this->setMediaUrl( $item->getPreview() );
 		}
 
-		$this->setModified();
-
-		return $this;
+		return $this->setModified();
 	}
 }

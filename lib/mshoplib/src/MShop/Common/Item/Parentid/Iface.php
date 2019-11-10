@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Common
  */
@@ -13,6 +13,7 @@ namespace Aimeos\MShop\Common\Item\Parentid;
 
 /**
  * Interface for items with parent/child relationship
+ *
  * @package MShop
  * @subpackage Common
  */

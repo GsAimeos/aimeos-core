@@ -3,13 +3,13 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 namespace Aimeos\MShop\Plugin\Provider\Order;
 
 
-class BasketLimitsTest extends \PHPUnit_Framework_TestCase
+class BasketLimitsTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $products;
@@ -18,15 +18,11 @@ class BasketLimitsTest extends \PHPUnit_Framework_TestCase
 
 	protected function setUp()
 	{
-		$orderManager = \Aimeos\MShop\Order\Manager\Factory::createManager( \TestHelperMShop::getContext() );
-		$orderBaseManager = $orderManager->getSubManager( 'base' );
+		$context = \TestHelperMShop::getContext();
+		$this->order = \Aimeos\MShop::create( $context, 'order/base' )->createItem()->off(); // remove event listeners
 
-		$this->order = $orderBaseManager->createItem();
-		$this->order->__sleep(); // remove event listeners
-
-		$orderBaseProductManager = $orderBaseManager->getSubManager( 'product' );
+		$orderBaseProductManager = \Aimeos\MShop::create( $context, 'order/base/product' );
 		$search = $orderBaseProductManager->createSearch();
-
 		$search->setConditions( $search->combine( '&&', array(
 			$search->compare( '==', 'order.base.product.prodcode', array( 'CNE', 'CNC' ) ),
 			$search->compare( '==', 'order.base.product.price', array( '600.00', '36.00' ) )
@@ -51,27 +47,49 @@ class BasketLimitsTest extends \PHPUnit_Framework_TestCase
 			'max-products' => 5
 		);
 
-		$pluginManager = \Aimeos\MShop\Plugin\Manager\Factory::createManager( \TestHelperMShop::getContext() );
-		$plugin = $pluginManager->createItem();
-		$plugin->setTypeId( 2 );
-		$plugin->setProvider( 'BasketLimits' );
-		$plugin->setConfig( $config );
-		$plugin->setStatus( '1' );
-
-		$this->object = new \Aimeos\MShop\Plugin\Provider\Order\BasketLimits( \TestHelperMShop::getContext(), $plugin );
+		$plugin = \Aimeos\MShop::create( $context, 'plugin' )->createItem()->setConfig( $config );
+		$this->object = new \Aimeos\MShop\Plugin\Provider\Order\BasketLimits( $context, $plugin );
 	}
 
 
-	/**
-	 * Tears down the fixture, for example, closes a network connection.
-	 * This method is called after a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function tearDown()
 	{
-		unset( $this->object );
-		unset( $this->order );
+		unset( $this->object, $this->order );
+	}
+
+
+	public function testCheckConfigBE()
+	{
+		$attributes = array(
+			'min-products' => '10',
+			'max-products' => '100',
+			'min-value' => ['EUR' => '100.00'],
+			'max-value' => ['EUR' => '1000.00'],
+		);
+
+		$result = $this->object->checkConfigBE( $attributes );
+
+		$this->assertEquals( 4, count( $result ) );
+		$this->assertEquals( null, $result['min-products'] );
+		$this->assertEquals( null, $result['max-products'] );
+		$this->assertEquals( null, $result['min-value'] );
+		$this->assertEquals( null, $result['max-value'] );
+	}
+
+
+	public function testGetConfigBE()
+	{
+		$list = $this->object->getConfigBE();
+
+		$this->assertEquals( 4, count( $list ) );
+		$this->assertArrayHasKey( 'min-products', $list );
+		$this->assertArrayHasKey( 'max-products', $list );
+		$this->assertArrayHasKey( 'min-value', $list );
+		$this->assertArrayHasKey( 'max-value', $list );
+
+		foreach( $list as $entry ) {
+			$this->assertInstanceOf( \Aimeos\MW\Criteria\Attribute\Iface::class, $entry );
+		}
 	}
 
 
@@ -85,17 +103,19 @@ class BasketLimitsTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->products['CNE']->setQuantity( 4 );
 		$this->order->addProduct( $this->products['CNE'] );
+		$value = \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT;
 
-		$this->assertTrue( $this->object->update( $this->order, 'check.after', \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT ) );
+		$this->assertEquals( $value, $this->object->update( $this->order, 'check.after', $value ) );
 	}
 
 
 	public function testUpdateMinProductsFails()
 	{
 		$this->order->addProduct( $this->products['CNC'] );
+		$value = \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT;
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Plugin\\Provider\\Exception' );
-		$this->object->update( $this->order, 'check.after', \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT );
+		$this->setExpectedException( \Aimeos\MShop\Plugin\Provider\Exception::class );
+		$this->object->update( $this->order, 'check.after', $value );
 	}
 
 
@@ -103,18 +123,20 @@ class BasketLimitsTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->products['CNE']->setQuantity( 6 );
 		$this->order->addProduct( $this->products['CNE'] );
+		$value = \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT;
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Plugin\\Provider\\Exception' );
-		$this->object->update( $this->order, 'check.after', \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT );
+		$this->setExpectedException( \Aimeos\MShop\Plugin\Provider\Exception::class );
+		$this->object->update( $this->order, 'check.after', $value );
 	}
 
 
 	public function testUpdateMinValueFails()
 	{
 		$this->order->addProduct( $this->products['CNE'] );
+		$value = \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT;
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Plugin\\Provider\\Exception' );
-		$this->object->update( $this->order, 'check.after', \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT );
+		$this->setExpectedException( \Aimeos\MShop\Plugin\Provider\Exception::class );
+		$this->object->update( $this->order, 'check.after', $value );
 	}
 
 
@@ -122,8 +144,9 @@ class BasketLimitsTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->products['CNC']->setQuantity( 2 );
 		$this->order->addProduct( $this->products['CNC'] );
+		$value = \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT;
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Plugin\\Provider\\Exception' );
-		$this->object->update( $this->order, 'check.after', \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT );
+		$this->setExpectedException( \Aimeos\MShop\Plugin\Provider\Exception::class );
+		$this->object->update( $this->order, 'check.after', $value );
 	}
 }

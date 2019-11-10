@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Filesystem
  */
@@ -26,13 +26,13 @@ class Factory
 	 * @return \Aimeos\MW\Filesystem\Iface File system object
 	 * @throws \Aimeos\MW\Filesystem\Exception if file system class isn't found
 	 */
-	static public function create( array $config )
+	public static function create( array $config )
 	{
 		if( !isset( $config['adapter'] ) ) {
 			throw new \Aimeos\MW\Filesystem\Exception( 'File system not configured' );
 		}
 
-		$classname = '\\Aimeos\\MW\\Filesystem\\' . ucfirst( (string) $config['adapter'] );
+		$classname = '\Aimeos\MW\Filesystem\\' . ucfirst( (string) $config['adapter'] );
 
 		if( !class_exists( $classname ) ) {
 			throw new \Aimeos\MW\Filesystem\Exception( sprintf( 'File system "%1$s" not found', $config['adapter'] ) );

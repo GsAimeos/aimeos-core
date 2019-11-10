@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Common
  */
@@ -21,8 +21,16 @@ namespace Aimeos\MShop\Common\Item\Lists;
 interface Iface
 	extends \Aimeos\MShop\Common\Item\Iface, \Aimeos\MShop\Common\Item\Config\Iface,
 		\Aimeos\MShop\Common\Item\Position\Iface, \Aimeos\MShop\Common\Item\Time\Iface,
-		\Aimeos\MShop\Common\Item\Typeid\Iface, \Aimeos\MShop\Common\Item\Parentid\Iface
+		\Aimeos\MShop\Common\Item\TypeRef\Iface, \Aimeos\MShop\Common\Item\Parentid\Iface,
+		\Aimeos\MShop\Common\Item\Status\Iface
 {
+	/**
+	 * Returns the unique key of the list item
+	 *
+	 * @return string Unique key consisting of domain/type/refid
+	 */
+	public function getKey();
+
 	/**
 	 * Returns the domain of the common list item, e.g. text or media.
 	 *
@@ -54,21 +62,6 @@ interface Iface
 	public function setRefId( $refid );
 
 	/**
-	 * Returns the status of the list item.
-	 *
-	 * @return integer Status of the item
-	 */
-	public function getStatus();
-
-	/**
-	 * Sets the new status of the list item.
-	 *
-	 * @param integer $status Status of the item
-	 * @return \Aimeos\MShop\Common\Item\Lists\Iface Lists item for chaining method calls
-	 */
-	public function setStatus( $status );
-
-	/**
 	 * Returns the referenced item if it's available.
 	 *
 	 * @return \Aimeos\MShop\Common\Item\Iface|null Referenced list item
@@ -78,8 +71,8 @@ interface Iface
 	/**
 	 * Stores the item referenced by the list item.
 	 *
-	 * @param \Aimeos\MShop\Common\Item\Iface $refItem Item referenced by the list item
+	 * @param \Aimeos\MShop\Common\Item\Iface|null $refItem Item referenced by the list item or null for no reference
 	 * @return \Aimeos\MShop\Common\Item\Lists\Iface Lists item for chaining method calls
 	 */
-	public function setRefItem( \Aimeos\MShop\Common\Item\Iface $refItem );
+	public function setRefItem( \Aimeos\MShop\Common\Item\Iface $refItem = null );
 }

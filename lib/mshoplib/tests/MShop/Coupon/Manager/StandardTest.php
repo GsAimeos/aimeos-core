@@ -3,31 +3,22 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MShop\Coupon\Manager;
 
 
-/**
- * Test class for \Aimeos\MShop\Coupon\Manager\Standard.
- */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $item;
 
 
-	/**
-	 * Sets up the fixture, for example, opens a network connection.
-	 * This method is called before a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function setUp()
 	{
-		$this->object = \Aimeos\MShop\Coupon\Manager\Factory::createManager( \TestHelperMShop::getContext() );
+		$this->object = \Aimeos\MShop\Coupon\Manager\Factory::create( \TestHelperMShop::getContext() );
 
 		$this->item = $this->object->createItem();
 		$this->item->setProvider( 'Example' );
@@ -36,21 +27,21 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	/**
-	 * Tears down the fixture, for example, closes a network connection.
-	 * This method is called after a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function tearDown()
 	{
 		unset( $this->object );
 	}
 
 
-	public function testCleanup()
+	public function testClear()
 	{
-		$this->object->cleanup( array( -1 ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->clear( [-1] ) );
+	}
+
+
+	public function testDeleteItems()
+	{
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->deleteItems( [-1] ) );
 	}
 
 
@@ -67,44 +58,44 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$attribs = $this->object->getSearchAttributes();
 		foreach( $attribs as $obj ) {
-			$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\Attribute\\Iface', $obj );
+			$this->assertInstanceOf( \Aimeos\MW\Criteria\Attribute\Iface::class, $obj );
 		}
 	}
 
 
 	public function testCreateItem()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Coupon\\Item\\Iface', $this->object->createItem() );
+		$this->assertInstanceOf( \Aimeos\MShop\Coupon\Item\Iface::class, $this->object->createItem() );
 	}
 
 
 	public function testGetSubManager()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager( 'code' ) );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager( 'code', 'Standard' ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->getSubManager( 'code' ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->getSubManager( 'code', 'Standard' ) );
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getSubManager( 'unknown' );
 	}
 
 
 	public function testGetSubManagerInvalidManager()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getSubManager( '$%^' );
 	}
 
 
 	public function testGetSubManagerInvalidName()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getSubManager( 'Code', 'unknown' );
 	}
 
 
 	public function testGetItem()
 	{
-		$search = $this->object->createSearch();
+		$search = $this->object->createSearch()->setSlice( 0, 1 );
 		$search->setConditions( $search->compare( '==', 'coupon.code.code', 'OPQR' ) );
 		$results = $this->object->searchItems( $search );
 
@@ -114,13 +105,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$itemB = $this->object->getItem( $itemA->getId() );
 		$this->assertEquals( 'Unit test example', $itemB->getLabel() );
-	}
-
-
-	public function testSaveInvalid()
-	{
-		$this->setExpectedException( '\Aimeos\MShop\Coupon\Exception' );
-		$this->object->saveItem( new \Aimeos\MShop\Locale\Item\Standard() );
 	}
 
 
@@ -137,14 +121,13 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$item->setProvider( 'Unit' );
 		$item->setConfig( array( 'key'=>'value' ) );
 		$item->setStatus( '1' );
-		$this->object->saveItem( $item );
+		$resultSaved = $this->object->saveItem( $item );
 		$itemSaved = $this->object->getItem( $item->getId() );
 
 		$itemExp = clone $itemSaved;
 
 		$itemExp->setStatus( '0' );
-		$this->object->saveItem( $itemExp );
-
+		$resultUpd = $this->object->saveItem( $itemExp );
 		$itemUpd = $this->object->getItem( $itemExp->getId() );
 
 		$this->object->deleteItem( $item->getId() );
@@ -178,7 +161,10 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $itemExp->getTimeCreated(), $itemUpd->getTimeCreated() );
 		$this->assertRegExp( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemUpd->getTimeModified() );
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultSaved );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultUpd );
+
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getItem( $item->getId() );
 	}
 
@@ -189,11 +175,11 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$item->setProvider( 'Present,Example' );
 		$provider = $this->object->getProvider( $item, 'abcd' );
 
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Coupon\\Provider\\Iface', $provider );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Coupon\\Provider\\Decorator\\Example', $provider );
+		$this->assertInstanceOf( \Aimeos\MShop\Coupon\Provider\Iface::class, $provider );
+		$this->assertInstanceOf( \Aimeos\MShop\Coupon\Provider\Decorator\Example::class, $provider );
 
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getProvider( $this->object->createItem(), '' );
 	}
 
@@ -201,7 +187,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testCreateSearch()
 	{
 		$search = $this->object->createSearch();
-		$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\SQL', $search );
+		$this->assertInstanceOf( \Aimeos\MW\Criteria\SQL::class, $search );
 	}
 
 
@@ -209,7 +195,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$search = $this->object->createSearch();
 
-		$expr = array();
+		$expr = [];
 		$expr[] = $search->compare( '!=', 'coupon.id', null );
 		$expr[] = $search->compare( '!=', 'coupon.siteid', null );
 		$expr[] = $search->compare( '==', 'coupon.label', 'Unit test fixed rebate' );
@@ -235,19 +221,27 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$total = 0;
 		$search->setConditions( $search->combine( '&&', $expr ) );
-		$results = $this->object->searchItems( $search, array(), $total );
+		$results = $this->object->searchItems( $search, [], $total );
 
 		$this->assertEquals( 1, count( $results ) );
 		$this->assertEquals( 1, $total );
+	}
 
 
+	public function testSearchItemsTotal()
+	{
+		$total = 0;
 		//search with base criteria
 		$search = $this->object->createSearch( true );
+		$search->setSlice( 0, 1 );
 		$expr = array(
 			$search->getConditions(),
-			$search->compare( '==', 'coupon.code.editor', 'core:unittest' ),
+			$search->compare( '==', 'coupon.code.editor', 'core:lib/mshoplib' ),
 		);
 		$search->setConditions( $search->combine( '&&', $expr ) );
-		$this->assertEquals( 5, count( $this->object->searchItems( $search ) ) );
+		$result = $this->object->searchItems( $search, [], $total );
+
+		$this->assertEquals( 1, count( $result ) );
+		$this->assertEquals( 6, $total );
 	}
 }

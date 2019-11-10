@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MW
  * @subpackage MQueue
  */
@@ -31,12 +31,12 @@ class Standard implements Iface
 	 *
 	 * @param \Aimeos\MW\DB\Connection\Iface $conn Database connection
 	 * @param string $queue Message queue name
-	 * @param array $sql Associative list of SQL statements as key/value pairs for insert/reserve/get/delete
+	 * @param string[] $sql Associative list of SQL statements as key/value pairs for insert/reserve/get/delete
 	 * @param integer $rtime Time before the job is released again in seconds
 	 */
 	public function __construct( \Aimeos\MW\DB\Connection\Iface $conn, $queue, $sql, $rtime )
 	{
-		$this->cname = md5( microtime(true) . getmypid() );
+		$this->cname = md5( microtime( true ) . getmypid() );
 		$this->conn = $conn;
 		$this->queue = $queue;
 		$this->sql = $sql;
@@ -48,6 +48,7 @@ class Standard implements Iface
 	 * Adds a new message to the message queue
 	 *
 	 * @param string $msg Message, e.g. JSON encoded data
+	 * @return \Aimeos\MW\MQueue\Iface MQueue instance for method chaining
 	 */
 	public function add( $msg )
 	{
@@ -66,6 +67,8 @@ class Standard implements Iface
 		{
 			throw new \Aimeos\MW\MQueue\Exception( $e->getMessage() );
 		}
+
+		return $this;
 	}
 
 
@@ -73,6 +76,7 @@ class Standard implements Iface
 	 * Removes the message from the queue
 	 *
 	 * @param \Aimeos\MW\MQueue\Message\Iface $msg Message object
+	 * @return \Aimeos\MW\MQueue\Iface MQueue instance for method chaining
 	 */
 	public function del( \Aimeos\MW\MQueue\Message\Iface $msg )
 	{
@@ -89,6 +93,8 @@ class Standard implements Iface
 		{
 			throw new \Aimeos\MW\MQueue\Exception( $e->getMessage() );
 		}
+
+		return $this;
 	}
 
 

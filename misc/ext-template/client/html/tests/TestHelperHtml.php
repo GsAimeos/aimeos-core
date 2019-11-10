@@ -1,11 +1,6 @@
 <?php
 
 
-/**
- * @copyright Metaways Infosystems GmbH, 2011
- * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
- */
 class TestHelperHtml
 {
 	private static $aimeos;
@@ -19,6 +14,20 @@ class TestHelperHtml
 		$includepaths = $aimeos->getIncludePaths();
 		$includepaths[] = get_include_path();
 		set_include_path( implode( PATH_SEPARATOR, $includepaths ) );
+	}
+
+
+	private static function getAimeos()
+	{
+		if( !isset( self::$aimeos ) )
+		{
+			require_once 'Bootstrap.php';
+			spl_autoload_register( 'Aimeos\\Bootstrap::autoload' );
+
+			self::$aimeos = new \Aimeos\Bootstrap();
+		}
+
+		return self::$aimeos;
 	}
 
 
@@ -62,21 +71,6 @@ class TestHelperHtml
 	}
 
 
-	private static function getAimeos()
-	{
-		if( !isset( self::$aimeos ) )
-		{
-			require_once 'Bootstrap.php';
-			spl_autoload_register( 'Aimeos\\Bootstrap::autoload' );
-
-			$extdir = dirname( dirname( dirname( dirname( __DIR__ ) ) ) );
-			self::$aimeos = new \Aimeos\Bootstrap( array( $extdir ), true );
-		}
-
-		return self::$aimeos;
-	}
-
-
 	private static function createContext( $site )
 	{
 		$ctx = new \Aimeos\MShop\Context\Item\Standard();
@@ -110,12 +104,12 @@ class TestHelperHtml
 		$ctx->setSession( $session );
 
 
-		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::createManager( $ctx );
+		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::create( $ctx );
 		$locale = $localeManager->bootstrap( $site, '', '', false );
 		$ctx->setLocale( $locale );
 
 
-		$ctx->setEditor( '<extname>:unittest' );
+		$ctx->setEditor( '<extname>:client/html' );
 
 		return $ctx;
 	}

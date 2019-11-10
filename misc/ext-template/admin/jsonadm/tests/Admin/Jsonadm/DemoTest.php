@@ -3,7 +3,7 @@
 namespace Aimeos\Admin\Jsonadm;
 
 
-class DemoTest extends \PHPUnit_Framework_TestCase
+class DemoTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -14,6 +14,8 @@ class DemoTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function setUp()
 	{
+		\Aimeos\MShop::cache( true );
+
 		// $this->object = new \Aimeos\Admin\Jsonadm\Demo\Standard( \TestHelperJsonadm::getContext() );
 	}
 
@@ -24,8 +26,9 @@ class DemoTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function tearDown()
 	{
+		\Aimeos\MShop::cache( false );
+
 		unset( $this->object );
-		\Aimeos\MShop\Factory::clear();
 	}
 
 

@@ -2,7 +2,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Order
  */
@@ -21,14 +21,14 @@ interface Iface extends \Aimeos\MShop\Common\Item\Iface
 	/**
 	 * Returns the parentid of the order status.
 	 *
-	 * @return integer Parent ID of the order status
+	 * @return string Parent ID of the order status
 	 */
 	public function getParentId();
 
 	/**
 	 * Sets the parentid of the order status.
 	 *
-	 * @param integer $parentid Parent ID of the order status
+	 * @param string $parentid Parent ID of the order status
 	 * @return \Aimeos\MShop\Order\Item\Status\Iface Order status item for chaining method calls
 	 */
 	public function setParentId( $parentid );

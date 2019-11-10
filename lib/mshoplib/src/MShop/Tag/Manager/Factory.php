@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Tag
  */
@@ -31,7 +31,7 @@ class Factory
 	 * @throws \Aimeos\MShop\Tag\Exception|\Aimeos\MShop\Exception If requested manager
 	 * implementation couldn't be found or initialisation fails
 	 */
-	public static function createManager( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
+	public static function create( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
 	{
 		/** mshop/tag/manager/name
 		 * Class name of the used tag manager implementation
@@ -72,14 +72,14 @@ class Factory
 
 		if( ctype_alnum( $name ) === false )
 		{
-			$classname = is_string( $name ) ? '\\Aimeos\\MShop\\Tag\\Manager\\' . $name : '<not a string>';
+			$classname = is_string( $name ) ? '\Aimeos\MShop\Tag\Manager\\' . $name : '<not a string>';
 			throw new \Aimeos\MShop\Tag\Exception( sprintf( 'Invalid characters in class name "%1$s"', $classname ) );
 		}
 
-		$iface = '\\Aimeos\\MShop\\Tag\\Manager\\Iface';
-		$classname = '\\Aimeos\\MShop\\Tag\\Manager\\' . $name;
+		$iface = \Aimeos\MShop\Tag\Manager\Iface::class;
+		$classname = '\Aimeos\MShop\Tag\Manager\\' . $name;
 
-		$manager = self::createManagerBase( $context, $classname, $iface );
+		$manager = self::createManager( $context, $classname, $iface );
 
 		/** mshop/tag/manager/decorators/excludes
 		 * Excludes decorators added by the "common" option from the tag manager
@@ -121,7 +121,8 @@ class Factory
 		 *  mshop/tag/manager/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the tag controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the tag
+		 * manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2015.12
@@ -140,13 +141,13 @@ class Factory
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the tag manager.
+		 * ("\Aimeos\MShop\Tag\Manager\Decorator\*") around the tag manager.
 		 *
 		 *  mshop/tag/manager/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the tag
-		 * controller.
+		 * "\Aimeos\MShop\Tag\Manager\Decorator\Decorator2" only to the tag
+		 * manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2015.12

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -17,10 +17,7 @@ class DemoRebuildIndex extends \Aimeos\MW\Setup\Task\Base
 {
 	public function __construct( \Aimeos\MW\Setup\DBSchema\Iface $schema, \Aimeos\MW\DB\Connection\Iface $conn, $additional = null )
 	{
-		$iface = '\\Aimeos\\MShop\\Context\\Item\\Iface';
-		if( !( $additional instanceof $iface ) ) {
-			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Additionally provided object is not of type "%1$s"', $iface ) );
-		}
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Context\Item\Iface::class, $additional );
 
 		parent::__construct( $schema, $conn, $additional );
 	}
@@ -44,7 +41,7 @@ class DemoRebuildIndex extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPostDependencies()
 	{
-		return array();
+		return [];
 	}
 
 
@@ -55,7 +52,14 @@ class DemoRebuildIndex extends \Aimeos\MW\Setup\Task\Base
 	{
 		$this->msg( 'Rebuilding index for demo data', 0 );
 
-		\Aimeos\MShop\Factory::createManager( $this->additional, 'index' )->rebuildIndex();
+		if( $this->additional->getConfig()->get( 'setup/default/demo', '' ) === '' )
+		{
+			$this->status( 'OK' );
+			return;
+		}
+
+		$timestamp = date( 'Y-m-d H:i:s' );
+		\Aimeos\MShop::create( $this->additional, 'index' )->rebuild()->cleanup( $timestamp );
 
 		$this->status( 'done' );
 	}

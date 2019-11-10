@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Order
  */
@@ -22,51 +22,38 @@ class Standard
 	extends \Aimeos\MShop\Common\Item\Base
 	implements \Aimeos\MShop\Order\Item\Base\Product\Attribute\Iface
 {
-	private $values;
-
 	/**
 	 * Initializes the order product attribute instance.
 	 *
 	 * @param array $values Associative array of order product attribute values. Possible
 	 * keys: 'id', 'ordprodid', 'value', 'code', 'mtime'
 	 */
-	public function __construct( array $values = array() )
+	public function __construct( array $values = [] )
 	{
 		parent::__construct( 'order.base.product.attribute.', $values );
-
-		$this->values = $values;
 	}
 
 
 	/**
 	 * Returns the ID of the site the item is stored
 	 *
-	 * @return integer|null Site ID (or null if not available)
+	 * @return string|null Site ID (or null if not available)
 	 */
 	public function getSiteId()
 	{
-		if( isset( $this->values['order.base.product.attribute.siteid'] ) ) {
-			return (int) $this->values['order.base.product.attribute.siteid'];
-		}
-
-		return null;
+		return $this->get( 'order.base.product.attribute.siteid' );
 	}
 
 
 	/**
 	 * Sets the site ID of the item.
 	 *
-	 * @param integer $value Unique site ID of the item
+	 * @param string $value Unique site ID of the item
 	 * @return \Aimeos\MShop\Order\Item\Base\Product\Attribute\Iface Order base product attribute item for chaining method calls
 	 */
 	public function setSiteId( $value )
 	{
-		if( $value == $this->getSiteId() ) { return $this; }
-
-		$this->values['order.base.product.attribute.siteid'] = (int) $value;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.attribute.siteid', (string) $value );
 	}
 
 
@@ -77,11 +64,7 @@ class Standard
 	 */
 	public function getAttributeId()
 	{
-		if( isset( $this->values['order.base.product.attribute.attributeid'] ) ) {
-			return (string) $this->values['order.base.product.attribute.attributeid'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.attribute.attributeid', '' );
 	}
 
 
@@ -93,12 +76,7 @@ class Standard
 	 */
 	public function setAttributeId( $id )
 	{
-		if( $id == $this->getAttributeId() ) { return $this; }
-
-		$this->values['order.base.product.attribute.attributeid'] = (string) $id;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.attribute.attributeid', (string) $id );
 	}
 
 
@@ -109,11 +87,7 @@ class Standard
 	 */
 	public function getParentId()
 	{
-		if( isset( $this->values['order.base.product.attribute.parentid'] ) ) {
-			return (string) $this->values['order.base.product.attribute.parentid'];
-		}
-
-		return null;
+		return $this->get( 'order.base.product.attribute.parentid' );
 	}
 
 
@@ -125,12 +99,7 @@ class Standard
 	 */
 	public function setParentId( $id )
 	{
-		if( $id == $this->getParentId() ) { return $this; }
-
-		$this->values['order.base.product.attribute.parentid'] = (string) $id;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.attribute.parentid', (string) $id );
 	}
 
 
@@ -141,11 +110,7 @@ class Standard
 	 */
 	public function getType()
 	{
-		if( isset( $this->values['order.base.product.attribute.type'] ) ) {
-			return (string) $this->values['order.base.product.attribute.type'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.attribute.type', '' );
 	}
 
 
@@ -157,12 +122,7 @@ class Standard
 	 */
 	public function setType( $type )
 	{
-		if( $type == $this->getType() ) { return $this; }
-
-		$this->values['order.base.product.attribute.type'] = (string) $type;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.attribute.type', $this->checkCode( $type ) );
 	}
 
 
@@ -173,11 +133,7 @@ class Standard
 	 */
 	public function getCode()
 	{
-		if( isset( $this->values['order.base.product.attribute.code'] ) ) {
-			return (string) $this->values['order.base.product.attribute.code'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.attribute.code', '' );
 	}
 
 
@@ -189,44 +145,7 @@ class Standard
 	 */
 	public function setCode( $code )
 	{
-		if( $code == $this->getCode() ) { return $this; }
-
-		$this->values['order.base.product.attribute.code'] = (string) $this->checkCode( $code );
-		$this->setModified();
-
-		return $this;
-	}
-
-
-	/**
-	 * Returns the value of the product attribute.
-	 *
-	 * @return string|array Value of the product attribute
-	 */
-	public function getValue()
-	{
-		if( isset( $this->values['order.base.product.attribute.value'] ) ) {
-			return $this->values['order.base.product.attribute.value'];
-		}
-
-		return '';
-	}
-
-
-	/**
-	 * Sets the value of the product attribute.
-	 *
-	 * @param string|array $value Value of the product attribute
-	 * @return \Aimeos\MShop\Order\Item\Base\Product\Attribute\Iface Order base product attribute item for chaining method calls
-	 */
-	public function setValue( $value )
-	{
-		if( $value == $this->getValue() ) { return $this; }
-
-		$this->values['order.base.product.attribute.value'] = $value;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.product.attribute.code', $this->checkCode( $code, 255 ) );
 	}
 
 
@@ -237,11 +156,7 @@ class Standard
 	 */
 	public function getName()
 	{
-		if( isset( $this->values['order.base.product.attribute.name'] ) ) {
-			return (string) $this->values['order.base.product.attribute.name'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.product.attribute.name', '' );
 	}
 
 
@@ -253,12 +168,53 @@ class Standard
 	 */
 	public function setName( $name )
 	{
-		if( $name == $this->getName() ) { return $this; }
+		return $this->set( 'order.base.product.attribute.name', (string) $name );
+	}
 
-		$this->values['order.base.product.attribute.name'] = (string) $name;
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Returns the value of the product attribute.
+	 *
+	 * @return string|array Value of the product attribute
+	 */
+	public function getValue()
+	{
+		return $this->get( 'order.base.product.attribute.value', '' );
+	}
+
+
+	/**
+	 * Sets the value of the product attribute.
+	 *
+	 * @param string|array $value Value of the product attribute
+	 * @return \Aimeos\MShop\Order\Item\Base\Product\Attribute\Iface Order base product attribute item for chaining method calls
+	 */
+	public function setValue( $value )
+	{
+		return $this->set( 'order.base.product.attribute.value', $value );
+	}
+
+
+	/**
+	 * Returns the quantity of the product attribute.
+	 *
+	 * @return integer Quantity of the product attribute
+	 */
+	public function getQuantity()
+	{
+		return (int) $this->get( 'order.base.product.attribute.quantity', 1 );
+	}
+
+
+	/**
+	 * Sets the quantity of the product attribute.
+	 *
+	 * @param integer $value Quantity of the product attribute
+	 * @return \Aimeos\MShop\Order\Item\Base\Product\Attribute\Iface Order base product attribute item for chaining method calls
+	 */
+	public function setQuantity( $value )
+	{
+		return $this->set( 'order.base.product.attribute.quantity', (int) $value );
 	}
 
 
@@ -281,6 +237,7 @@ class Standard
 	 */
 	public function copyFrom( \Aimeos\MShop\Attribute\Item\Iface $item )
 	{
+		$this->setSiteId( $item->getSiteId() );
 		$this->setAttributeId( $item->getId() );
 		$this->setName( $item->getName() );
 		$this->setCode( $item->getType() );
@@ -292,57 +249,60 @@ class Standard
 	}
 
 
-	/**
-	 * Sets the item values from the given array.
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Order\Item\Base\Product\Attribute\Iface Order product attribute item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-
-		if( isset( $list['order.base.product.attribute.siteid'] ) ) { // set siteid in this class too
-			$this->setSiteId( $list['order.base.product.attribute.siteid'] );
-		}
-
-		$list = parent::fromArray( $list );
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'order.base.product.attribute.siteid': $this->setSiteId( $value ); break;
-				case 'order.base.product.attribute.attrid': $this->setAttributeId( $value ); break;
-				case 'order.base.product.attribute.parentid': $this->setParentId( $value ); break;
-				case 'order.base.product.attribute.type': $this->setType( $value ); break;
-				case 'order.base.product.attribute.code': $this->setCode( $value ); break;
-				case 'order.base.product.attribute.value': $this->setValue( $value ); break;
-				case 'order.base.product.attribute.name': $this->setName( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'order.base.product.attribute.siteid': !$private ?: $item = $item->setSiteId( $value ); break;
+				case 'order.base.product.attribute.attrid': !$private ?: $item = $item->setAttributeId( $value ); break;
+				case 'order.base.product.attribute.parentid': !$private ?: $item = $item->setParentId( $value ); break;
+				case 'order.base.product.attribute.type': $item = $item->setType( $value ); break;
+				case 'order.base.product.attribute.code': $item = $item->setCode( $value ); break;
+				case 'order.base.product.attribute.value': $item = $item->setValue( $value ); break;
+				case 'order.base.product.attribute.name': $item = $item->setName( $value ); break;
+				case 'order.base.product.attribute.quantity': $item = $item->setQuantity( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
-		$list['order.base.product.attribute.siteid'] = $this->getSiteId();
-		$list['order.base.product.attribute.attrid'] = $this->getAttributeId();
-		$list['order.base.product.attribute.parentid'] = $this->getParentId();
 		$list['order.base.product.attribute.type'] = $this->getType();
 		$list['order.base.product.attribute.code'] = $this->getCode();
-		$list['order.base.product.attribute.value'] = $this->getValue();
 		$list['order.base.product.attribute.name'] = $this->getName();
+		$list['order.base.product.attribute.value'] = $this->getValue();
+		$list['order.base.product.attribute.quantity'] = $this->getQuantity();
+
+		if( $private === true )
+		{
+			$list['order.base.product.attribute.attrid'] = $this->getAttributeId();
+			$list['order.base.product.attribute.parentid'] = $this->getParentId();
+		}
 
 		return $list;
 	}

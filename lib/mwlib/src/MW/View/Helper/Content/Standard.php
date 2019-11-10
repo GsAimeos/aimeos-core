@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage View
  */
@@ -37,7 +37,7 @@ class Standard
 		parent::__construct( $view );
 
 		if( $baseurl === null ) {
-			$baseurl = $view->config( 'client/html/common/content/baseurl' );
+			$baseurl = $view->config( 'resource/fs/baseurl' );
 		}
 
 		$this->baseurl = rtrim( $baseurl, '/' );
@@ -53,8 +53,8 @@ class Standard
 	 */
 	public function transform( $url )
 	{
-		if( strncmp( $url, 'http', 4 ) !== 0 && strncmp( $url, 'data:', 5 ) !== 0 ) {
-			$url = $this->baseurl . ( $url && $url[0] === '/' ? $url : '/' . $url );
+		if( strncmp( $url, 'http', 4 ) !== 0 && strncmp( $url, 'data:', 5 ) !== 0 && strncmp( $url, '/', 1 ) !== 0 ) {
+			$url = $this->baseurl . '/' . $url;
 		}
 
 		return $this->enc->attr( $url );

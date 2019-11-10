@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Setup
  */
@@ -43,13 +43,4 @@ interface Iface
 	 * @return null
 	 */
 	public function clean( $task = null );
-
-	/**
-	 * Executes all tasks for the given database type.
-	 *
-	 * @param string $dbtype Name of the database type (mysql, etc.)
-	 * @return null
-	 * @deprecated 2016.05
-	 */
-	public function run( $dbtype );
 }

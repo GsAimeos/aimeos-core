@@ -3,14 +3,14 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MShop\Stock\Manager;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $editor = '';
@@ -29,22 +29,36 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	public function testCleanup()
+	public function testClear()
 	{
-		$this->object->cleanup( array( -1 ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->clear( [-1] ) );
+	}
+
+
+	public function testDeleteItems()
+	{
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->deleteItems( [-1] ) );
 	}
 
 
 	public function testCreateItem()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Stock\\Item\\Iface', $this->object->createItem() );
+		$this->assertInstanceOf( \Aimeos\MShop\Stock\Item\Iface::class, $this->object->createItem() );
 	}
 
 
-	public function testSaveInvalid()
+	public function testCreateItemType()
 	{
-		$this->setExpectedException( '\Aimeos\MShop\Stock\Exception' );
-		$this->object->saveItem( new \Aimeos\MShop\Locale\Item\Standard() );
+		$item = $this->object->createItem( ['stock.type' => 'default'] );
+		$this->assertEquals( 'default', $item->getType() );
+	}
+
+
+	public function testFindItem()
+	{
+		$item = $this->object->findItem( 'CNC', [], 'product', 'default' );
+
+		$this->assertEquals( 'CNC', $item->getProductCode() );
 	}
 
 
@@ -61,12 +75,12 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$item->setId( null );
 		$item->setProductCode( 'XYZ' );
-		$this->object->saveItem( $item );
+		$resultSaved = $this->object->saveItem( $item );
 		$itemSaved = $this->object->getItem( $item->getId() );
 
 		$itemExp = clone $itemSaved;
 		$itemExp->setStockLevel( 50 );
-		$this->object->saveItem( $itemExp );
+		$resultUpd = $this->object->saveItem( $itemExp );
 		$itemUpd = $this->object->getItem( $itemExp->getId() );
 
 		$this->object->deleteItem( $itemSaved->getId() );
@@ -75,9 +89,10 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue( $item->getId() !== null );
 		$this->assertEquals( $item->getId(), $itemSaved->getId() );
 		$this->assertEquals( $item->getSiteId(), $itemSaved->getSiteId() );
-		$this->assertEquals( $item->getTypeId(), $itemSaved->getTypeId() );
+		$this->assertEquals( $item->getType(), $itemSaved->getType() );
 		$this->assertEquals( $item->getProductCode(), $itemSaved->getProductCode() );
 		$this->assertEquals( $item->getStockLevel(), $itemSaved->getStockLevel() );
+		$this->assertEquals( $item->getTimeFrame(), $itemSaved->getTimeFrame() );
 		$this->assertEquals( $item->getDateBack(), $itemSaved->getDateBack() );
 
 		$this->assertEquals( $this->editor, $itemSaved->getEditor() );
@@ -86,23 +101,27 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertEquals( $itemExp->getId(), $itemUpd->getId() );
 		$this->assertEquals( $itemExp->getSiteId(), $itemUpd->getSiteId() );
-		$this->assertEquals( $itemExp->getTypeId(), $itemUpd->getTypeId() );
+		$this->assertEquals( $itemExp->getType(), $itemUpd->getType() );
 		$this->assertEquals( $itemExp->getProductCode(), $itemUpd->getProductCode() );
 		$this->assertEquals( $itemExp->getStockLevel(), $itemUpd->getStockLevel() );
+		$this->assertEquals( $itemExp->getTimeFrame(), $itemUpd->getTimeFrame() );
 		$this->assertEquals( $itemExp->getDateBack(), $itemUpd->getDateBack() );
 
 		$this->assertEquals( $this->editor, $itemUpd->getEditor() );
 		$this->assertEquals( $itemExp->getTimeCreated(), $itemUpd->getTimeCreated() );
 		$this->assertRegExp( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemUpd->getTimeModified() );
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultSaved );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultUpd );
+
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getItem( $itemSaved->getId() );
 	}
 
 
 	public function testGetItem()
 	{
-		$search = $this->object->createSearch();
+		$search = $this->object->createSearch()->setSlice( 0, 1 );
 		$conditions = array(
 			$search->compare( '==', 'stock.stocklevel', 2000 ),
 			$search->compare( '==', 'stock.editor', $this->editor )
@@ -124,14 +143,13 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$result = $this->object->getResourceType();
 
 		$this->assertContains( 'stock', $result );
-		$this->assertContains( 'stock/type', $result );
 	}
 
 
 	public function testGetSearchAttributes()
 	{
 		foreach( $this->object->getSearchAttributes() as $attribute ) {
-			$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\Attribute\\Iface', $attribute );
+			$this->assertInstanceOf( \Aimeos\MW\Criteria\Attribute\Iface::class, $attribute );
 		}
 	}
 
@@ -141,12 +159,13 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$total = 0;
 		$search = $this->object->createSearch();
 
-		$expr = array();
+		$expr = [];
 		$expr[] = $search->compare( '!=', 'stock.id', null );
 		$expr[] = $search->compare( '!=', 'stock.siteid', null );
-		$expr[] = $search->compare( '!=', 'stock.typeid', null );
+		$expr[] = $search->compare( '!=', 'stock.type', null );
 		$expr[] = $search->compare( '!=', 'stock.productcode', null );
 		$expr[] = $search->compare( '==', 'stock.stocklevel', 1000 );
+		$expr[] = $search->compare( '==', 'stock.timeframe', '' );
 		$expr[] = $search->compare( '==', 'stock.dateback', '2010-04-01 00:00:00' );
 		$expr[] = $search->compare( '>=', 'stock.mtime', '1970-01-01 00:00:00' );
 		$expr[] = $search->compare( '>=', 'stock.ctime', '1970-01-01 00:00:00' );
@@ -154,7 +173,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$search->setConditions( $search->combine( '&&', $expr ) );
 		$search->setSlice( 0, 1 );
-		$results = $this->object->searchItems( $search, array(), $total );
+		$results = $this->object->searchItems( $search, [], $total );
 
 		$this->assertEquals( 1, count( $results ) );
 		$this->assertEquals( 1, $total );
@@ -167,49 +186,43 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testDecrease()
 	{
-		$typeManager = $this->object->getSubManager( 'type' );
-		$typeItem = $typeManager->findItem( 'unit_type1', array(), 'product' );
-
 		$stockItem = $this->object->createItem();
-		$stockItem->setTypeId( $typeItem->getId() );
+		$stockItem->setType( 'unit_type1' );
 		$stockItem->setProductCode( 'CNC' );
 		$stockItem->setStockLevel( 0 );
 
 		$this->object->saveItem( $stockItem );
 
-		$this->object->decrease( 'CNC', $typeItem->getCode(), 5 );
+		$this->object->decrease( ['CNC' => 5], 'unit_type1' );
 		$actual = $this->object->getItem( $stockItem->getId() );
 
 		$this->object->deleteItem( $stockItem->getId() );
 
-		$this->assertEquals( -5, $actual->getStocklevel() );
+		$this->assertEquals( -5, $actual->getStockLevel() );
 	}
 
 
 	public function testIncrease()
 	{
-		$typeManager = $this->object->getSubManager( 'type' );
-		$typeItem = $typeManager->findItem( 'unit_type1', array(), 'product' );
-
 		$stockItem = $this->object->createItem();
-		$stockItem->setTypeId( $typeItem->getId() );
+		$stockItem->setType( 'unit_type1' );
 		$stockItem->setProductCode( 'CNC' );
 		$stockItem->setStockLevel( 0 );
 
 		$this->object->saveItem( $stockItem );
 
-		$this->object->increase( 'CNC', $typeItem->getCode(), 5 );
+		$this->object->increase( ['CNC' => 5], 'unit_type1' );
 		$actual = $this->object->getItem( $stockItem->getId() );
 
 		$this->object->deleteItem( $stockItem->getId() );
 
-		$this->assertEquals( 5, $actual->getStocklevel() );
+		$this->assertEquals( 5, $actual->getStockLevel() );
 	}
 
 
 	public function testGetSubManager()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getSubManager( 'unknown' );
 	}
 }

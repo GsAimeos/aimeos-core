@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Locale
  */
@@ -20,16 +20,16 @@ namespace Aimeos\MShop\Locale\Manager\Site;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Base
-	implements \Aimeos\MShop\Locale\Manager\Site\Iface
+	implements \Aimeos\MShop\Locale\Manager\Site\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
-	private $cache = array();
+	private $cache = [];
 
 	private $searchConfig = array(
 		'locale.site.id' => array(
 			'code' => 'locale.site.id',
 			'internalcode' => 'mlocsi."id"',
 			'internaldeps' => array( 'LEFT JOIN "mshop_locale_site" AS mlocsi ON (mloc."siteid" = mlocsi."id")' ),
-			'label' => 'Locale site ID',
+			'label' => 'Site ID',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
@@ -37,82 +37,70 @@ class Standard
 		'locale.site.siteid' => array(
 			'code' => 'locale.site.siteid',
 			'internalcode' => 'mlocsi."id"',
-			'label' => 'Locale site ID',
+			'label' => 'Site ID',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		'locale.site.code' => array(
-			'code' => 'locale.site.code',
-			'internalcode' => 'mlocsi."code"',
-			'label' => 'Locale site code',
-			'type' => 'string',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
-		),
 		'locale.site.label' => array(
 			'code' => 'locale.site.label',
 			'internalcode' => 'mlocsi."label"',
-			'label' => 'Locale site label',
+			'label' => 'Site label',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'locale.site.config' => array(
-			'code' => 'locale.site.config',
-			'internalcode' => 'mlocsi."config"',
-			'label' => 'Locale site config',
+		'locale.site.code' => array(
+			'code' => 'locale.site.code',
+			'internalcode' => 'mlocsi."code"',
+			'label' => 'Site code',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'locale.site.status' => array(
 			'code' => 'locale.site.status',
 			'internalcode' => 'mlocsi."status"',
-			'label' => 'Locale site status',
+			'label' => 'Site status',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'locale.site.ctime'=> array(
-			'code'=>'locale.site.ctime',
-			'internalcode'=>'mlocsi."ctime"',
-			'label'=>'Locale site create date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR
-		),
-		'locale.site.mtime'=> array(
-			'code'=>'locale.site.mtime',
-			'internalcode'=>'mlocsi."mtime"',
-			'label'=>'Locale site modification date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR
-		),
-		'locale.site.editor'=> array(
-			'code'=>'locale.site.editor',
-			'internalcode'=>'mlocsi."editor"',
-			'label'=>'Locale site editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR
-		),
-		'level' => array(
-			'code'=>'locale.site.level',
-			'internalcode'=>'mlocsi."level"',
-			'label'=>'Locale site tree level',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'locale.site.level' => array(
+			'code' => 'locale.site.level',
+			'internalcode' => 'mlocsi."level"',
+			'label' => 'Site tree level',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		'left' => array(
-			'code'=>'locale.site.left',
-			'internalcode'=>'mlocsi."nleft"',
-			'label'=>'Locale site left value',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'locale.site.config' => array(
+			'code' => 'locale.site.config',
+			'internalcode' => 'mlocsi."config"',
+			'label' => 'Site config',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
-		'right' => array(
-			'code'=>'locale.site.right',
-			'internalcode'=>'mlocsi."nright"',
-			'label'=>'Locale site right value',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'locale.site.ctime' => array(
+			'code' => 'locale.site.ctime',
+			'internalcode' => 'mlocsi."ctime"',
+			'label' => 'Site create date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
+		),
+		'locale.site.mtime' => array(
+			'code' => 'locale.site.mtime',
+			'internalcode' => 'mlocsi."mtime"',
+			'label' => 'Site modify date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
+		),
+		'locale.site.editor' => array(
+			'code' => 'locale.site.editor',
+			'internalcode' => 'mlocsi."editor"',
+			'label' => 'Site editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 	);
@@ -131,36 +119,104 @@ class Standard
 
 
 	/**
-	 * Creates a new site object.
+	 * Removes old entries from the storage.
 	 *
-	 * @return \Aimeos\MShop\Locale\Item\Site\Iface
-	 * @throws \Aimeos\MShop\Locale\Exception
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Locale\Manager\Site\Iface Manager object for chaining method calls
 	 */
-	public function createItem()
+	public function clear( array $siteids )
 	{
-		return $this->createItemBase();
+		$context = $this->getContext();
+		$config = $context->getConfig();
+
+		/** mshop/locale/manager/site/cleanup/shop/domains
+		 * List of madmin domains names whose items referring to the same site should be deleted as well
+		 *
+		 * As items for each domain can be stored in a separate database, the
+		 * site manager needs a list of domain names used to connect to the
+		 * correct database and to remove all items that belong the the deleted
+		 * site.
+		 *
+		 * For each domain the cleanup will be done by the corresponding MShop
+		 * manager. To keep records for old sites in the database even if the
+		 * site was already deleted, you can configure a new list with the
+		 * domains removed you would like to keep, e.g. the "order" domain to
+		 * keep all orders ever placed.
+		 *
+		 * @param array List of domain names in lower case
+		 * @since 2014.03
+		 * @category Developer
+		 * @see mshop/locale/manager/site/cleanup/admin/domains
+		 */
+		$path = 'mshop/locale/manager/site/cleanup/shop/domains';
+		$default = array(
+			'attribute', 'catalog', 'coupon', 'customer', 'index',
+			'media', 'order', 'plugin', 'price', 'product', 'tag',
+			'service', 'stock', 'subscription', 'supplier', 'text'
+		);
+
+		foreach( $config->get( $path, $default ) as $domain ) {
+			\Aimeos\MShop::create( $context, $domain )->clear( $siteids );
+		}
+
+		/** mshop/locale/manager/site/cleanup/admin/domains
+		 * List of mshop domains names whose items referring to the same site should be deleted as well
+		 *
+		 * As items for each domain can be stored in a separate database, the
+		 * site manager needs a list of domain names used to connect to the
+		 * correct database and to remove all items that belong the the deleted
+		 * site.
+		 *
+		 * For each domain the cleanup will be done by the corresponding MAdmin
+		 * manager. To keep records for old sites in the database even if the
+		 * site was already deleted, you can configure a new list with the
+		 * domains removed you would like to keep, e.g. the "log" domain to
+		 * keep all log entries ever written.
+		 *
+		 * @param array List of domain names in lower case
+		 * @since 2014.03
+		 * @category Developer
+		 * @see mshop/locale/manager/site/cleanup/shop/domains
+		 */
+		$path = 'mshop/locale/manager/site/cleanup/admin/domains';
+		$default = array( 'job', 'log', 'cache' );
+
+		foreach( $config->get( $path, $default ) as $domain ) {
+			\Aimeos\MAdmin::create( $context, $domain )->clear( $siteids );
+		}
+
+		return $this;
+	}
+
+
+	/**
+	 * Creates a new empty item instance
+	 *
+	 * @param array $values Values the item should be initialized with
+	 * @return \Aimeos\MShop\Locale\Item\Site\Iface New locale site item object
+	 */
+	public function createItem( array $values = [] )
+	{
+		return $this->createItemBase( $values );
 	}
 
 
 	/**
 	 * Adds a new site to the storage or updates an existing one.
 	 *
-	 * @param \Aimeos\MShop\Common\Item\Iface $item New site item for saving to the storage
+	 * @param \Aimeos\MShop\Locale\Item\Site\Iface $item New site item for saving to the storage
 	 * @param boolean $fetch True if the new ID should be returned in the item
-	 * @throws \Aimeos\MShop\Locale\Exception
+	 * @return \Aimeos\MShop\Locale\Item\Site\Iface $item Updated item including the generated ID
 	 */
-	public function saveItem( \Aimeos\MShop\Common\Item\Iface $item, $fetch = true )
+	public function saveItem( \Aimeos\MShop\Locale\Item\Site\Iface $item, $fetch = true )
 	{
-		$iface = '\\Aimeos\\MShop\\Locale\\Item\\Site\\Iface';
-		if( !( $item instanceof $iface ) ) {
-			throw new \Aimeos\MShop\Locale\Exception( sprintf( 'Object is not of required type "%1$s"', $iface ) );
-		}
-
 		if( $item->getId() === null ) {
 			throw new \Aimeos\MShop\Locale\Exception( sprintf( 'Newly created site can not be saved using method "saveItem()". Try using method "insertItem()" instead.' ) );
 		}
 
-		if( !$item->isModified() ) { return; }
+		if( !$item->isModified() ) {
+			return $item;
+		}
 
 		$context = $this->getContext();
 
@@ -171,6 +227,7 @@ class Standard
 		try
 		{
 			$id = $item->getId();
+			$columns = $this->getObject()->getSaveAttributes();
 
 			/** mshop/locale/manager/site/standard/update/mysql
 			 * Updates an existing site record in the database
@@ -202,16 +259,22 @@ class Standard
 			 * @see mshop/locale/manager/site/standard/newid/ansi
 			 */
 			$path = 'mshop/locale/manager/site/standard/update';
+			$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ), false );
 
-			$stmt = $this->getCachedStatement( $conn, $path );
+			$idx = 1;
+			$stmt = $this->getCachedStatement( $conn, $path, $sql );
 
-			$stmt->bind( 1, $item->getCode() );
-			$stmt->bind( 2, $item->getLabel() );
-			$stmt->bind( 3, json_encode( $item->getConfig() ) );
-			$stmt->bind( 4, $item->getStatus(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 5, $context->getEditor() );
-			$stmt->bind( 6, date( 'Y-m-d H:i:s' ) ); // mtime
-			$stmt->bind( 7, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			foreach( $columns as $name => $entry ) {
+				$stmt->bind( $idx++, $item->get( $name ), $entry->getInternalType() );
+			}
+
+			$stmt->bind( $idx++, $item->getCode() );
+			$stmt->bind( $idx++, $item->getLabel() );
+			$stmt->bind( $idx++, json_encode( $item->getConfig() ) );
+			$stmt->bind( $idx++, $item->getStatus(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			$stmt->bind( $idx++, $context->getEditor() );
+			$stmt->bind( $idx++, date( 'Y-m-d H:i:s' ) ); // mtime
+			$stmt->bind( $idx++, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 
 			$stmt->execute()->finish();
 			$item->setId( $id ); // set Modified false
@@ -223,18 +286,20 @@ class Standard
 			$dbm->release( $conn, $dbname );
 			throw $e;
 		}
+
+		return $item;
 	}
 
 
 	/**
-	 * Removes multiple items specified by ids in the array.
+	 * Removes multiple items.
 	 *
-	 * @param array $ids List of IDs
+	 * @param \Aimeos\MShop\Common\Item\Iface[]|string[] $itemIds List of item objects or IDs of the items
+	 * @return \Aimeos\MShop\Locale\Manager\Site\Iface Manager object for chaining method calls
 	 */
-	public function deleteItems( array $ids )
+	public function deleteItems( array $itemIds )
 	{
-		$context = $this->getContext();
-		$config = $context->getConfig();
+		$this->getObject()->clear( $itemIds );
 
 		/** mshop/locale/manager/site/standard/delete/mysql
 		 * Deletes the items matched by the given IDs from the database
@@ -267,63 +332,8 @@ class Standard
 		 * @see mshop/locale/manager/site/standard/newid/ansi
 		 */
 		$path = 'mshop/locale/manager/site/standard/delete';
-		$this->deleteItemsBase( $ids, $path, false );
 
-		/** mshop/locale/manager/site/cleanup/shop/domains
-		 * List of madmin domains names whose items referring to the same site should be deleted as well
-		 *
-		 * As items for each domain can be stored in a separate database, the
-		 * site manager needs a list of domain names used to connect to the
-		 * correct database and to remove all items that belong the the deleted
-		 * site.
-		 *
-		 * For each domain the cleanup will be done by the corresponding MShop
-		 * manager. To keep records for old sites in the database even if the
-		 * site was already deleted, you can configure a new list with the
-		 * domains removed you would like to keep, e.g. the "order" domain to
-		 * keep all orders ever placed.
-		 *
-		 * @param array List of domain names in lower case
-		 * @since 2014.03
-		 * @category Developer
-		 * @see mshop/locale/manager/site/cleanup/admin/domains
-		 */
-		$path = 'mshop/locale/manager/site/cleanup/shop/domains';
-		$default = array(
-			'attribute', 'catalog', 'coupon', 'customer', 'index',
-			'media', 'order', 'plugin', 'price', 'product', 'tag',
-			'service', 'supplier', 'text'
-		);
-
-		foreach( $config->get( $path, $default ) as $domain ) {
-			\Aimeos\MShop\Factory::createManager( $context, $domain )->cleanup( $ids );
-		}
-
-		/** mshop/locale/manager/site/cleanup/admin/domains
-		 * List of mshop domains names whose items referring to the same site should be deleted as well
-		 *
-		 * As items for each domain can be stored in a separate database, the
-		 * site manager needs a list of domain names used to connect to the
-		 * correct database and to remove all items that belong the the deleted
-		 * site.
-		 *
-		 * For each domain the cleanup will be done by the corresponding MAdmin
-		 * manager. To keep records for old sites in the database even if the
-		 * site was already deleted, you can configure a new list with the
-		 * domains removed you would like to keep, e.g. the "log" domain to
-		 * keep all log entries ever written.
-		 *
-		 * @param array List of domain names in lower case
-		 * @since 2014.03
-		 * @category Developer
-		 * @see mshop/locale/manager/site/cleanup/shop/domains
-		 */
-		$path = 'mshop/locale/manager/site/cleanup/admin/domains';
-		$default = array( 'job', 'log', 'cache' );
-
-		foreach( $config->get( $path, $default ) as $domain ) {
-			\Aimeos\MAdmin\Factory::createManager( $context, $domain )->cleanup( $ids );
-		}
+		return $this->deleteItemsBase( $itemIds, $path, false );
 	}
 
 
@@ -334,11 +344,12 @@ class Standard
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
 	 * @param string|null $domain Domain of the item if necessary to identify the item uniquely
 	 * @param string|null $type Type code of the item if necessary to identify the item uniquely
+	 * @param boolean $default True to add default criteria
 	 * @return \Aimeos\MShop\Common\Item\Iface Item object
 	 */
-	public function findItem( $code, array $ref = array(), $domain = null, $type = null )
+	public function findItem( $code, array $ref = [], $domain = null, $type = null, $default = false )
 	{
-		return $this->findItemBase( array( 'locale.site.code' => $code ), $ref );
+		return $this->findItemBase( array( 'locale.site.code' => $code ), $ref, $default );
 	}
 
 
@@ -347,12 +358,13 @@ class Standard
 	 *
 	 * @param string $id Unique ID of the site data in the storage
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
+	 * @param boolean $default Add default criteria
 	 * @return \Aimeos\MShop\Locale\Item\Site\Iface Returns the site item of the given id
 	 * @throws \Aimeos\MShop\Exception If the item couldn't be found
 	 */
-	public function getItem( $id, array $ref = array() )
+	public function getItem( $id, array $ref = [], $default = false )
 	{
-		return $this->getItemBase( 'locale.site.id', $id, $ref );
+		return $this->getItemBase( 'locale.site.id', $id, $ref, $default );
 	}
 
 
@@ -360,13 +372,13 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/locale/manager/site/submanagers';
 
-		return $this->getResourceTypeBase( 'locale/site', $path, array(), $withsub );
+		return $this->getResourceTypeBase( 'locale/site', $path, [], $withsub );
 	}
 
 
@@ -374,7 +386,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array List of attribute items implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -397,7 +409,7 @@ class Standard
 		 */
 		$path = 'mshop/locale/manager/site/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -479,12 +491,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap global decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the locale site manager.
+		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the locale site
+		 * manager.
 		 *
 		 *  mshop/locale/manager/site/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the locale controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the locale
+		 * site manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2014.03
@@ -503,13 +517,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the locale site manager.
+		 * ("\Aimeos\MShop\Locale\Manager\Site\Decorator\*") around the locale site
+		 * manager.
 		 *
 		 *  mshop/locale/manager/site/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the locale
-		 * controller.
+		 * "\Aimeos\MShop\Locale\Manager\Site\Decorator\Decorator2" only to the
+		 * locale site manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2014.03
@@ -531,9 +546,9 @@ class Standard
 	 * @param integer|null &$total Number of items that are available in total
 	 * @return array List of site items implementing \Aimeos\MShop\Locale\Item\Site\Iface
 	 */
-	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = array(), &$total = null )
+	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = [], &$total = null )
 	{
-		$items = array();
+		$items = [];
 		$context = $this->getContext();
 
 		$dbm = $context->getDatabaseManager();
@@ -542,16 +557,22 @@ class Standard
 
 		try
 		{
-			$attributes = $this->getSearchAttributes();
-			$types = $this->getSearchTypes( $attributes );
+			$attributes = $this->getObject()->getSearchAttributes();
 			$translations = $this->getSearchTranslations( $attributes );
-			$columns = $search->getColumnString( $search->getSortations(), $translations );
+			$types = $this->getSearchTypes( $attributes );
+			$columns = $this->getObject()->getSaveAttributes();
+			$sortcols = $search->translate( $search->getSortations(), $translations );
 
-			$find = array( ':cond', ':order', ':columns', ':start', ':size' );
+			$colstring = '';
+			foreach( $columns as $name => $entry ) {
+				$colstring .= $entry->getInternalCode() . ', ';
+			}
+
+			$find = array( ':columns', ':cond', ':order', ':start', ':size' );
 			$replace = array(
-				$search->getConditionString( $types, $translations ),
-				$search->getSortationString( $types, $translations ),
-				( $columns ? ', ' . $columns : '' ),
+				$colstring . ( $sortcols ? join( ', ', $sortcols ) . ', ' : '' ),
+				$search->getConditionSource( $types, $translations ),
+				$search->getSortationSource( $types, $translations ),
 				$search->getSliceStart(),
 				$search->getSliceSize(),
 			);
@@ -624,13 +645,13 @@ class Standard
 				{
 					$config = $row['locale.site.config'];
 
-					if( ( $row['locale.site.config'] = json_decode( $row['locale.site.config'], true ) ) === null )
+					if( ( $row['locale.site.config'] = json_decode( $config = $row['locale.site.config'], true ) ) === null )
 					{
-						$msg = sprintf( 'Invalid JSON as result of search for ID "%2$s" in "%1$s": %3$s', 'mshop_locale.config', $row['locale.site.id'], $config );
+						$msg = sprintf( 'Invalid JSON as result of search for ID "%2$s" in "%1$s": %3$s', 'mshop_locale_site.config', $row['locale.site.id'], $config );
 						$this->getContext()->getLogger()->log( $msg, \Aimeos\MW\Logger\Base::WARN );
 					}
 
-					$items[$row['locale.site.id']] = $this->createItemBase( $row );
+					$items[(string) $row['locale.site.id']] = $this->createItemBase( $row );
 				}
 			}
 			catch( \Exception $e )
@@ -656,17 +677,17 @@ class Standard
 
 
 	/**
-	 * Creates a search object and sets base criteria.
+	 * Creates a search critera object
 	 *
-	 * @param boolean $default
-	 * @return \Aimeos\MW\Criteria\Iface
+	 * @param boolean $default Add default criteria (optional)
+	 * @return \Aimeos\MW\Criteria\Iface New search criteria object
 	 */
 	public function createSearch( $default = false )
 	{
 		if( $default === true ) {
 			$search = $this->createSearchBase( 'locale.site' );
 		} else {
-			$search = parent::createSearch();
+			$search = parent::createSearch( $default );
 		}
 
 		$expr = array(
@@ -683,11 +704,11 @@ class Standard
 	/**
 	 * Returns a list of item IDs, that are in the path of given item ID.
 	 *
-	 * @param integer $id ID of item to get the path for
-	 * @param array $ref List of domains to fetch list items and referenced items for
-	 * @return \Aimeos\MShop\Locale\Item\Site\Iface[] Associative list of items implementing \Aimeos\MShop\Locale\Item\Site\Iface with IDs as keys
+	 * @param string $id ID of item to get the path for
+	 * @param string[] $ref List of domains to fetch list items and referenced items for
+	 * @return \Aimeos\MShop\Locale\Item\Site\Iface[] Associative list of IDs as keys and items as values
 	 */
-	public function getPath( $id, array $ref = array() )
+	public function getPath( $id, array $ref = [] )
 	{
 		$item = $this->getTree( $id, $ref, \Aimeos\MW\Tree\Manager\Base::LEVEL_ONE );
 		return array( $item->getId() => $item );
@@ -697,31 +718,31 @@ class Standard
 	/**
 	 * Returns a node and its descendants depending on the given resource.
 	 *
-	 * @param integer|null $id Retrieve nodes starting from the given ID
-	 * @param array List of domains (e.g. text, media, etc.) whose referenced items should be attached to the objects
+	 * @param string|null $id Retrieve nodes starting from the given ID
+	 * @param string[] $ref List of domains (e.g. text, media, etc.) whose referenced items should be attached to the objects
 	 * @param integer $level One of the level constants from \Aimeos\MW\Tree\Manager\Base
-	 * @return \Aimeos\MShop\Locale\Item\Site\Iface Site item
+	 * @return \Aimeos\MShop\Locale\Item\Site\Iface Site item, maybe with subnodes
 	 */
-	public function getTree( $id = null, array $ref = array(), $level = \Aimeos\MW\Tree\Manager\Base::LEVEL_TREE )
+	public function getTree( $id = null, array $ref = [], $level = \Aimeos\MW\Tree\Manager\Base::LEVEL_TREE )
 	{
 		if( $id !== null )
 		{
 			if( count( $ref ) > 0 ) {
-				return $this->getItem( $id, $ref );
+				return $this->getObject()->getItem( $id, $ref );
 			}
 
 			if( !isset( $this->cache[$id] ) ) {
-				$this->cache[$id] = $this->getItem( $id, $ref );
+				$this->cache[$id] = $this->getObject()->getItem( $id, $ref );
 			}
 
 			return $this->cache[$id];
 		}
 
-		$criteria = $this->createSearch();
+		$criteria = $this->getObject()->createSearch();
 		$criteria->setConditions( $criteria->compare( '==', 'locale.site.code', 'default' ) );
 		$criteria->setSlice( 0, 1 );
 
-		$items = $this->searchItems( $criteria, $ref );
+		$items = $this->getObject()->searchItems( $criteria, $ref );
 
 		if( ( $item = reset( $items ) ) === false ) {
 			throw new \Aimeos\MShop\Locale\Exception( sprintf( 'Tree root with code "%1$s" in "%2$s" not found', 'default', 'locale.site.code' ) );
@@ -737,8 +758,9 @@ class Standard
 	 * Adds a new item object.
 	 *
 	 * @param \Aimeos\MShop\Locale\Item\Site\Iface $item Item which should be inserted
-	 * @param integer|null $parentId ID of the parent item where the item should be inserted into
-	 * @param integer|null $refId ID of the item where the item should be inserted before (null to append)
+	 * @param string|null $parentId ID of the parent item where the item should be inserted into
+	 * @param string|null $refId ID of the item where the item should be inserted before (null to append)
+	 * @return \Aimeos\MShop\Locale\Item\Site\Iface $item Updated item including the generated ID
 	 */
 	public function insertItem( \Aimeos\MShop\Locale\Item\Site\Iface $item, $parentId = null, $refId = null )
 	{
@@ -751,6 +773,7 @@ class Standard
 		try
 		{
 			$date = date( 'Y-m-d H:i:s' );
+			$columns = $this->getObject()->getSaveAttributes();
 
 			/** mshop/locale/manager/site/standard/insert/mysql
 			 * Inserts a new currency record into the database table
@@ -784,17 +807,22 @@ class Standard
 			 * @see mshop/locale/manager/site/standard/newid/ansi
 			 */
 			$path = 'mshop/locale/manager/site/standard/insert';
+			$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ) );
 
-			$stmt = $this->getCachedStatement( $conn, $path );
+			$idx = 1;
+			$stmt = $this->getCachedStatement( $conn, $path, $sql );
 
-			$stmt->bind( 1, $item->getCode() );
-			$stmt->bind( 2, $item->getLabel() );
-			$stmt->bind( 3, json_encode( $item->getConfig() ) );
-			$stmt->bind( 4, $item->getStatus(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 5, 0, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 6, $context->getEditor() );
-			$stmt->bind( 7, $date ); // mtime
-			$stmt->bind( 8, $date ); // ctime
+			foreach( $columns as $name => $entry ) {
+				$stmt->bind( $idx++, $item->get( $name ), $entry->getInternalType() );
+			}
+
+			$stmt->bind( $idx++, $item->getCode() );
+			$stmt->bind( $idx++, $item->getLabel() );
+			$stmt->bind( $idx++, json_encode( $item->getConfig() ) );
+			$stmt->bind( $idx++, $item->getStatus(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			$stmt->bind( $idx++, $context->getEditor() );
+			$stmt->bind( $idx++, $date ); // mtime
+			$stmt->bind( $idx++, $date ); // ctime
 
 			$stmt->execute()->finish();
 
@@ -844,16 +872,19 @@ class Standard
 			$dbm->release( $conn, $dbname );
 			throw $e;
 		}
+
+		return $item;
 	}
 
 
 	/**
 	 * Moves an existing item to the new parent in the storage.
 	 *
-	 * @param integer $id ID of the item that should be moved
-	 * @param integer $oldParentId ID of the old parent item which currently contains the item that should be removed
-	 * @param integer $newParentId ID of the new parent item where the item should be moved to
-	 * @param integer|null $refId ID of the item where the item should be inserted before (null to append)
+	 * @param string $id ID of the item that should be moved
+	 * @param string $oldParentId ID of the old parent item which currently contains the item that should be removed
+	 * @param string $newParentId ID of the new parent item where the item should be moved to
+	 * @param string|null $refId ID of the item where the item should be inserted before (null to append)
+	 * @return \Aimeos\MShop\Locale\Manager\Site\Iface Manager object for chaining method calls
 	 */
 	public function moveItem( $id, $oldParentId, $newParentId, $refId = null )
 	{
@@ -878,17 +909,24 @@ class Standard
 	 * Returns the search results for the given SQL statement.
 	 *
 	 * @param \Aimeos\MW\DB\Connection\Iface $conn Database connection
-	 * @param $sql SQL statement
+	 * @param string $sql SQL statement
 	 * @return \Aimeos\MW\DB\Result\Iface Search result object
 	 */
 	protected function getSearchResults( \Aimeos\MW\DB\Connection\Iface $conn, $sql )
 	{
-		$statement = $conn->create( $sql );
-		$this->getContext()->getLogger()->log( __METHOD__ . ': SQL statement: ' . $statement, \Aimeos\MW\Logger\Base::DEBUG );
+		$time = microtime( true );
 
-		$results = $statement->execute();
+		$stmt = $conn->create( $sql );
+		$result = $stmt->execute();
 
-		return $results;
+		$msg = [
+			'time' => ( microtime( true ) - $time ) * 1000,
+			'class' => get_class( $this ),
+			'stmt' => (string) $stmt,
+		];
+		$this->getContext()->getLogger()->log( $msg, \Aimeos\MW\Logger\Base::DEBUG, 'core/sql' );
+
+		return $result;
 	}
 
 
@@ -896,9 +934,9 @@ class Standard
 	 * Create new item object initialized with given parameters.
 	 *
 	 * @param array $data Associative list of item key/value pairs
-	 * @return \Aimeos\MShop\Locale\Item\Site\Iface Locale site item object
+	 * @return \Aimeos\MShop\Locale\Item\Site\Iface Site item object
 	 */
-	protected function createItemBase( array $data = array( ) )
+	protected function createItemBase( array $data = [] )
 	{
 		return new \Aimeos\MShop\Locale\Item\Site\Standard( $data );
 	}
@@ -919,8 +957,8 @@ class Standard
 	 * Returns the total number of items found for the conditions
 	 *
 	 * @param \Aimeos\MW\DB\Connection\Iface $conn Database connection
-	 * @param array $find List of markers that should be replaced in the SQL statement
-	 * @param array $replace List of replacements for the markers in the SQL statement
+	 * @param string[] $find List of markers that should be replaced in the SQL statement
+	 * @param string[] $replace List of replacements for the markers in the SQL statement
 	 * @throws \Aimeos\MShop\Locale\Exception If no total value was found
 	 * @return integer Total number of found items
 	 */

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Order
  */
@@ -22,50 +22,37 @@ class Standard
 	extends \Aimeos\MShop\Order\Item\Base\Address\Base
 	implements \Aimeos\MShop\Order\Item\Base\Address\Iface
 {
-	private $values;
-
 	/**
 	 * Initializes the objects with the given array of values.
 	 *
 	 * @param array $values List of address elements
 	 */
-	public function __construct( array $values = array( ) )
+	public function __construct( array $values = [] )
 	{
 		parent::__construct( 'order.base.address.', $values );
-
-		$this->values = $values;
 	}
 
 
 	/**
 	 * Returns the order base ID the address belongs to.
 	 *
-	 * @return integer|null Base ID
+	 * @return string|null Base ID
 	 */
 	public function getBaseId()
 	{
-		if( isset( $this->values['order.base.address.baseid'] ) ) {
-			return (int) $this->values['order.base.address.baseid'];
-		}
-
-		return null;
+		return $this->get( 'order.base.address.baseid' );
 	}
 
 
 	/**
 	 * Sets the order base ID the address belongs to.
 	 *
-	 * @param integer|null $value New base ID
+	 * @param string $value New base ID
 	 * @return \Aimeos\MShop\Order\Item\Base\Address\Iface Order base address item for chaining method calls
 	 */
 	public function setBaseId( $value )
 	{
-		if( $value == $this->getBaseId() ) { return $this; }
-
-		$this->values['order.base.address.baseid'] = ( $value !== null ? (int) $value : null );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.address.baseid', (string) $value );
 	}
 
 
@@ -76,11 +63,7 @@ class Standard
 	 */
 	public function getAddressId()
 	{
-		if( isset( $this->values['order.base.address.addressid'] ) ) {
-			return (string) $this->values['order.base.address.addressid'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.address.addressid', '' );
 	}
 
 
@@ -92,12 +75,35 @@ class Standard
 	 */
 	public function setAddressId( $addrid )
 	{
-		if( $addrid == $this->getAddressId() ) { return $this; }
+		return $this->set( 'order.base.address.addressid', (string) $addrid );
+	}
 
-		$this->values['order.base.address.addressid'] = (string) $addrid;
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Returns the position of the address in the order.
+	 *
+	 * @return integer|null Address position in the order from 0-n
+	 */
+	public function getPosition()
+	{
+		return $this->get( 'order.base.address.position' );
+	}
+
+
+	/**
+	 * Sets the position of the address within the list of ordered addresses
+	 *
+	 * @param integer|null $value Address position in the order from 0-n or null for resetting the position
+	 * @return \Aimeos\MShop\Order\Item\Base\Address\Iface Order base address item for chaining method calls
+	 * @throws \Aimeos\MShop\Order\Exception If the position is invalid
+	 */
+	public function setPosition( $value )
+	{
+		if( $value < 0 ) {
+			throw new \Aimeos\MShop\Order\Exception( sprintf( 'Order address position "%1$s" must be greater than 0', $value ) );
+		}
+
+		return $this->set( 'order.base.address.position', ( $value !== null ? (int) $value : null ) );
 	}
 
 
@@ -108,11 +114,7 @@ class Standard
 	 */
 	public function getType()
 	{
-		if( isset( $this->values['order.base.address.type'] ) ) {
-			return (string) $this->values['order.base.address.type'];
-		}
-
-		return \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_DELIVERY;
+		return (string) $this->get( 'order.base.address.type', \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_DELIVERY );
 	}
 
 
@@ -124,14 +126,7 @@ class Standard
 	 */
 	public function setType( $type )
 	{
-		if( $type == $this->getType() ) { return $this; }
-
-		$this->checkType( $type );
-
-		$this->values['order.base.address.type'] = (string) $type;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.address.type', $this->checkType( $type ) );
 	}
 
 
@@ -152,44 +147,53 @@ class Standard
 	}
 
 
-	/**
-	 * Sets the item values from the given array.
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Order\Item\Base\Address\Iface Order address item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'order.base.address.baseid': $this->setBaseId( $value ); break;
-				case 'order.base.address.addressid': $this->setAddressId( $value ); break;
-				case 'order.base.address.type': $this->setType( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'order.base.address.baseid': !$private ?: $item = $item->setBaseId( $value ); break;
+				case 'order.base.address.addressid': !$private ?: $item = $item->setAddressId( $value ); break;
+				case 'order.base.address.position': $item = $item->setPosition( $value ); break;
+				case 'order.base.address.type': $item = $item->setType( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
-		$list['order.base.address.baseid'] = $this->getBaseId();
-		$list['order.base.address.addressid'] = $this->getAddressId();
 		$list['order.base.address.type'] = $this->getType();
+		$list['order.base.address.position'] = $this->getPosition();
+
+		if( $private === true )
+		{
+			$list['order.base.address.baseid'] = $this->getBaseId();
+			$list['order.base.address.addressid'] = $this->getAddressId();
+		}
 
 		return $list;
 	}

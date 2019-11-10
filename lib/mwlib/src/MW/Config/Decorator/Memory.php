@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Config
  */
@@ -22,8 +22,8 @@ class Memory
 	extends \Aimeos\MW\Config\Decorator\Base
 	implements \Aimeos\MW\Config\Decorator\Iface
 {
-	private $negCache = array();
-	private $cache = array();
+	private $negCache = [];
+	private $cache = [];
 	private $config;
 
 
@@ -33,7 +33,7 @@ class Memory
 	 * @param \Aimeos\MW\Config\Iface $object Config object or decorator
 	 * @param array $config Pre-cached non-shared configuration
 	 */
-	public function __construct( \Aimeos\MW\Config\Iface $object, $config = array() )
+	public function __construct( \Aimeos\MW\Config\Iface $object, $config = [] )
 	{
 		parent::__construct( $object );
 
@@ -52,12 +52,12 @@ class Memory
 	{
 		$name = trim( $name, '/' );
 
-		if( isset( $this->negCache[ $name ] ) ) {
+		if( isset( $this->negCache[$name] ) ) {
 			return $default;
 		}
 
 		if( array_key_exists( $name, $this->cache ) ) {
-			return $this->cache[ $name ];
+			return $this->cache[$name];
 		}
 
 		if( ( $value = $this->getValueFromArray( $this->config, explode( '/', $name ) ) ) === null ) {
@@ -66,11 +66,11 @@ class Memory
 
 		if( $value === null )
 		{
-			$this->negCache[ $name ] = true;
+			$this->negCache[$name] = true;
 			return $default;
 		}
 
-		$this->cache[ $name ] = $value;
+		$this->cache[$name] = $value;
 		return $value;
 	}
 
@@ -80,6 +80,7 @@ class Memory
 	 *
 	 * @param string $name Path to the requested value like tree/node/classname
 	 * @param string $value Value that should be associated with the given path
+	 * @return \Aimeos\MW\Config\Iface Config instance for method chaining
 	 */
 	public function set( $name, $value )
 	{
@@ -87,18 +88,19 @@ class Memory
 
 		if( $value !== null )
 		{
-			$this->cache[ $name ] = $value;
+			$this->cache[$name] = $value;
 
-			if( isset( $this->negCache[ $name ] ) ) {
-				unset( $this->negCache[ $name ] );
+			if( isset( $this->negCache[$name] ) ) {
+				unset( $this->negCache[$name] );
 			}
 		}
 		else
 		{
-			$this->negCache[ $name ] = true;
+			$this->negCache[$name] = true;
 		}
 
 		// don't store local configuration
+		return $this;
 	}
 
 

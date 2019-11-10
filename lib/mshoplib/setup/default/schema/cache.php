@@ -2,13 +2,13 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  */
 
 
 return array(
 	'table' => array(
-		'madmin_cache' => function ( \Doctrine\DBAL\Schema\Schema $schema ) {
+		'madmin_cache' => function( \Doctrine\DBAL\Schema\Schema $schema ) {
 
 			$table = $schema->createTable( 'madmin_cache' );
 
@@ -23,7 +23,7 @@ return array(
 			return $schema;
 		},
 
-		'madmin_cache_tag' => function ( \Doctrine\DBAL\Schema\Schema $schema ) {
+		'madmin_cache_tag' => function( \Doctrine\DBAL\Schema\Schema $schema ) {
 
 			$table = $schema->createTable( 'madmin_cache_tag' );
 

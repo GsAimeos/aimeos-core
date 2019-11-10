@@ -1,25 +1,21 @@
 <?php
 
-namespace Aimeos\MAdmin\Cache\Manager;
-
-
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
-class NoneTest extends \PHPUnit_Framework_TestCase
+
+
+namespace Aimeos\MAdmin\Cache\Manager;
+
+
+class NoneTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $context;
 
 
-	/**
-	 * Sets up the fixture, for example, opens a network connection.
-	 * This method is called before a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function setUp()
 	{
 		$this->context = \TestHelperMShop::getContext();
@@ -27,12 +23,6 @@ class NoneTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	/**
-	 * Tears down the fixture, for example, closes a network connection.
-	 * This method is called after a test is executed.
-	 *
-	 * @access protected
-	 */
 	protected function tearDown()
 	{
 		$this->object = null;
@@ -41,7 +31,7 @@ class NoneTest extends \PHPUnit_Framework_TestCase
 
 	public function testCreateItem()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MAdmin\\Cache\\Item\\Iface', $this->object->createItem() );
+		$this->assertInstanceOf( \Aimeos\MAdmin\Cache\Item\Iface::class, $this->object->createItem() );
 	}
 
 
@@ -56,14 +46,14 @@ class NoneTest extends \PHPUnit_Framework_TestCase
 	public function testGetSearchAttributes()
 	{
 		foreach( $this->object->getSearchAttributes() as $attr ) {
-			$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\Attribute\\Iface', $attr );
+			$this->assertInstanceOf( \Aimeos\MW\Criteria\Attribute\Iface::class, $attr );
 		}
 	}
 
 
 	public function testGetSubManager()
 	{
-		$this->setExpectedException( '\\Aimeos\\MAdmin\\Exception' );
+		$this->setExpectedException( \Aimeos\MAdmin\Exception::class );
 		$this->object->getSubManager( 'unknown' );
 	}
 
@@ -74,21 +64,22 @@ class NoneTest extends \PHPUnit_Framework_TestCase
 		$search->setConditions( $search->compare( '==', 'cache.id', 'unittest' ) );
 		$results = $this->object->searchItems( $search );
 
-		$this->assertEquals( array(), $results );
+		$this->assertEquals( [], $results );
 	}
 
 
 	public function testGetItem()
 	{
-		$this->setExpectedException( '\\Aimeos\\MAdmin\\Cache\\Exception' );
+		$this->setExpectedException( \Aimeos\MAdmin\Cache\Exception::class );
 		$this->object->getItem( 'unittest' );
 	}
 
 
 	public function testSaveUpdateDeleteItem()
 	{
-		$item = $this->object->createItem();
-		$this->object->saveItem( $item );
+		$item = $this->object->saveItem( $this->object->createItem() );
 		$this->object->deleteItem( $item->getId() );
+
+		$this->assertInstanceOf( \Aimeos\MAdmin\Cache\Item\Iface::class, $item );
 	}
 }

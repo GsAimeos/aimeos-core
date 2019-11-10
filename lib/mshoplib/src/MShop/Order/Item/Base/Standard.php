@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Order
  */
@@ -20,10 +20,11 @@ namespace Aimeos\MShop\Order\Item\Base;
  */
 class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 {
-	private $price;
-	private $locale;
-	private $values;
-	private $modified = false;
+	// protected is a workaround for serialize problem
+	protected $price;
+	protected $locale;
+	protected $recalc = false;
+	protected $available = true;
 
 
 	/**
@@ -32,20 +33,19 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 * @param \Aimeos\MShop\Price\Item\Iface $price Default price of the basket (usually 0.00)
 	 * @param \Aimeos\MShop\Locale\Item\Iface $locale Locale item containing the site, language and currency
 	 * @param array $values Associative list of key/value pairs containing, e.g. the order or user ID
-	 * @param array $products List of ordered products implementing \Aimeos\MShop\Order\Item\Base\Product\Iface
-	 * @param array $addresses List of order addresses implementing \Aimeos\MShop\Order\Item\Base\Address\Iface
-	 * @param array $services List of order services implementing \Aimeos\MShop\Order\Item\Base\Service\Iface
-	 * @param array $coupons Associative list of coupon codes as keys and ordered products implementing \Aimeos\MShop\Order\Item\Base\Product\Iface as values
+	 * @param \Aimeos\MShop\Order\Item\Base\Product\Iface[] $products List of ordered product items
+	 * @param \Aimeos\MShop\Order\Item\Base\Address\Iface[] $addresses List of order address items
+	 * @param \Aimeos\MShop\Order\Item\Base\Service\Iface[] $services List of order service items
+	 * @param \Aimeos\MShop\Order\Item\Base\Product\Iface[] $coupons Associative list of coupon codes as keys and order product items as values
 	 */
 	public function __construct( \Aimeos\MShop\Price\Item\Iface $price, \Aimeos\MShop\Locale\Item\Iface $locale,
-		array $values = array(), array $products = array(), array $addresses = array(),
-		array $services = array(), array $coupons = array() )
+		array $values = [], array $products = [], array $addresses = [],
+		array $services = [], array $coupons = [] )
 	{
 		parent::__construct( $price, $locale, $values, $products, $addresses, $services, $coupons );
 
 		$this->price = $price;
 		$this->locale = $locale;
-		$this->values = $values;
 	}
 
 
@@ -62,19 +62,25 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 
 
 	/**
-	 * Prepares the object for serialization.
+	 * Tests if all necessary items are available to create the order.
 	 *
-	 * @return array List of properties that should be serialized
+	 * @param integer $what Test for the specific type of completeness
+	 * @return \Aimeos\MShop\Order\Item\Base\Iface Order base item for method chaining
+	 * @throws \Aimeos\MShop\Order\Exception if there are no products in the basket
 	 */
-	public function __sleep()
+	public function check( $what = self::PARTS_ALL )
 	{
-		/*
-		 * Workaround because database connections can't be serialized
-		 * Listeners will be reattached on wakeup by the order base manager
-		 */
-		$this->clearListeners();
+		$this->checkParts( $what );
 
-		return array_keys( get_object_vars( $this ) );
+		$this->notify( 'check.before', $what );
+
+		if( ( $what & self::PARTS_PRODUCT ) && ( count( $this->getProducts() ) < 1 ) ) {
+			throw new \Aimeos\MShop\Order\Exception( sprintf( 'Basket empty' ) );
+		}
+
+		$this->notify( 'check.after', $what );
+
+		return $this;
 	}
 
 
@@ -85,11 +91,7 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function getId()
 	{
-		if( isset( $this->values['order.base.id'] ) ) {
-			return (string) $this->values['order.base.id'];
-		}
-
-		return null;
+		return $this->get( 'order.base.id' );
 	}
 
 
@@ -101,9 +103,10 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function setId( $id )
 	{
-		if( ( $this->values['order.base.id'] = \Aimeos\MShop\Common\Item\Base::checkId( $this->getId(), $id ) ) === null ) {
-			$this->modified = true;
-		} else {
+		$id = \Aimeos\MShop\Common\Item\Base::checkId( $this->getId(), $id );
+		$this->set( 'order.base.id', $id );
+
+		if( $id !== null ) {
 			$this->modified = false;
 		}
 
@@ -114,15 +117,11 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	/**
 	 * Returns the ID of the site the item is stored.
 	 *
-	 * @return integer|null Site ID (or null if not available)
+	 * @return string|null Site ID (or null if not available)
 	 */
 	public function getSiteId()
 	{
-		if( isset( $this->values['order.base.siteid'] ) ) {
-			return (int) $this->values['order.base.siteid'];
-		}
-
-		return null;
+		return $this->get( 'order.base.siteid' );
 	}
 
 
@@ -133,11 +132,7 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function getSiteCode()
 	{
-		if( isset( $this->values['order.base.sitecode'] ) ) {
-			return (string) $this->values['order.base.sitecode'];
-		}
-
-		return '';
+		return $this->get( 'order.base.sitecode', '' );
 	}
 
 
@@ -148,11 +143,7 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function getComment()
 	{
-		if( isset( $this->values['order.base.comment'] ) ) {
-			return (string) $this->values['order.base.comment'];
-		}
-
-		return '';
+		return $this->get( 'order.base.comment', '' );
 	}
 
 
@@ -164,57 +155,18 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function setComment( $comment )
 	{
-		if( $comment == $this->getComment() ) { return $this; }
-
-		$this->values['order.base.comment'] = (string) $comment;
-		$this->modified = true;
-
-		return $this;
+		return $this->set( 'order.base.comment', (string) $comment );
 	}
 
 
 	/**
-	 * Returns the current status of the order base item.
+	 * Returns modify date/time of the order item base product.
 	 *
-	 * @return integer Status of the item
-	 */
-	public function getStatus()
-	{
-		if( isset( $this->values['order.base.status'] ) ) {
-			return (int) $this->values['order.base.status'];
-		}
-
-		return 0;
-	}
-
-
-	/**
-	 * Sets the new status of the order base item.
-	 *
-	 * @param integer $value Status of the item
-	 * @return \Aimeos\MShop\Order\Item\Base\Iface Order base item for chaining method calls
-	 */
-	public function setStatus( $value )
-	{
-		$this->values['order.base.status'] = (int) $value;
-		$this->modified = true;
-
-		return $this;
-	}
-
-
-	/**
-	 * Returns modification time of the order item base product.
-	 *
-	 * @return string|null Returns modification time of the order base item
+	 * @return string|null Returns modify date/time of the order base item
 	 */
 	public function getTimeModified()
 	{
-		if( isset( $this->values['order.base.mtime'] ) ) {
-			return (string) $this->values['order.base.mtime'];
-		}
-
-		return null;
+		return $this->get( 'order.base.mtime' );
 	}
 
 
@@ -225,11 +177,7 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function getTimeCreated()
 	{
-		if( isset( $this->values['order.base.ctime'] ) ) {
-			return (string) $this->values['order.base.ctime'];
-		}
-
-		return null;
+		return $this->get( 'order.base.ctime' );
 	}
 
 
@@ -240,11 +188,7 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function getEditor()
 	{
-		if( isset( $this->values['order.base.editor'] ) ) {
-			return (string) $this->values['order.base.editor'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.editor' );
 	}
 
 
@@ -255,11 +199,7 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function getCustomerId()
 	{
-		if( isset( $this->values['order.base.customerid'] ) ) {
-			return (string) $this->values['order.base.customerid'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.customerid' );
 	}
 
 
@@ -271,16 +211,37 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function setCustomerId( $customerid )
 	{
-		if( $customerid === $this->getCustomerId() ) { return $this; }
-
-		$this->notifyListeners( 'setCustomerId.before', $customerid );
-
-		$this->values['order.base.customerid'] = (string) $customerid;
-		$this->modified = true;
-
-		$this->notifyListeners( 'setCustomerId.after', $customerid );
+		if( (string) $customerid !== $this->getCustomerId() )
+		{
+			$this->notify( 'setCustomerId.before', $customerid );
+			$this->set( 'order.base.customerid', (string) $customerid );
+			$this->notify( 'setCustomerId.after', $customerid );
+		}
 
 		return $this;
+	}
+
+
+	/**
+	 * Returns the customer reference field of the order item
+	 *
+	 * @return string Customer reference for the order
+	 */
+	public function getCustomerReference()
+	{
+		return (string) $this->get( 'order.base.customerref' );
+	}
+
+
+	/**
+	 * Sets the customer reference field of the order item
+	 *
+	 * @param string $value Customer reference for the order
+	 * @return \Aimeos\MShop\Order\Item\Base\Iface Order base item for chaining method calls
+	 */
+	public function setCustomerReference( $value )
+	{
+		return $this->set( 'order.base.customerref', (string) $value );
 	}
 
 
@@ -305,12 +266,12 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function setLocale( \Aimeos\MShop\Locale\Item\Iface $locale )
 	{
-		$this->notifyListeners( 'setLocale.before', $locale );
+		$this->notify( 'setLocale.before', $locale );
 
 		$this->locale = clone $locale;
 		$this->modified = true;
 
-		$this->notifyListeners( 'setLocale.after', $locale );
+		$this->notify( 'setLocale.after', $locale );
 
 		return $this;
 	}
@@ -323,18 +284,23 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function getPrice()
 	{
-		if( $this->price->getValue() === '0.00' )
+		if( $this->recalc )
 		{
-			$this->price->clear();
-			$currencyId = $this->price->getCurrencyId();
+			$price = $this->price->clear();
 
-			foreach( $this->getServices() as $service ) {
-				$this->price->addItem( $service->getPrice()->setCurrencyId( $currencyId ) );
+			foreach( $this->getServices() as $list )
+			{
+				foreach( $list as $service ) {
+					$price = $price->addItem( $service->getPrice() );
+				}
 			}
 
 			foreach( $this->getProducts() as $product ) {
-				$this->price->addItem( $product->getPrice()->setCurrencyId( $currencyId ), $product->getQuantity() );
+				$price = $price->addItem( $product->getPrice(), $product->getQuantity() );
 			}
+
+			$this->price = $price;
+			$this->recalc = false;
 		}
 
 		return $this->price;
@@ -342,84 +308,110 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 
 
 	/**
-	 * Tests if the order object was modified.
+	 * Tests if the item is available based on status, time, language and currency
 	 *
-	 * @return bool True if modified, false if not
+	 * @return boolean True if available, false if not
 	 */
-	public function isModified()
+	public function isAvailable()
 	{
-		return ( parent::isModified() === false ? $this->modified : true );
+		return $this->available;
+	}
+
+
+	/**
+	 * Sets the general availability of the item
+	 *
+	 * @return boolean $value True if available, false if not
+	 */
+	public function setAvailable( $value )
+	{
+		$this->available = (bool) $value;
 	}
 
 
 	/**
 	 * Sets the modified flag of the object.
+	 *
+	 * @return \Aimeos\MShop\Order\Item\Base\Iface Order base item for method chaining
 	 */
 	public function setModified()
 	{
-		$this->modified = true;
-		$this->price->clear();
+		$this->recalc = true;
+		return parent::setModified();
 	}
 
 
-	/**
-	 * Sets the item values from the given array.
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Order\Item\Base\Iface Order base item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-
-		foreach( $list as $key => $value )
-		{
-			switch( $key )
-			{
-				case 'order.base.id': $this->setId( $value ); break;
-				case 'order.base.comment': $this->setComment( $value ); break;
-				case 'order.base.customerid': $this->setCustomerId( $value ); break;
-				case 'order.base.status': $this->setStatus( $value ); break;
-				case 'order.base.languageid': $this->locale->setLanguageId( $value ); break;
-				default: $unknown[$key] = $value;
-			}
-		}
+		$item = $this;
+		$locale = $item->getLocale();
 
 		unset( $list['order.base.siteid'] );
 		unset( $list['order.base.ctime'] );
 		unset( $list['order.base.mtime'] );
 		unset( $list['order.base.editor'] );
 
-		return $unknown;
+		foreach( $list as $key => $value )
+		{
+			switch( $key )
+			{
+				case 'order.base.id': $item = $item->setId( $value ); break;
+				case 'order.base.customerid': $item = $item->setCustomerId( $value ); break;
+				case 'order.base.languageid': $locale = $locale->setLanguageId( $value ); break;
+				case 'order.base.customerref': $item = $item->setCustomerReference( $value ); break;
+				case 'order.base.comment': $item = $item->setComment( $value ); break;
+				default: continue 2;
+			}
+
+			unset( $list[$key] );
+		}
+
+		return $item->setLocale( $locale );
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$price = $this->price;
-		$locale = $this->locale;
+		$price = $this->getPrice();
+		$locale = $this->getLocale();
 
-		return array(
+		$list = array(
 			'order.base.id' => $this->getId(),
-			'order.base.siteid' => $this->getSiteId(),
 			'order.base.sitecode' => $this->getSiteCode(),
-			'order.base.languageid' => $locale->getLanguageId(),
-			'order.base.comment' => $this->getComment(),
 			'order.base.customerid' => $this->getCustomerId(),
+			'order.base.languageid' => $locale->getLanguageId(),
+			'order.base.currencyid' => $price->getCurrencyId(),
 			'order.base.price' => $price->getValue(),
 			'order.base.costs' => $price->getCosts(),
 			'order.base.rebate' => $price->getRebate(),
-			'order.base.currencyid' => $price->getCurrencyId(),
-			'order.base.status' => $this->getStatus(),
-			'order.base.mtime' => $this->getTimeModified(),
-			'order.base.ctime' => $this->getTimeCreated(),
-			'order.base.editor' => $this->getEditor(),
+			'order.base.taxvalue' => $price->getTaxValue(),
+			'order.base.taxflag' => $price->getTaxFlag(),
+			'order.base.customerref' => $this->getCustomerReference(),
+			'order.base.comment' => $this->getComment(),
 		);
+
+		if( $private === true )
+		{
+			$list['order.base.siteid'] = $this->getSiteId();
+			$list['order.base.mtime'] = $this->getTimeModified();
+			$list['order.base.ctime'] = $this->getTimeCreated();
+			$list['order.base.editor'] = $this->getEditor();
+		}
+
+		return $list;
 	}
 
 
@@ -430,8 +422,24 @@ class Standard extends \Aimeos\MShop\Order\Item\Base\Base
 	 */
 	public function finish()
 	{
-		$this->notifyListeners( 'setOrder.before' );
+		$this->notify( 'setOrder.before' );
 		return $this;
+	}
+
+
+	/**
+	 * Checks the constants for the different parts of the basket.
+	 *
+	 * @param integer $value Part constant
+	 * @throws \Aimeos\MShop\Order\Exception If parts constant is invalid
+	 */
+	protected function checkParts( $value )
+	{
+		$value = (int) $value;
+
+		if( $value < self::PARTS_NONE || $value > self::PARTS_ALL ) {
+			throw new \Aimeos\MShop\Order\Exception( sprintf( 'Flags not within allowed range' ) );
+		}
 	}
 
 

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MW
  * @subpackage MQueue
  */
@@ -20,7 +20,7 @@ namespace Aimeos\MW\MQueue;
 class Standard extends Base implements Iface
 {
 	private $conn;
-	private $queues = array();
+	private $queues = [];
 
 
 	/**
@@ -79,6 +79,7 @@ class Standard extends Base implements Iface
 		$pass = $this->getConfig( 'db/password', '' );
 		$sock = $this->getConfig( 'db/socket' );
 		$dbase = $this->getConfig( 'db/database', 'aimeos' );
+		$persist = $this->getConfig( 'db/opt-persistent', false );
 
 		$dsn = $adapter . ':dbname=' . $dbase;
 		if( $sock == null )
@@ -91,18 +92,9 @@ class Standard extends Base implements Iface
 			$dsn .= ';unix_socket=' . $sock;
 		}
 
-		$attr = array(
-			\PDO::ATTR_PERSISTENT => $this->getConfig( 'db/opt-persistent', false ),
-		);
+		$params = array( $dsn, $user, $pass, array( \PDO::ATTR_PERSISTENT => $persist ) );
+		$stmts = $this->getConfig( 'db/stmt', [] );
 
-		$pdo = new \PDO( $dsn, $user, $pass, $attr );
-		$pdo->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
-		$dbc = new \Aimeos\MW\DB\Connection\PDO( $pdo );
-
-		foreach( (array) $this->getConfig( 'db/stmt', array() ) as $stmt ) {
-			$dbc->create( $stmt )->execute()->finish();
-		}
-
-		return $dbc;
+		return new \Aimeos\MW\DB\Connection\PDO( $params, $stmts );
 	}
 }

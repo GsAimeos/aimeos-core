@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2017
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Media
  */
@@ -31,7 +31,7 @@ class Factory
 	 * @param array $options Associative list of options for configuring the media class
 	 * @return \Aimeos\MW\Media\Iface Media object
 	 */
-	public static function get( $file, array $options = array() )
+	public static function get( $file, array $options = [] )
 	{
 		$content = $file;
 
@@ -49,17 +49,26 @@ class Factory
 		$mime = explode( '/', $mimetype );
 
 		$type = ( $mime[0] === 'image' ? 'Image' : 'Application' );
-		$name = ( isset( $options[ $mime[0] ]['name'] ) ? ucfirst( $options[ $mime[0] ]['name'] ) : 'Standard' );
+		$name = ( isset( $options[$mime[0]]['name'] ) ? ucfirst( $options[$mime[0]]['name'] ) : 'Standard' );
+
+		if( in_array( $mimetype, ['image/svg', 'image/svg+xml'] )
+			|| in_array( $mimetype, ['application/gzip', 'application/x-gzip'] )
+			&& is_string( $file ) && in_array( pathinfo( $file, PATHINFO_EXTENSION ), ['svg', 'svgz'] )
+		) {
+			$mimetype = 'image/svg+xml';
+			$type = 'Image';
+			$name = 'Svg';
+		}
 
 
 		if( ctype_alnum( $name ) === false )
 		{
-			$classname = is_string( $name ) ? '\\Aimeos\\MW\\Media\\' . $name : '<not a string>';
+			$classname = is_string( $name ) ? '\Aimeos\MW\Media\\' . $type . '\\' . $name : '<not a string>';
 			throw new \Aimeos\MW\Container\Exception( sprintf( 'Invalid characters in class name "%1$s"', $classname ) );
 		}
 
-		$iface = '\\Aimeos\\MW\\Media\\Iface';
-		$classname = '\\Aimeos\\MW\\Media\\' . $type . '\\' . $name;
+		$iface = \Aimeos\MW\Media\Iface::class;
+		$classname = '\Aimeos\MW\Media\\' . $type . '\\' . $name;
 
 		if( class_exists( $classname ) === false ) {
 			throw new \Aimeos\MW\Media\Exception( sprintf( 'Class "%1$s" not available', $classname ) );

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -23,18 +23,7 @@ class TagAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPreDependencies()
 	{
-		return array( 'MShopSetLocale', 'MediaListAddTestData', 'PriceListAddTestData', 'ProductAddTestData' );
-	}
-
-
-	/**
-	 * Returns the list of task names which depends on this task.
-	 *
-	 * @return string[] List of task names
-	 */
-	public function getPostDependencies()
-	{
-		return array( 'CatalogRebuildTestIndex' );
+		return ['MShopSetLocale'];
 	}
 
 
@@ -43,13 +32,10 @@ class TagAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function migrate()
 	{
-		$iface = '\\Aimeos\\MShop\\Context\\Item\\Iface';
-		if( !( $this->additional instanceof $iface ) ) {
-			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Additionally provided object is not of type "%1$s"', $iface ) );
-		}
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Context\Item\Iface::class, $this->additional );
 
 		$this->msg( 'Adding tag test data', 0 );
-		$this->additional->setEditor( 'core:unittest' );
+		$this->additional->setEditor( 'core:lib/mshoplib' );
 
 		$ds = DIRECTORY_SEPARATOR;
 		$path = __DIR__ . $ds . 'data' . $ds . 'tag.php';
@@ -71,42 +57,19 @@ class TagAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	private function addTagData( array $testdata )
 	{
-		$tagManager = \Aimeos\MShop\Tag\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$tagManager = \Aimeos\MShop\Tag\Manager\Factory::create( $this->additional, 'Standard' );
 		$tagTypeManager = $tagManager->getSubManager( 'type', 'Standard' );
 
-		$typeIds = array();
-		$typeItem = $tagTypeManager->createItem();
+		$tagManager->begin();
 
-		$this->conn->begin();
-
-		foreach( $testdata['tag/type'] as $key => $dataset )
-		{
-			$typeItem->setId( null );
-			$typeItem->setCode( $dataset['code'] );
-			$typeItem->setDomain( $dataset['domain'] );
-			$typeItem->setLabel( $dataset['label'] );
-			$typeItem->setStatus( $dataset['status'] );
-
-			$tagTypeManager->saveItem( $typeItem );
-			$typeIds[$key] = $typeItem->getId();
+		foreach( $testdata['tag/type'] as $dataset ) {
+			$tagTypeManager->saveItem( $tagTypeManager->createItem()->fromArray( $dataset ), false );
 		}
 
-		$tagItem = $tagManager->createItem();
-		foreach( $testdata['tag'] as $key => $dataset )
-		{
-			if( !isset( $typeIds[$dataset['typeid']] ) ) {
-				throw new \Aimeos\MW\Setup\Exception( sprintf( 'No tag type ID found for "%1$s"', $dataset['typeid'] ) );
-			}
-
-			$tagItem->setId( null );
-			$tagItem->setDomain( $dataset['domain'] );
-			$tagItem->setLanguageId( $dataset['langid'] );
-			$tagItem->setTypeId( $typeIds[$dataset['typeid']] );
-			$tagItem->setLabel( $dataset['label'] );
-
-			$tagManager->saveItem( $tagItem, false );
+		foreach( $testdata['tag'] as $dataset ) {
+			$tagManager->saveItem( $tagManager->createItem()->fromArray( $dataset ), false );
 		}
 
-		$this->conn->commit();
+		$tagManager->commit();
 	}
 }

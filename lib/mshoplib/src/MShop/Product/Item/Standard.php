@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Product
  */
@@ -19,56 +19,70 @@ namespace Aimeos\MShop\Product\Item;
  * @subpackage Product
  */
 class Standard
-	extends \Aimeos\MShop\Common\Item\ListRef\Base
+	extends \Aimeos\MShop\Common\Item\Base
 	implements \Aimeos\MShop\Product\Item\Iface
 {
-	private $values;
+	use \Aimeos\MShop\Common\Item\Config\Traits;
+	use \Aimeos\MShop\Common\Item\ListRef\Traits {
+		__clone as __cloneList;
+	}
+	use \Aimeos\MShop\Common\Item\PropertyRef\Traits {
+		__clone as __cloneProperty;
+	}
+
+
+	private $date;
 
 
 	/**
 	 * Initializes the item object.
 	 *
 	 * @param array $values Parameter for initializing the basic properties
-	 * @param \Aimeos\MShop\Common\Lists\Item\Iface[] $listItems List of list items
+	 * @param \Aimeos\MShop\Common\Item\Lists\Iface[] $listItems List of list items
 	 * @param \Aimeos\MShop\Common\Item\Iface[] $refItems List of referenced items
+	 * @param \Aimeos\MShop\Common\Item\Property\Iface[] $propItems List of property items
 	 */
-	public function __construct( array $values = array(), array $listItems = array(), array $refItems = array() )
+	public function __construct( array $values = [], array $listItems = [],
+		array $refItems = [], array $propItems = [] )
 	{
-		parent::__construct( 'product.', $values, $listItems, $refItems );
+		parent::__construct( 'product.', $values );
 
-		$this->values = $values;
+		$this->date = isset( $values['.date'] ) ? $values['.date'] : date( 'Y-m-d H:i:s' );
+		$this->initListItems( $listItems, $refItems );
+		$this->initPropertyItems( $propItems );
 	}
 
 
 	/**
-	 * Returns the type ID of the product item.
-	 *
-	 * @return integer|null Type ID of the product item
+	 * Creates a deep clone of all objects
 	 */
-	public function getTypeId()
+	public function __clone()
 	{
-		if( isset( $this->values['product.typeid'] ) ) {
-			return (int) $this->values['product.typeid'];
-		}
-
-		return null;
+		parent::__clone();
+		$this->__cloneList();
+		$this->__cloneProperty();
 	}
 
 
 	/**
-	 * Sets the new type ID of the product item.
+	 * Returns the catalog items referencing the product
 	 *
-	 * @param integer $typeid New type ID of the product item
-	 * @return \Aimeos\MShop\Product\Item\Iface Product item for chaining method calls
+	 * @return \Aimeos\MShop\Catalog\Item\Iface[] Catalog items
 	 */
-	public function setTypeId( $typeid )
+	public function getCatalogItems()
 	{
-		if( $typeid == $this->getTypeId() ) { return $this; }
+		return (array) $this->get( 'catalog', [] );
+	}
 
-		$this->values['product.typeid'] = (int) $typeid;
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Returns the supplier items referencing the product
+	 *
+	 * @return \Aimeos\MShop\Supplier\Item\Iface[] Supplier items
+	 */
+	public function getSupplierItems()
+	{
+		return (array) $this->get( 'supplier', [] );
 	}
 
 
@@ -79,26 +93,19 @@ class Standard
 	 */
 	public function getType()
 	{
-		if( isset( $this->values['product.type'] ) ) {
-			return (string) $this->values['product.type'];
-		}
-
-		return null;
+		return $this->get( 'product.type' );
 	}
 
 
 	/**
-	 * Returns the localized name of the type
+	 * Sets the new type of the product item.
 	 *
-	 * @return string|null Localized name of the type
+	 * @param string $type New type of the product item
+	 * @return \Aimeos\MShop\Product\Item\Iface Product item for chaining method calls
 	 */
-	public function getTypeName()
+	public function setType( $type )
 	{
-		if( isset( $this->values['product.typename'] ) ) {
-			return (string) $this->values['product.typename'];
-		}
-
-		return null;
+		return $this->set( 'product.type', $this->checkCode( $type ) );
 	}
 
 
@@ -109,11 +116,7 @@ class Standard
 	 */
 	public function getStatus()
 	{
-		if( isset( $this->values['product.status'] ) ) {
-			return (int) $this->values['product.status'];
-		}
-
-		return 0;
+		return (int) $this->get( 'product.status', 1 );
 	}
 
 
@@ -125,12 +128,7 @@ class Standard
 	 */
 	public function setStatus( $status )
 	{
-		if( $status == $this->getStatus() ) { return $this; }
-
-		$this->values['product.status'] = (int) $status;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'product.status', (int) $status );
 	}
 
 
@@ -141,11 +139,7 @@ class Standard
 	 */
 	public function getCode()
 	{
-		if( isset( $this->values['product.code'] ) ) {
-			return (string) $this->values['product.code'];
-		}
-
-		return '';
+		return (string) $this->get( 'product.code', '' );
 	}
 
 
@@ -157,14 +151,30 @@ class Standard
 	 */
 	public function setCode( $code )
 	{
-		$this->checkCode( $code );
+		return $this->set( 'product.code', $this->checkCode( $code ) );
+	}
 
-		if( $code == $this->getCode() ) { return $this; }
 
-		$this->values['product.code'] = (string) $code;
-		$this->setModified();
+	/**
+	 * Returns the data set name assigned to the product item.
+	 *
+	 * @return string Data set name
+	 */
+	public function getDataset()
+	{
+		return (string) $this->get( 'product.dataset', '' );
+	}
 
-		return $this;
+
+	/**
+	 * Sets a new data set name assignd to the product item.
+	 *
+	 * @param string $name New data set name
+	 * @return \Aimeos\MShop\Product\Item\Iface Product item for chaining method calls
+	 */
+	public function setDataset( $name )
+	{
+		return $this->set( 'product.dataset', $this->checkCode( $name ) );
 	}
 
 
@@ -175,11 +185,7 @@ class Standard
 	 */
 	public function getLabel()
 	{
-		if( isset( $this->values['product.label'] ) ) {
-			return (string) $this->values['product.label'];
-		}
-
-		return '';
+		return (string) $this->get( 'product.label', '' );
 	}
 
 
@@ -191,12 +197,7 @@ class Standard
 	 */
 	public function setLabel( $label )
 	{
-		if( $label == $this->getLabel() ) { return $this; }
-
-		$this->values['product.label'] = (string) $label;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'product.label', (string) $label );
 	}
 
 
@@ -207,28 +208,19 @@ class Standard
 	 */
 	public function getDateStart()
 	{
-		if( isset( $this->values['product.datestart'] ) ) {
-			return (string) $this->values['product.datestart'];
-		}
-
-		return null;
+		return $this->get( 'product.datestart' );
 	}
 
 
 	/**
 	 * Sets a new starting point of time, in which the product is available.
 	 *
-	 * @param string|null New ISO date in YYYY-MM-DD hh:mm:ss format
+	 * @param string|null $date New ISO date in YYYY-MM-DD hh:mm:ss format
 	 * @return \Aimeos\MShop\Product\Item\Iface Product item for chaining method calls
 	 */
 	public function setDateStart( $date )
 	{
-		if( $date === $this->getDateStart() ) { return $this; }
-
-		$this->values['product.datestart'] = $this->checkDateFormat( $date );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'product.datestart', $this->checkDateFormat( $date ) );
 	}
 
 
@@ -239,28 +231,19 @@ class Standard
 	 */
 	public function getDateEnd()
 	{
-		if( isset( $this->values['product.dateend'] ) ) {
-			return (string) $this->values['product.dateend'];
-		}
-
-		return null;
+		return $this->get( 'product.dateend' );
 	}
 
 
 	/**
 	 * Sets a new ending point of time, in which the product is available.
 	 *
-	 * @param string|null New ISO date in YYYY-MM-DD hh:mm:ss format
+	 * @param string|null $date New ISO date in YYYY-MM-DD hh:mm:ss format
 	 * @return \Aimeos\MShop\Product\Item\Iface Product item for chaining method calls
 	 */
 	public function setDateEnd( $date )
 	{
-		if( $date === $this->getDateEnd() ) { return $this; }
-
-		$this->values['product.dateend'] = $this->checkDateFormat( $date );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'product.dateend', $this->checkDateFormat( $date ) );
 	}
 
 
@@ -271,11 +254,7 @@ class Standard
 	 */
 	public function getConfig()
 	{
-		if( isset( $this->values['product.config'] ) ) {
-			return (array) $this->values['product.config'];
-		}
-
-		return array();
+		return (array) $this->get( 'product.config', [] );
 	}
 
 
@@ -287,10 +266,53 @@ class Standard
 	 */
 	public function setConfig( array $config )
 	{
-		$this->values['product.config'] = $config;
-		$this->setModified();
+		return $this->set( 'product.config', $config );
+	}
 
-		return $this;
+
+	/**
+	 * Returns the URL target specific for that product
+	 *
+	 * @return string URL target specific for that product
+	 */
+	public function getTarget()
+	{
+		return (string) $this->get( 'product.target', '' );
+	}
+
+
+	/**
+	 * Sets a new URL target specific for that product
+	 *
+	 * @param string $value New URL target specific for that product
+	 * @return \Aimeos\MShop\Product\Item\Iface Product item for chaining method calls
+	 */
+	public function setTarget( $value )
+	{
+		return $this->set( 'product.target', (string) $value );
+	}
+
+
+	/**
+	 * Returns the create date of the item
+	 *
+	 * @return string ISO date in YYYY-MM-DD hh:mm:ss format
+	 */
+	public function getTimeCreated()
+	{
+		return (string) $this->get( 'product.ctime', date( 'Y-m-d H:i:s' ) );
+	}
+
+
+	/**
+	 * Sets the create date of the item
+	 *
+	 * @param string|null $value ISO date in YYYY-MM-DD hh:mm:ss format
+	 * @return \Aimeos\MShop\Product\Item\Iface Product item for chaining method calls
+	 */
+	public function setTimeCreated( $value )
+	{
+		return $this->set( 'product.ctime', $this->checkDateFormat( $value ) );
 	}
 
 
@@ -306,54 +328,73 @@ class Standard
 
 
 	/**
-	 * Sets the item values from the given array.
+	 * Tests if the item is available based on status, time, language and currency
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @return boolean True if available, false if not
 	 */
-	public function fromArray( array $list )
+	public function isAvailable()
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
-		unset( $list['product.type'], $list['product.typename'] );
+		return parent::isAvailable() && $this->getStatus() > 0
+			&& ( $this->getDateStart() === null || $this->getDateStart() < $this->date )
+			&& ( $this->getDateEnd() === null || $this->getDateEnd() > $this->date );
+	}
+
+
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
+	 *
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Product\Item\Iface Product item for chaining method calls
+	 */
+	public function fromArray( array &$list, $private = false )
+	{
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'product.typeid': $this->setTypeId( $value ); break;
-				case 'product.code': $this->setCode( $value ); break;
-				case 'product.label': $this->setLabel( $value ); break;
-				case 'product.status': $this->setStatus( $value ); break;
-				case 'product.datestart': $this->setDateStart( $value ); break;
-				case 'product.dateend': $this->setDateEnd( $value ); break;
-				case 'product.config': $this->setConfig( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'product.type': $item = $item->setType( $value ); break;
+				case 'product.code': $item = $item->setCode( $value ); break;
+				case 'product.label': $item = $item->setLabel( $value ); break;
+				case 'product.status': $item = $item->setStatus( $value ); break;
+				case 'product.dataset': $item = $item->setDataset( $value ); break;
+				case 'product.datestart': $item = $item->setDateStart( $value ); break;
+				case 'product.dateend': $item = $item->setDateEnd( $value ); break;
+				case 'product.config': $item = $item->setConfig( $value ); break;
+				case 'product.target': $item = $item->setTarget( $value ); break;
+				case 'product.ctime': $item = $item->setTimeCreated( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
-		$list['product.typename'] = $this->getTypeName();
-		$list['product.typeid'] = $this->getTypeId();
 		$list['product.type'] = $this->getType();
 		$list['product.code'] = $this->getCode();
 		$list['product.label'] = $this->getLabel();
 		$list['product.status'] = $this->getStatus();
+		$list['product.dataset'] = $this->getDataset();
 		$list['product.datestart'] = $this->getDateStart();
 		$list['product.dateend'] = $this->getDateEnd();
 		$list['product.config'] = $this->getConfig();
+		$list['product.target'] = $this->getTarget();
+		$list['product.ctime'] = $this->getTimeCreated();
 
 		return $list;
 	}

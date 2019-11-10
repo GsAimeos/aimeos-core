@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -11,7 +11,9 @@ namespace Aimeos\MW\Setup\Task;
 
 
 /**
- * Adds product stock test data.
+ * Adds stock test data.
+ *
+ * @todo 2020.01 Rename to StockAddTestData
  */
 class ProductAddStockTestData extends \Aimeos\MW\Setup\Task\Base
 {
@@ -23,18 +25,7 @@ class ProductAddStockTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPreDependencies()
 	{
-		return array( 'MShopSetLocale', 'MediaListAddTestData', 'PriceListAddTestData', 'ProductListAddTestData' );
-	}
-
-
-	/**
-	 * Returns the list of task names which depends on this task.
-	 *
-	 * @return string[] List of task names
-	 */
-	public function getPostDependencies()
-	{
-		return array( 'CatalogRebuildTestIndex', 'MShopAddTypeData' );
+		return ['MShopSetLocale'];
 	}
 
 
@@ -43,74 +34,81 @@ class ProductAddStockTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function migrate()
 	{
-		$iface = '\\Aimeos\\MShop\\Context\\Item\\Iface';
-		if( !( $this->additional instanceof $iface ) ) {
-			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Additionally provided object is not of type "%1$s"', $iface ) );
-		}
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Context\Item\Iface::class, $this->additional );
 
-		$this->msg( 'Adding product stock test data', 0 );
-		$this->additional->setEditor( 'core:unittest' );
+		$this->msg( 'Adding stock test data', 0 );
+		$this->additional->setEditor( 'core:lib/mshoplib' );
 
-		$ds = DIRECTORY_SEPARATOR;
-		$path = __DIR__ . $ds . 'data' . $ds . 'stock.php';
+		$testdata = $this->getData();
+		$config = $this->additional->getConfig();
+		$name = $config->get( 'mshop/stock/manager/name' );
 
-		if( ( $testdata = include( $path ) ) == false ) {
-			throw new \Aimeos\MShop\Exception( sprintf( 'No file "%1$s" found for stock domain', $path ) );
-		}
+		$config->set( 'mshop/stock/manager/name', 'Standard' );
 
-		$this->addProductStockData( $testdata );
+		$this->addTypeItems( $testdata, ['stock/type'] );
+		$this->createData( $testdata );
+
+		$config->set( 'mshop/stock/manager/name', $name );
 
 		$this->status( 'done' );
 	}
 
 
 	/**
-	 * Adds the product stock test data.
+	 * Creates the type test data
+	 *
+	 * @param array $testdata Associative list of key/list pairs
+	 * @param array $domains List of domain names
+	 */
+	protected function addTypeItems( array $testdata, array $domains )
+	{
+		foreach( $domains as $domain )
+		{
+			$manager = \Aimeos\MShop::create( $this->additional, $domain );
+
+			foreach( $testdata[$domain] as $key => $entry )
+			{
+				$item = $manager->createItem()->fromArray( $entry );
+				$manager->saveItem( $item );
+			}
+		}
+	}
+
+
+	/**
+	 * Creates the test data
 	 *
 	 * @param array $testdata Associative list of key/list pairs
 	 * @throws \Aimeos\MW\Setup\Exception If no type ID is found
 	 */
-	private function addProductStockData( array $testdata )
+	protected function createData( array $testdata )
 	{
-		$stockManager = \Aimeos\MShop\Stock\Manager\Factory::createManager( $this->additional, 'Standard' );
-		$typeManager = $stockManager->getSubManager( 'type', 'Standard' );
+		$manager = \Aimeos\MShop::create( $this->additional, 'stock' );
+		$items = [];
 
-
-		$typeIds = array();
-		$typeItem = $typeManager->createItem();
-
-		$this->conn->begin();
-
-		foreach( $testdata['stock/type'] as $key => $dataset )
-		{
-			$typeItem->setId( null );
-			$typeItem->setCode( $dataset['code'] );
-			$typeItem->setLabel( $dataset['label'] );
-			$typeItem->setDomain( $dataset['domain'] );
-			$typeItem->setStatus( $dataset['status'] );
-
-			$typeManager->saveItem( $typeItem );
-			$typeIds[$key] = $typeItem->getId();
+		foreach( $testdata['stock'] as $key => $entry ) {
+			$items[] = $manager->createItem( $entry )->setId( null );
 		}
 
+		$manager->begin();
+		$manager->saveItems( $items );
+		$manager->commit();
+	}
 
-		$stock = $stockManager->createItem();
 
-		foreach( $testdata['stock'] as $dataset )
-		{
-			if( !isset( $typeIds[$dataset['typeid']] ) ) {
-				throw new \Aimeos\MW\Setup\Exception( sprintf( 'No type ID found for "%1$s"', $dataset['typeid'] ) );
-			}
+	/**
+	 * Returns the test data
+	 *
+	 * @return array Multi-dimensional associative array
+	 */
+	protected function getData()
+	{
+		$path = __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'stock.php';
 
-			$stock->setId( null );
-			$stock->setProductCode( $dataset['productcode'] );
-			$stock->setTypeId( $typeIds[$dataset['typeid']] );
-			$stock->setStocklevel( $dataset['stocklevel'] );
-			$stock->setDateBack( $dataset['backdate'] );
-
-			$stockManager->saveItem( $stock, false );
+		if( ( $testdata = include( $path ) ) == false ) {
+			throw new \Aimeos\MShop\Exception( sprintf( 'No file "%1$s" found for stock domain', $path ) );
 		}
 
-		$this->conn->commit();
+		return $testdata;
 	}
 }

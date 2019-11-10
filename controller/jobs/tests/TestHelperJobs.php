@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -19,7 +19,7 @@ class TestHelperJobs
 	public static function bootstrap()
 	{
 		self::getAimeos();
-		\Aimeos\MShop\Factory::setCache( false );
+		\Aimeos\MShop::cache( false );
 	}
 
 
@@ -50,7 +50,7 @@ class TestHelperJobs
 		{
 			require_once dirname( dirname( dirname( __DIR__ ) ) ) . DIRECTORY_SEPARATOR . 'Bootstrap.php';
 
-			self::$aimeos = new \Aimeos\Bootstrap( array(), false );
+			self::$aimeos = new \Aimeos\Bootstrap( [], false );
 		}
 
 		return self::$aimeos;
@@ -84,7 +84,7 @@ class TestHelperJobs
 		$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'config';
 		$file = __DIR__ . DIRECTORY_SEPARATOR . 'confdoc.ser';
 
-		$conf = new \Aimeos\MW\Config\PHPArray( array(), $paths );
+		$conf = new \Aimeos\MW\Config\PHPArray( [], $paths );
 		$conf = new \Aimeos\MW\Config\Decorator\Memory( $conf );
 		$conf = new \Aimeos\MW\Config\Decorator\Documentor( $conf, $file );
 		$ctx->setConfig( $conf );
@@ -114,7 +114,7 @@ class TestHelperJobs
 		$ctx->setI18n( array( 'de' => $i18n ) );
 
 
-		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::createManager( $ctx );
+		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::create( $ctx );
 		$locale = $localeManager->bootstrap( $site, 'de', '', false );
 		$ctx->setLocale( $locale );
 
@@ -123,7 +123,7 @@ class TestHelperJobs
 		$ctx->setView( $view );
 
 
-		$ctx->setEditor( 'core:controller/jobs' );
+		$ctx->setEditor( 'core:cntl/jobs' );
 
 		return $ctx;
 	}

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -32,7 +32,7 @@ class MShopAddCodeDataUnitperf extends \Aimeos\MW\Setup\Task\MShopAddCodeData
 	 */
 	public function getPostDependencies()
 	{
-		return array();
+		return [];
 	}
 
 
@@ -41,6 +41,18 @@ class MShopAddCodeDataUnitperf extends \Aimeos\MW\Setup\Task\MShopAddCodeData
 	 */
 	public function migrate()
 	{
-		$this->process();
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Context\Item\Iface::class, $this->additional );
+
+		$site = $this->additional->getLocale()->getSite()->getCode();
+		$this->msg( sprintf( 'Adding default code data for site "%1$s"', $site ), 0 ); $this->status( '' );
+
+		$ds = DIRECTORY_SEPARATOR;
+		$path = __DIR__ . $ds . '..' . $ds . 'default' . $ds . 'data' . $ds . 'code.php';
+
+		if( ( $data = include( $path ) ) == false ) {
+			throw new \Aimeos\MShop\Exception( sprintf( 'No file "%1$s" found for default codes', $path ) );
+		}
+
+		$this->process( $data );
 	}
 }

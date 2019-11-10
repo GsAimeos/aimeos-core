@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package Controller
  * @subpackage Common
  */
@@ -40,40 +40,77 @@ class Standard
 	 * {inheritDoc}
 	 *
 	 * @param \Aimeos\MShop\Media\Item\Iface $item Media item to add the file references to
-	 * @param \Psr\Http\Message\UploadedFileInterface Uploaded file
+	 * @param \Psr\Http\Message\UploadedFileInterface $file Uploaded file
 	 * @param string $fsname Name of the file system to store the files at
+	 * @return \Aimeos\MShop\Media\Item\Iface Added media item
 	 */
 	public function add( \Aimeos\MShop\Media\Item\Iface $item, \Psr\Http\Message\UploadedFileInterface $file, $fsname = 'fs-media' )
 	{
 		$this->checkFileUpload( $file );
+
 		$media = $this->getMediaFile( $file->getStream() );
+		$mimetype = $media->getMimeType();
 
 		if( $media instanceof \Aimeos\MW\Media\Image\Iface )
 		{
-			$this->scaleImage( $media, 'files' );
-			$mimetype = $this->getMimeType( $media, 'files' );
-			$filepath = $this->getFilePath( $file->getClientFilename(), 'files', $mimetype );
-			$this->storeFile( $media->save( null, $mimetype ), $fsname, $filepath, $item->getUrl() );
-			$item->setUrl( $filepath );
-
-			$this->scaleImage( $media, 'preview' );
-			$mimeprev = $this->getMimeType( $media, 'preview' );
-			$filepath = $this->getFilePath( $file->getClientFilename(), 'preview', $mimeprev );
-			$this->storeFile( $media->save( null, $mimetype ), $fsname, $filepath, $item->getPreview() );
-			$item->setPreview( $filepath );
+			$item = $this->addImages( $item, $media, null, $fsname );
 		}
 		else
 		{
-			$mimetype = $media->getMimeType();
-			$item->setPreview( $this->getMimeIcon( $mimetype ) );
-
 			$filepath = $this->getFilePath( $file->getClientFilename(), 'files', $mimetype );
-			$this->storeFile( $media->save(), $fsname, $filepath, $item->getPreview() );
-			$item->setUrl( $filepath );
+
+			$this->store( $filepath, $media->save(), $fsname );
+			$item->setUrl( $filepath )->setPreviews( [1 => $this->getMimeIcon( $mimetype )] )->setMimeType( $mimetype );
 		}
 
-		$item->setLabel( basename( $file->getClientFilename() ) );
-		$item->setMimeType( $mimetype );
+		return $item->setLabel( $item->getLabel() ?: basename( $file->getClientFilename() ) );
+	}
+
+
+	/**
+	 * Copies the media item and the referenced files
+	 *
+	 * @param \Aimeos\MShop\Media\Item\Iface $item Media item whose files should be copied
+	 * @param string $fsname Name of the file system to delete the files from
+	 * @return \Aimeos\MShop\Media\Item\Iface Copied media item with new files
+	 */
+	public function copy( \Aimeos\MShop\Media\Item\Iface $item, $fsname = 'fs-media' )
+	{
+		$manager = \Aimeos\MShop::create( $this->context, 'media' );
+
+		$search = $manager->createSearch()->setSlice( 0, 1 );
+		$search->setConditions( $search->compare( '==', 'media.url', $item->getUrl() ) );
+
+		if( count( $manager->searchItems( $search ) ) > 0 ) {
+			return $item;
+		}
+
+		$fs = $this->context->getFilesystemManager()->get( $fsname );
+		$previews = $item->getPreviews();
+		$path = $item->getUrl();
+
+		if( $fs->has( $path ) )
+		{
+			$newPath = $this->getFilePath( $path, 'files', $item->getMimeType() );
+			$fs->copy( $path, $newPath );
+			$item->setUrl( $newPath );
+		}
+
+		foreach( $previews as $size => $preview )
+		{
+			if( $fs->has( $preview ) )
+			{
+				try
+				{
+					$newPath = $this->getFilePath( $preview, 'preview', pathinfo( $preview, PATHINFO_EXTENSION ) );
+					$fs->copy( $preview, $newPath );
+					$previews[$size] = $newPath;
+				}
+				catch( \Aimeos\MW\Filesystem\Exception $e ) {} // mime icons can't be copied
+			}
+		}
+
+		return $item->setPreviews( $previews );
 	}
 
 
@@ -87,25 +124,34 @@ class Standard
 	 */
 	public function delete( \Aimeos\MShop\Media\Item\Iface $item, $fsname = 'fs-media' )
 	{
-		$fs = $this->context->getFilesystemManager()->get( $fsname );
+		$manager = \Aimeos\MShop::create( $this->context, 'media' );
+		$search = $manager->createSearch()->setSlice( 0, 2 );
+		$search->setConditions( $search->compare( '==', 'media.url', $item->getUrl() ) );
 
+		if( count( $manager->searchItems( $search ) ) > 1 ) {
+			return $item->setUrl( '' )->setPreview( '' );
+		}
+
+		$mimedir = (string) $this->context->getConfig()->get( 'controller/common/media/standard/mimeicon/directory' );
+		$fs = $this->context->getFilesystemManager()->get( $fsname );
 		$path = $item->getUrl();
+
 		if( $path !== '' && $fs->has( $path ) ) {
 			$fs->rm( $path );
 		}
 
-		$item->setUrl( '' );
-
-		try
+		foreach( $item->getPreviews() as $preview )
 		{
-			$path = $item->getPreview();
-			if( $path !== '' && $fs->has( $path ) ) {
-				$fs->rm( $path );
+			try
+			{
+				if( $preview !== '' && !strcmp( $preview, $mimedir ) && $fs->has( $preview ) ) {
+					$fs->rm( $preview );
+				}
 			}
+			catch( \Exception $e ) { ; } // continue if removing file fails
 		}
-		catch( \Exception $e ) { ; } // Can be a mime icon with relative path
 
-		$item->setPreview( '' );
+		return $item->setUrl( '' )->setPreviews( [] )->deletePropertyItems( $item->getPropertyItems() );
 	}
 
 
@@ -119,33 +165,50 @@ class Standard
 	 *
 	 * @param \Aimeos\MShop\Media\Item\Iface $item Media item whose files should be scaled
 	 * @param string $fsname Name of the file system to rescale the files from
-	 * @return void
+	 * @return \Aimeos\MShop\Media\Item\Iface Rescaled media item
 	 */
 	public function scale( \Aimeos\MShop\Media\Item\Iface $item, $fsname = 'fs-media' )
 	{
 		$path = $item->getUrl();
-		$config = $this->context->getConfig();
 		$media = $this->getMediaFile( $this->getFileContent( $path, $fsname ) );
 
 		if( !( $media instanceof \Aimeos\MW\Media\Image\Iface ) ) {
-			return;
+			return $item;
 		}
 
-		if( (bool) $config->get( 'controller/common/media/standard/files/scale', false ) === true )
+		return $this->addImages( $item, $media, $path, $fsname );
+	}
+
+
+	/**
+	 * Adds original image and preview images to the media item
+	 *
+	 * @param \Aimeos\MShop\Media\Item\Iface $item Media item which will contains the image URLs afterwards
+	 * @param \Aimeos\MW\Media\Image\Iface $media Image object to scale
+	 * @param string $path Path to the file or URL, empty or random for uploaded files
+	 * @param string $fsname File system name the file is located at
+	 * @return \Aimeos\MShop\Media\Item\Iface Updated media item with URLs
+	 */
+	protected function addImages( \Aimeos\MShop\Media\Item\Iface $item, \Aimeos\MW\Media\Image\Iface $media, $path, $fsname )
+	{
+		if( $path == null )
 		{
-			$mimetype = $this->getMimeType( $media, 'files' );
-			$filepath = $this->getFilePath( $path, 'files', $mimetype );
-			$this->storeFile( $media->save( null, $mimetype ), $fsname, $filepath, $path );
-			$item->setUrl( $filepath );
+			$path = $this->getFilePath( rand(), 'files', $media->getMimeType() );
+			$this->store( $path, $media->save(), $fsname );
 		}
 
-		if( (bool) $config->get( 'controller/common/media/standard/preview/scale', true ) === true )
+		$previews = [];
+		$mime = $this->getMimeType( $media, 'preview' );
+
+		foreach( $this->createPreviews( $media ) as $type => $mediaFile )
 		{
-			$mimetype = $this->getMimeType( $media, 'preview' );
-			$filepath = $this->getFilePath( $path, 'preview', $mimetype );
-			$this->storeFile( $media->save( null, $mimetype ), $fsname, $filepath, $item->getPreview() );
-			$item->setPreview( $filepath );
+			$filepath = $this->getFilePath( rand(), 'preview', $media->getMimeType() );
+			$this->store( $filepath, $mediaFile->save( null, $mime ), $fsname );
+			$previews[$mediaFile->getWidth()] = $filepath;
+			unset( $mediaFile );
 		}
+
+		return $item->setUrl( $path )->setPreviews( $previews )->setMimeType( $media->getMimeType() );
 	}
 
 
@@ -182,6 +245,98 @@ class Standard
 
 
 	/**
+	 * Creates scaled images according to the configuration settings
+	 *
+	 * @param \Aimeos\MW\Media\Image\Iface $media Media object
+	 * @return \Aimeos\MW\Media\Image\Iface[] Associative list of image width as keys and scaled media object as values
+	 */
+	protected function createPreviews( \Aimeos\MW\Media\Image\Iface $media )
+	{
+		$list = [];
+		$config = $this->context->getConfig();
+
+		/** controller/common/media/standard/previews
+		 * Scaling options for preview images
+		 *
+		 * For responsive images, several preview images of different sizes are
+		 * generated. This setting controls how many preview images are generated,
+		 * what's their maximum width and height and if the given width/height is
+		 * enforced by cropping images that doesn't fit.
+		 *
+		 * The setting must consist of a list image size definitions like:
+		 *
+		 *  [
+		 *    ['maxwidth' => 240, 'maxheight' => 320, 'force-size' => true],
+		 *    ['maxwidth' => 720, 'maxheight' => 960, 'force-size' => false],
+		 *    ['maxwidth' => 2160, 'maxheight' => 2880, 'force-size' => false],
+		 *  ]
+		 *
+		 * "maxwidth" sets the maximum allowed width of the image whereas
+		 * "maxheight" does the same for the maximum allowed height. If both
+		 * values are given, the image is scaled proportionally so it fits into
+		 * the box defined by both values. In case the image has different
+		 * proportions than the specified ones and "force-size" is false, the
+		 * image is resized to fit entirely into the specified box. One side of
+		 * the image will be shorter than it would be possible by the specified
+		 * box.
+		 *
+		 * If "force-size" is true, scaled images that doesn't fit into the
+		 * given maximum width/height are centered and then cropped. By default,
+		 * images aren't cropped.
+		 *
+		 * The values for "maxwidth" and "maxheight" can also be null or not
+		 * used. In that case, the width or height or both is unbound. If none
+		 * of the values are given, the image won't be scaled at all. If only
+		 * one value is set, the image will be scaled exactly to the given width
+		 * or height and the other side is scaled proportionally.
+		 *
+		 * @param array List of image size definitions
+		 * @category Developer
+		 * @category User
+		 * @since 2019.07
+		 */
+		foreach( $config->get( 'controller/common/media/standard/previews', [] ) as $entry )
+		{
+			$maxwidth = ( isset( $entry['maxwidth'] ) ? (int) $entry['maxwidth'] : null );
+			$maxheight = ( isset( $entry['maxheight'] ) ? (int) $entry['maxheight'] : null );
+			$fit = ( isset( $entry['force-size'] ) ? (bool) $entry['force-size'] : false );
+
+			if( $maxheight || $maxwidth )
+			{
+				$image = $media->scale( $maxwidth, $maxheight, !$fit );
+				$list[$image->getWidth()] = $image;
+			}
+		}
+
+		if( empty( $list ) )
+		{
+			$maxwidth = $config->get( 'controller/common/media/standard/preview/maxwidth', null );
+			$maxheight = $config->get( 'controller/common/media/standard/preview/maxheight', null );
+			$fit = (bool) $config->get( 'controller/common/media/standard/preview/force-size', false );
+
+			if( $maxheight || $maxwidth )
+			{
+				$image = $media->scale( $maxwidth, $maxheight, !$fit );
+				$list[$image->getWidth()] = $image;
+			}
+		}
+
+		return $list;
+	}
+
+
+	/**
+	 * Returns the context item
+	 *
+	 * @return \Aimeos\MShop\Context\Item\Iface Context item
+	 */
+	protected function getContext()
+	{
+		return $this->context;
+	}
+
+
+	/**
 	 * Returns the file content of the file or URL
 	 *
 	 * @param string $path Path to the file or URL
@@ -195,9 +350,9 @@ class Standard
 		{
 			if( preg_match( '#^[a-zA-Z]{1,10}://#', $path ) === 1 )
 			{
-				if( ( $content = file_get_contents( $path ) ) === false )
+				if( ( $content = @file_get_contents( $path ) ) === false )
 				{
-					$msg = sprintf( 'Download file "%1$s" using file_get_contents failed', $path );
+					$msg = sprintf( 'Downloading file "%1$s" failed', $path );
 					throw new \Aimeos\Controller\Common\Exception( $msg );
 				}
 
@@ -220,24 +375,29 @@ class Standard
 	 *
 	 * @param string $filename Original file name, can contain the path as well
 	 * @param string $type File type, i.e. "files" or "preview"
-	 * @param string $mimetype Mime type of the file
+	 * @param string $mimeext Mime type or extension of the file
 	 * @return string New file name including the file path
 	 */
-	protected function getFilePath( $filename, $type, $mimetype )
+	protected function getFilePath( $filename, $type, $mimeext )
 	{
-		switch( $mimetype )
-		{
-			case 'application/pdf': $ext = '.pdf'; break;
-
-			case 'image/gif': $ext = '.gif'; break;
-			case 'image/jpeg': $ext = '.jpg'; break;
-			case 'image/png': $ext = '.png'; break;
-			case 'image/tiff': $ext = '.tif'; break;
-
-			default: $ext = '';
-		}
+		/** controller/common/media/standard/extensions
+		 * Available files extensions for mime types of uploaded files
+		 *
+		 * Uploaded files should have the right file extension (e.g. ".jpg" for
+		 * JPEG images) so files are recognized correctly if downloaded by users.
+		 * The extension of the uploaded file can't be trusted and only its mime
+		 * type can be determined automatically. This configuration setting
+		 * provides the file extensions for the configured mime types. You can
+		 * add more mime type / file extension combinations if required.
+		 *
+		 * @param array Associative list of mime types as keys and file extensions as values
+		 * @since 2018.04
+		 * @category Developer
+		 */
+		$list = $this->context->getConfig()->get( 'controller/common/media/standard/extensions', [] );
 
 		$filename = md5( $filename . getmypid() . microtime( true ) );
+		$ext = isset( $list[$mimeext] ) ? '.' . $list[$mimeext] : ( ctype_alpha( $mimeext ) ? '.' . $mimeext : '' );
 
 		return "${type}/${filename[0]}/${filename[1]}/${filename}${ext}";
 	}
@@ -256,16 +416,13 @@ class Standard
 		 *
 		 * When uploading a file, a preview image for that file is generated if
 		 * possible (especially for images). You can configure certain options
-		 * for the generated images, namely the quality of those images with
+		 * for the generated images, namely the implementation of the scaling
+		 * algorithm and the quality of the resulting images with
 		 *
 		 *  array(
 		 *  	'image' => array(
-		 *  		'jpeg' => array(
-		 *  			'quality' => 75
-		 *  		),
-		 *  		'png' => array(
-		 *  			'quality' => 9
-		 *  		),
+		 *  		'name' => 'Imagick',
+		 *  		'quality' => 75,
 		 *  	)
 		 *  )
 		 *
@@ -274,7 +431,7 @@ class Standard
 		 * @category Developer
 		 * @category User
 		 */
-		$options = $this->context->getConfig()->get( 'controller/common/media/standard/options', array() );
+		$options = $this->context->getConfig()->get( 'controller/common/media/standard/options', [] );
 
 		return \Aimeos\MW\Media\Factory::get( $file, $options );
 	}
@@ -367,7 +524,7 @@ class Standard
 		 * @category Developer
 		 * @category User
 		 */
-		$default = array( 'image/jpeg', 'image/png', 'image/gif' );
+		$default = array( 'image/jpeg', 'image/png', 'image/gif', 'image/svg+xml' );
 		$allowed = $config->get( 'controller/common/media/standard/' . $type . '/allowedtypes', $default );
 
 		if( in_array( $mimetype, $allowed ) === false )
@@ -384,110 +541,16 @@ class Standard
 
 
 	/**
-	 * Scales the image according to the configuration settings
-	 *
-	 * @param \Aimeos\MW\Media\Image\Iface $media Media object
-	 * @param string $type Type of the image like "preview" or "files"
-	 * @param \Aimeos\MW\Media\Image\Iface Scaled media object
-	 */
-	protected function scaleImage( \Aimeos\MW\Media\Image\Iface $media, $type )
-	{
-		$config = $this->context->getConfig();
-
-		/** controller/common/media/standard/files/maxwidth
-		 * Maximum width of the uploaded images
-		 *
-		 * The uploaded image files are scaled down if their width exceeds the
-		 * configured width of pixels. If the image width in smaller than the
-		 * configured one, no scaling happens. In case of a value of null or if
-		 * no configuration for that option is available, the image width isn't
-		 * scaled at all.
-		 *
-		 * The width/height ratio of the image is always kept.
-		 *
-		 * @param integer|null Width in pixel or null for no scaling
-		 * @since 2016.01
-		 * @category Developer
-		 * @category User
-		 */
-
-		/** controller/common/media/standard/preview/maxwidth
-		 * Maximum width of the preview images
-		 *
-		 * The preview image files are created with the configured width in
-		 * pixel. If the original image width in smaller than the one configured
-		 * for the preview image, the width of the original image is used. In
-		 * case of a value of null or if no configuration for that option is
-		 * available, the width of the preview image is the same as the width of
-		 * the original image.
-		 *
-		 * The width/height ratio of the preview image is always the same as for
-		 * the original image.
-		 *
-		 * @param integer|null Width in pixel or null for no scaling
-		 * @since 2016.01
-		 * @category Developer
-		 * @category User
-		 */
-		$maxwidth = $config->get( 'controller/common/media/standard/' . $type . '/maxwidth', null );
-
-		/** controller/common/media/standard/files/maxheight
-		 * Maximum height of the uploaded images
-		 *
-		 * The uploaded image files are scaled down if their height exceeds the
-		 * configured height of pixels. If the image height in smaller than the
-		 * configured one, no scaling happens. In case of a value of null or if
-		 * no configuration for that option is available, the image width isn't
-		 * scaled at all.
-		 *
-		 * The width/height ratio of the image is always kept.
-		 *
-		 * @param integer|null Height in pixel or null for no scaling
-		 * @since 2016.01
-		 * @category Developer
-		 * @category User
-		 */
-
-		/** controller/common/media/standard/preview/maxheight
-		 * Maximum height of the preview images
-		 *
-		 * The preview image files are created with the configured width in
-		 * pixel. If the original image height in smaller than the one configured
-		 * for the preview image, the height of the original image is used. In
-		 * case of a value of null or if no configuration for that option is
-		 * available, the height of the preview image is the same as the height
-		 * of the original image.
-		 *
-		 * The width/height ratio of the preview image is always the same as for
-		 * the original image.
-		 *
-		 * @param integer|null Height in pixel or null for no scaling
-		 * @since 2016.01
-		 * @category Developer
-		 * @category User
-		 */
-		$maxheight = $config->get( 'controller/common/media/standard/' . $type . '/maxheight', null );
-
-		return $media->scale( $maxwidth, $maxheight );
-	}
-
-
-	/**
 	 * Stores the file content
 	 *
+	 * @param string $filepath Path of the new file
 	 * @param string $content File content
 	 * @param string $fsname Name of the file system to store the files at
-	 * @param string $filepath Path of the new file
-	 * @param string $oldpath Path of the old file
+	 * @return \Aimeos\Controller\Common\Media\Iface Self object for fluent interface
 	 */
-	protected function storeFile( $content, $fsname, $filepath, $oldpath )
+	protected function store( $filepath, $content, $fsname )
 	{
-		$fs = $this->context->getFilesystemManager()->get( $fsname );
-
-		if( $oldpath !== '' && $oldpath !== $filepath && $fs->has( $oldpath ) ) {
-			$fs->rm( $oldpath );
-		}
-
-		$fs->write( $filepath, $content );
+		$this->context->getFilesystemManager()->get( $fsname )->write( $filepath, $content );
+		return $this;
 	}
 }

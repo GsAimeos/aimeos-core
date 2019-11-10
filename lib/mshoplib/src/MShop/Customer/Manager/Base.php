@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Customer
  */
@@ -19,12 +19,15 @@ namespace Aimeos\MShop\Customer\Manager;
  * @subpackage Customer
  */
 abstract class Base
-	extends \Aimeos\MShop\Common\Manager\ListRef\Base
-	implements \Aimeos\MShop\Customer\Manager\Iface
+	extends \Aimeos\MShop\Common\Manager\Base
 {
+	use \Aimeos\MShop\Common\Manager\ListRef\Traits;
+	use \Aimeos\MShop\Common\Manager\AddressRef\Traits;
+	use \Aimeos\MShop\Common\Manager\PropertyRef\Traits;
+
+
 	private $salt;
 	private $helper;
-	private $addressManager;
 
 
 	/**
@@ -79,25 +82,27 @@ abstract class Base
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
 	 * @param string|null $domain Domain of the item if necessary to identify the item uniquely
 	 * @param string|null $type Type code of the item if necessary to identify the item uniquely
+	 * @param boolean $default True to add default criteria
 	 * @return \Aimeos\MShop\Common\Item\Iface Item object
 	 */
-	public function findItem( $code, array $ref = array(), $domain = null, $type = null )
+	public function findItem( $code, array $ref = [], $domain = null, $type = null, $default = false )
 	{
-		return $this->findItemBase( array( 'customer.code' => $code ), $ref );
+		return $this->findItemBase( array( 'customer.code' => $code ), $ref, $default );
 	}
 
 
 	/**
 	 * Returns the customer item object specificed by its ID.
 	 *
-	 * @param integer $id Unique customer ID referencing an existing customer
+	 * @param string $id Unique customer ID referencing an existing customer
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
+	 * @param boolean $default Add default criteria
 	 * @return \Aimeos\MShop\Customer\Item\Iface Returns the customer item of the given id
 	 * @throws \Aimeos\MShop\Exception If item couldn't be found
 	 */
-	public function getItem( $id, array $ref = array() )
+	public function getItem( $id, array $ref = [], $default = false )
 	{
-		return $this->getItemBase( 'customer.id', $id, $ref );
+		return $this->getItemBase( 'customer.id', $id, $ref, $default );
 	}
 
 
@@ -105,58 +110,29 @@ abstract class Base
 	 * Adds the customer to the groups listed in the customer item
 	 *
 	 * @param \Aimeos\MShop\Customer\Item\Iface $item Customer item
+	 * @return \Aimeos\MShop\Customer\Item\Iface $item Modified customer item
 	 */
 	protected function addGroups( \Aimeos\MShop\Customer\Item\Iface $item )
 	{
-		if( count( $item->getGroups() ) === 0 ) {
-			return;
-		}
+		$pos = 0;
+		$groupIds = [];
 
-		$listMap = array();
-		$manager = $this->getSubManager( 'lists' );
-		$typeManager = $manager->getSubManager( 'type' );
-		$typeId = $typeManager->findItem( 'default', array(), 'customer/group', 'default' )->getId();
+		$manager = $this->getObject()->getSubManager( 'lists' );
+		$listItem = $manager->createItem()->setType( 'default' );
+		$listItems = $item->getListItems( 'customer/group', 'default', null, false );
 
-		$listItem = $manager->createItem();
-		$listItem->setParentId( $item->getId() );
-		$listItem->setDomain( 'customer/group' );
-		$listItem->setTypeId( $typeId );
-		$listItem->setStatus( 1 );
-
-
-		$search = $manager->createSearch();
-		$expr = array(
-			$search->compare( '==', 'customer.lists.parentid', $item->getId() ),
-			$search->compare( '==', 'customer.lists.domain', 'customer/group' ),
-			$search->compare( '==', 'customer.lists.type.domain', 'customer/group' ),
-			$search->compare( '==', 'customer.lists.type.code', 'default' ),
-		);
-		$search->setConditions( $search->combine( '&&', $expr ) );
-		$search->setSlice( 0, 0x7fffffff );
-
-		foreach( $manager->searchItems( $search ) as $listid => $listItem ) {
-			$listMap[ $listItem->getRefId() ] = $listid;
-		}
-
-
-		$pos = count( $listMap );
-
-		foreach( $item->getGroups() as $gid )
+		foreach( $item->getGroups() as $refId )
 		{
-			if( isset( $listMap[$gid] ) )
-			{
-				unset( $listMap[$gid] );
-				continue;
+			if( ( $litem = $item->getListItem( 'customer/group', 'default', $refId, false ) ) !== null ) {
+				unset( $listItems[$litem->getId()] );
+			} else {
+				$litem = clone $listItem;
 			}
 
-			$listItem->setId( null );
-			$listItem->setRefId( $gid );
-			$listItem->setPosition( $pos++ );
-
-			$manager->saveItem( $listItem, false );
+			$item->addListItem( 'customer/group', $litem->setRefId( $refId )->setPosition( $pos++ ) );
 		}
 
-		$manager->deleteItems( $listMap );
+		return $item->deleteListItems( $listItems );
 	}
 
 
@@ -164,27 +140,28 @@ abstract class Base
 	 * Creates a new customer item.
 	 *
 	 * @param array $values List of attributes for customer item
-	 * @param array $listItems List items associated to the customer item
-	 * @param array $refItems Items referenced by the customer item via the list items
+	 * @param \Aimeos\MShop\Common\Item\Lists\Iface[] $listItems List of list items
+	 * @param \Aimeos\MShop\Common\Item\Iface[] $refItems List of referenced items
+	 * @param \Aimeos\MShop\Common\Item\Address\Iface[] $addrItems List of address items
+	 * @param \Aimeos\MShop\Common\Item\Property\Iface[] $propItems List of property items
 	 * @return \Aimeos\MShop\Customer\Item\Iface New customer item
 	 */
-	protected function createItemBase( array $values = array(), array $listItems = array(), array $refItems = array() )
+	protected function createItemBase( array $values = [], array $listItems = [], array $refItems = [],
+		array $addrItems = [], array $propItems = [] )
 	{
-		if( !isset( $this->addressManager ) ) {
-			$this->addressManager = $this->getSubManager( 'address' );
-		}
-
 		$helper = $this->getPasswordHelper();
-		$address = $this->addressManager->createItem();
+		$address = new \Aimeos\MShop\Common\Item\Address\Simple( 'customer.', $values );
 
-		return new \Aimeos\MShop\Customer\Item\Standard( $address, $values, $listItems, $refItems, $this->salt, $helper );
+		return new \Aimeos\MShop\Customer\Item\Standard(
+			$address, $values, $listItems, $refItems, $addrItems, $propItems, $helper, $this->salt
+		);
 	}
 
 
 	/**
 	 * Returns a password helper object based on the configuration.
 	 *
-	 * @return \Aimeos\MShop\Common\Item\Helper\Password\Iface Password helper object
+	 * @return \Aimeos\MShop\Common\Helper\Password\Iface Password helper object
 	 * @throws \Aimeos\MShop\Exception If the name is invalid or the class isn't found
 	 */
 	protected function getPasswordHelper()
@@ -224,16 +201,15 @@ abstract class Base
 		 * @see mshop/customer/manager/password/name
 		 * @sse mshop/customer/manager/salt
 		 */
-		$options = $config->get( 'mshop/customer/manager/password/options', array() );
+		$options = $config->get( 'mshop/customer/manager/password/options', [] );
 
 		if( ctype_alnum( $name ) === false )
 		{
-			$classname = is_string( $name ) ? '\\Aimeos\\MShop\\Common\\Item\\Helper\\Password\\' . $name : '<not a string>';
+			$classname = is_string( $name ) ? '\Aimeos\MShop\Common\Helper\Password\\' . $name : '<not a string>';
 			throw new \Aimeos\MShop\Exception( sprintf( 'Invalid characters in class name "%1$s"', $classname ) );
 		}
 
-		$iface = '\\Aimeos\\MShop\\Common\\Item\\Helper\\Password\\Iface';
-		$classname = '\\Aimeos\\MShop\\Common\\Item\\Helper\\Password\\' . $name;
+		$classname = '\Aimeos\MShop\Common\Helper\Password\\' . $name;
 
 		if( class_exists( $classname ) === false ) {
 			throw new \Aimeos\MShop\Exception( sprintf( 'Class "%1$s" not available', $classname ) );
@@ -241,9 +217,7 @@ abstract class Base
 
 		$helper = new $classname( $options );
 
-		if( !( $helper instanceof $iface ) ) {
-			throw new \Aimeos\MShop\Exception( sprintf( 'Class "%1$s" does not implement interface "%2$s"', $classname, $iface ) );
-		}
+		self::checkClass( \Aimeos\MShop\Common\Helper\Password\Iface::class, $helper );
 
 		$this->helper = $helper;
 

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Filesystem
  */
@@ -20,7 +20,7 @@ namespace Aimeos\MW\Filesystem\Manager;
 class Standard implements Iface
 {
 	private $config;
-	private $objects = array();
+	private $objects = [];
 
 
 	/**
@@ -35,6 +35,30 @@ class Standard implements Iface
 
 
 	/**
+	 * Cleans up the object
+	 */
+	public function __destruct()
+	{
+		foreach( $this->objects as $key => $object ) {
+			unset( $this->objects[$key] );
+		}
+	}
+
+
+	/**
+	 * Clean up the objects inside
+	 */
+	public function __sleep()
+	{
+		$this->__destruct();
+
+		$this->objects = [];
+
+		return get_object_vars( $this );
+	}
+
+
+	/**
 	 * Returns the file system for the given name
 	 *
 	 * @param string $name Key for the file system
@@ -43,10 +67,8 @@ class Standard implements Iface
 	 */
 	public function get( $name )
 	{
-		$conf = (array) $this->getConfig( $name );
-
 		if( !isset( $this->objects[$name] ) ) {
-			$this->objects[$name] = \Aimeos\MW\Filesystem\Factory::create( $conf );
+			$this->objects[$name] = \Aimeos\MW\Filesystem\Factory::create( (array) $this->getConfig( $name ) );
 		}
 
 		return $this->objects[$name];

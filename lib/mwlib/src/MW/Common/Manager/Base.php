@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Common
  */
@@ -18,7 +18,7 @@ namespace Aimeos\MW\Common\Manager;
  * @package MW
  * @subpackage Common
  */
-abstract class Base
+abstract class Base extends \Aimeos\MW\Common\Base
 {
 	/**
 	 * Returns a sorted list of required criteria keys.
@@ -54,24 +54,48 @@ abstract class Base
 
 
 	/**
-	 * Returns the attribute translations for searching defined by the manager.
+	 * Returns the attribute helper functions for searching defined by the manager.
 	 *
-	 * @param array $attributes List of search attribute objects implementing
-	 * 	\Aimeos\MW\Criteria\Attribute\Iface or associative arrays with 'code'
-	 * 	and 'internalcode' keys
-	 * @return array Associative array of attribute code and internal attribute code
+	 * @param \Aimeos\MW\Criteria\Attribute\Iface[] $attributes List of search attribute items
+	 * @return array Associative array of attribute code and helper function
 	 */
-	protected function getSearchTranslations( array $attributes )
+	protected function getSearchFunctions( array $attributes )
 	{
-		$translations = array();
-		$iface = '\\Aimeos\\MW\\Criteria\\Attribute\\Iface';
+		$list = [];
+		$iface = \Aimeos\MW\Criteria\Attribute\Iface::class;
 
 		foreach( $attributes as $key => $item )
 		{
 			if( $item instanceof $iface ) {
-				$translations[ $item->getCode() ] = $item->getInternalCode();
+				$list[$item->getCode()] = $item->getFunction();
 			} else if( isset( $item['code'] ) ) {
-				$translations[ $item['code'] ] = $item['internalcode'];
+				$list[$item['code']] = $item['function'];
+			} else {
+				throw new \Aimeos\MW\Common\Exception( sprintf( 'Invalid attribute at position "%1$d"', $key ) );
+			}
+		}
+
+		return $list;
+	}
+
+
+	/**
+	 * Returns the attribute translations for searching defined by the manager.
+	 *
+	 * @param \Aimeos\MW\Criteria\Attribute\Iface[] $attributes List of search attribute items
+	 * @return array Associative array of attribute code and internal attribute code
+	 */
+	protected function getSearchTranslations( array $attributes )
+	{
+		$translations = [];
+		$iface = \Aimeos\MW\Criteria\Attribute\Iface::class;
+
+		foreach( $attributes as $key => $item )
+		{
+			if( $item instanceof $iface ) {
+				$translations[$item->getCode()] = $item->getInternalCode();
+			} else if( isset( $item['code'] ) ) {
+				$translations[$item['code']] = $item['internalcode'];
 			} else {
 				throw new \Aimeos\MW\Common\Exception( sprintf( 'Invalid attribute at position "%1$d"', $key ) );
 			}
@@ -84,22 +108,20 @@ abstract class Base
 	/**
 	 * Returns the attribute types for searching defined by the manager.
 	 *
-	 * @param array $attributes List of search attribute objects implementing
-	 * 	\Aimeos\MW\Criteria\Attribute\Iface or associative arrays with 'code'
-	 * 	and 'internaltype' keys
+	 * @param \Aimeos\MW\Criteria\Attribute\Iface[] $attributes List of search attribute items
 	 * @return array Associative array of attribute code and internal attribute type
 	 */
 	protected function getSearchTypes( array $attributes )
 	{
-		$types = array();
-		$iface = '\\Aimeos\\MW\\Criteria\\Attribute\\Iface';
+		$types = [];
+		$iface = \Aimeos\MW\Criteria\Attribute\Iface::class;
 
 		foreach( $attributes as $key => $item )
 		{
 			if( $item instanceof $iface ) {
-				$types[ $item->getCode() ] = $item->getInternalType();
+				$types[$item->getCode()] = $item->getInternalType();
 			} else if( isset( $item['code'] ) ) {
-				$types[ $item['code'] ] = $item['internaltype'];
+				$types[$item['code']] = $item['internaltype'];
 			} else {
 				throw new \Aimeos\MW\Common\Exception( sprintf( 'Invalid attribute at position "%1$d"', $key ) );
 			}
@@ -118,7 +140,7 @@ abstract class Base
 	 */
 	private function cutNameTail( array $prefix, $string )
 	{
-		$result = array();
+		$result = [];
 		$noprefix = true;
 		$strlen = strlen( $string );
 		$sep = $this->getKeySeparator();
@@ -142,7 +164,9 @@ abstract class Base
 
 		if( $noprefix )
 		{
-			if( ( $pos = strrpos( $string, $sep ) ) !== false ) {
+			if( ( $pos = strrpos( $string, ':' ) ) !== false ) {
+				$result[] = substr( $string, 0, $pos );
+			} elseif( ( $pos = strrpos( $string, $sep ) ) !== false ) {
 				$result[] = substr( $string, 0, $pos );
 			} else {
 				$result[] = $string;
@@ -162,18 +186,18 @@ abstract class Base
 	 */
 	private function getCriteriaKeys( array $prefix, \Aimeos\MW\Criteria\Expression\Iface $expr = null )
 	{
-		if( $expr === null ) { return array(); }
+		if( $expr === null ) { return []; }
 
-		$result = array();
+		$result = [];
 
 		foreach( $this->getCriteriaNames( $expr ) as $item )
 		{
-			if( ( $pos = strpos( $item, '(' ) ) !== false ) {
-				$item = substr( $item, 0, $pos );
+			if( strncmp( $item, 'sort:', 5 ) === 0 ) {
+				$item = substr( $item, 5 );
 			}
 
-			if( ( $pos = strpos( $item, ':' ) ) !== false ) {
-				$item = substr( $item, $pos + 1 );
+			if( ( $pos = strpos( $item, '(' ) ) !== false ) {
+				$item = substr( $item, 0, $pos );
 			}
 
 			$result = array_merge( $result, $this->cutNameTail( $prefix, $item ) );
@@ -197,7 +221,7 @@ abstract class Base
 
 		if( $expr instanceof \Aimeos\MW\Criteria\Expression\Combine\Iface )
 		{
-			$list = array();
+			$list = [];
 			foreach( $expr->getExpressions() as $item ) {
 				$list = array_merge( $list, $this->getCriteriaNames( $item ) );
 			}
@@ -208,6 +232,6 @@ abstract class Base
 			return array( $expr->getName() );
 		}
 
-		return array();
+		return [];
 	}
 }

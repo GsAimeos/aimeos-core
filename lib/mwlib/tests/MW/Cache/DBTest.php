@@ -3,14 +3,14 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MW\Cache;
 
 
-class DBTest extends \PHPUnit_Framework_TestCase
+class DBTest extends \PHPUnit\Framework\TestCase
 {
 	private static $dbm;
 	private $config;
@@ -143,8 +143,8 @@ class DBTest extends \PHPUnit_Framework_TestCase
 
 	public function testConstructorNoConfig()
 	{
-		$this->setExpectedException( '\\Aimeos\\MW\\Cache\\Exception' );
-		new \Aimeos\MW\Cache\DB( array(), self::$dbm );
+		$this->setExpectedException( \Aimeos\MW\Cache\Exception::class );
+		new \Aimeos\MW\Cache\DB( [], self::$dbm );
 	}
 
 
@@ -153,7 +153,7 @@ class DBTest extends \PHPUnit_Framework_TestCase
 		$config = $this->config;
 		unset( $config['sql'] );
 
-		$this->setExpectedException( '\\Aimeos\\MW\\Cache\\Exception' );
+		$this->setExpectedException( \Aimeos\MW\Cache\Exception::class );
 		new \Aimeos\MW\Cache\DB( $config, self::$dbm );
 	}
 
@@ -163,7 +163,7 @@ class DBTest extends \PHPUnit_Framework_TestCase
 		$config = $this->config;
 		unset( $config['search'] );
 
-		$this->setExpectedException( '\\Aimeos\\MW\\Cache\\Exception' );
+		$this->setExpectedException( \Aimeos\MW\Cache\Exception::class );
 		new \Aimeos\MW\Cache\DB( $config, self::$dbm );
 	}
 
@@ -173,7 +173,7 @@ class DBTest extends \PHPUnit_Framework_TestCase
 		$config = $this->config;
 		unset( $config['sql']['delete'] );
 
-		$this->setExpectedException( '\\Aimeos\\MW\\Cache\\Exception' );
+		$this->setExpectedException( \Aimeos\MW\Cache\Exception::class );
 		new \Aimeos\MW\Cache\DB( $config, self::$dbm );
 	}
 
@@ -183,15 +183,14 @@ class DBTest extends \PHPUnit_Framework_TestCase
 		$config = $this->config;
 		unset( $config['search']['cache.id'] );
 
-		$this->setExpectedException( '\\Aimeos\\MW\\Cache\\Exception' );
+		$this->setExpectedException( \Aimeos\MW\Cache\Exception::class );
 		new \Aimeos\MW\Cache\DB( $config, self::$dbm );
 	}
 
 
 	public function testCleanup()
 	{
-		$this->object->cleanup();
-
+		$this->assertTrue( $this->object->cleanup() );
 
 		$conn = self::$dbm->acquire();
 		$result = $conn->create( 'SELECT "id" FROM "mw_cache_test"' )->execute();
@@ -204,7 +203,7 @@ class DBTest extends \PHPUnit_Framework_TestCase
 
 	public function testDelete()
 	{
-		$this->object->delete( 't:1' );
+		$this->assertTrue( $this->object->delete( 't:1' ) );
 
 		$conn = self::$dbm->acquire();
 		$row = $conn->create( 'SELECT * FROM "mw_cache_tag_test"' )->execute()->fetch();
@@ -224,7 +223,7 @@ class DBTest extends \PHPUnit_Framework_TestCase
 
 	public function testDeleteMultiple()
 	{
-		$this->object->deleteMultiple( array( 't:1', 't:2' ) );
+		$this->assertTrue( $this->object->deleteMultiple( array( 't:1', 't:2' ) ) );
 
 		$conn = self::$dbm->acquire();
 		$row = $conn->create( 'SELECT * FROM "mw_cache_test"' )->execute()->fetch();
@@ -236,7 +235,7 @@ class DBTest extends \PHPUnit_Framework_TestCase
 
 	public function testDeleteByTags()
 	{
-		$this->object->deleteByTags( array( 'tag:1' ) );
+		$this->assertTrue( $this->object->deleteByTags( array( 'tag:1' ) ) );
 
 		$conn = self::$dbm->acquire();
 		$row = $conn->create( 'SELECT * FROM "mw_cache_tag_test"' )->execute()->fetch();
@@ -256,7 +255,7 @@ class DBTest extends \PHPUnit_Framework_TestCase
 
 	public function testClear()
 	{
-		$this->object->clear();
+		$this->assertTrue( $this->object->clear() );
 
 		$conn = self::$dbm->acquire();
 		$row = $conn->create( 'SELECT * FROM "mw_cache_tag_test"' )->execute()->fetch();
@@ -291,15 +290,15 @@ class DBTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	public function testGetMultipleByTags()
+	public function testHas()
 	{
-		$this->assertEquals( array( 't:1' => 'test 1' ), $this->object->getMultipleByTags( array( 'tag:1' ) ) );
+		$this->assertTrue( $this->object->has( 't:1' ) );
 	}
 
 
 	public function testSet()
 	{
-		$this->object->set( 't:3', 'test 3', '2100-01-01 00:00:00', array( 'tag:2', 'tag:3' ) );
+		$this->assertTrue( $this->object->set( 't:3', 'test 3', '2100-01-01 00:00:00', ['tag:2', 'tag:3'] ) );
 
 
 		$conn = self::$dbm->acquire();
@@ -328,11 +327,9 @@ class DBTest extends \PHPUnit_Framework_TestCase
 
 	public function testSetMultiple()
 	{
-		$pairs = array( 't:3' => 'test 3', 't:2' => 'test 4' );
-		$tags = array( 't:3' => array( 'tag:2', 'tag:3' ), 't:2' => array( 'tag:4' ) );
-		$expires = array( 't:3' => '2100-01-01 00:00:00', 't:2' => 300 );
+		$pairs = ['t:3' => 'test 3', 't:2' => 'test 4'];
 
-		$this->object->setMultiple( $pairs, $expires, $tags );
+		$this->assertTrue( $this->object->setMultiple( $pairs, '2100-01-01 00:00:00', ['tag:2', 'tag:3'] ) );
 
 
 		$conn = self::$dbm->acquire();
@@ -345,10 +342,11 @@ class DBTest extends \PHPUnit_Framework_TestCase
 
 
 		$conn = self::$dbm->acquire();
-		$result = $conn->create( 'SELECT "tname" FROM "mw_cache_tag_test" WHERE "tid" = \'t:2\'' )->execute();
+		$result = $conn->create( 'SELECT "tname" FROM "mw_cache_tag_test" WHERE "tid" = \'t:2\' ORDER BY "tname"' )->execute();
 		self::$dbm->release( $conn );
 
-		$this->assertEquals( array( 'tname' => 'tag:4' ), $result->fetch() );
+		$this->assertEquals( array( 'tname' => 'tag:2' ), $result->fetch() );
+		$this->assertEquals( array( 'tname' => 'tag:3' ), $result->fetch() );
 		$this->assertFalse( $result->fetch() );
 
 
@@ -370,20 +368,13 @@ class DBTest extends \PHPUnit_Framework_TestCase
 		$result = $conn->create( 'SELECT * FROM "mw_cache_test" WHERE "id" = \'t:2\'' )->execute();
 		self::$dbm->release( $conn );
 
-		$actual = $result->fetch();
-
+		$expected = array(
+			'expire' => '2100-01-01 00:00:00',
+			'id' => 't:2',
+			'siteid' => 1,
+			'value' => 'test 4',
+		);
+		$this->assertEquals( $expected, $result->fetch() );
 		$this->assertFalse( $result->fetch() );
-		$this->assertEquals( 't:2', $actual['id'] );
-		$this->assertEquals( 1, $actual['siteid'] );
-		$this->assertEquals( 'test 4', $actual['value'] );
-		$this->assertGreaterThan( date( 'Y-m-d H:i:s' ), $actual['expire'] );
 	}
-
-
-	public function testSetException()
-	{
-		$this->setExpectedException( '\\Aimeos\\MW\\Cache\\Exception' );
-		$this->object->set( array(), '' );
-	}
-
 }

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Stock
  */
@@ -20,77 +20,83 @@ namespace Aimeos\MShop\Stock\Manager;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Base
-	implements \Aimeos\MShop\Stock\Manager\Iface
+	implements \Aimeos\MShop\Stock\Manager\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
-	private $typeIds = array();
-
 	private $searchConfig = array(
-		'stock.id'=> array(
-			'code'=>'stock.id',
-			'internalcode'=>'msto."id"',
-			'label'=>'Stock ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
-			'public' => false,
-		),
-		'stock.siteid'=> array(
-			'code'=>'stock.siteid',
-			'internalcode'=>'msto."siteid"',
-			'label'=>'Stock site ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
-			'public' => false,
-		),
-		'stock.productcode'=> array(
-			'code'=>'stock.productcode',
-			'internalcode'=>'msto."productcode"',
-			'label'=>'Stock product code',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
-			'public' => false,
-		),
-		'stock.typeid' => array(
-			'code'=>'stock.typeid',
-			'internalcode'=>'msto."typeid"',
-			'label'=>'Stock type ID',
-			'type'=> 'integer',
+		'stock.id' => array(
+			'code' => 'stock.id',
+			'internalcode' => 'msto."id"',
+			'label' => 'ID',
+			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
+		'stock.siteid' => array(
+			'code' => 'stock.siteid',
+			'internalcode' => 'msto."siteid"',
+			'label' => 'site ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
+		),
+		'stock.type' => array(
+			'code' => 'stock.type',
+			'internalcode' => 'msto."type"',
+			'label' => 'Type',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
+		'stock.productcode' => array(
+			'code' => 'stock.productcode',
+			'internalcode' => 'msto."productcode"',
+			'label' => 'Product code',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
 		'stock.stocklevel' => array(
-			'code'=>'stock.stocklevel',
-			'internalcode'=>'msto."stocklevel"',
-			'label'=>'Stock level',
-			'type'=> 'integer',
+			'code' => 'stock.stocklevel',
+			'internalcode' => 'msto."stocklevel"',
+			'label' => 'Stock level',
+			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
 		'stock.dateback' => array(
-			'code'=>'stock.dateback',
-			'internalcode'=>'msto."backdate"',
-			'label'=>'Stock back in stock date/time',
-			'type'=> 'datetime',
+			'code' => 'stock.dateback',
+			'internalcode' => 'msto."backdate"',
+			'label' => 'Back in stock date/time',
+			'type' => 'datetime',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'stock.mtime'=> array(
-			'code'=>'stock.mtime',
-			'internalcode'=>'msto."mtime"',
-			'label'=>'Stock modification date',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'stock.timeframe' => array(
+			'code' => 'stock.timeframe',
+			'internalcode' => 'msto."timeframe"',
+			'label' => 'Delivery time frame',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'stock.ctime'=> array(
-			'code'=>'stock.ctime',
-			'internalcode'=>'msto."ctime"',
-			'label'=>'Stock creation date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'stock.ctime' => array(
+			'code' => 'stock.ctime',
+			'internalcode' => 'msto."ctime"',
+			'label' => 'Creation date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'stock.editor'=> array(
-			'code'=>'stock.editor',
-			'internalcode'=>'msto."editor"',
-			'label'=>'Stock editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'stock.mtime' => array(
+			'code' => 'stock.mtime',
+			'internalcode' => 'msto."mtime"',
+			'label' => 'Modify date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
+		),
+		'stock.editor' => array(
+			'code' => 'stock.editor',
+			'internalcode' => 'msto."editor"',
+			'label' => 'Editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
 
@@ -110,28 +116,47 @@ class Standard
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param integer[] $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Stock\Manager\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/stock/manager/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array( 'type' ) ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, ['type'] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/stock/manager/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/stock/manager/standard/delete' );
 	}
 
 
 	/**
-	 * Creates new stock item object.
+	 * Creates a new empty item instance
 	 *
-	 * @return \Aimeos\MShop\Stock\Item\Iface New product stock item object
+	 * @param array $values Values the item should be initialized with
+	 * @return \Aimeos\MShop\Stock\Item\Iface New stock item object
 	 */
-	public function createItem()
+	public function createItem( array $values = [] )
 	{
-		$values = array( 'stock.siteid' => $this->getContext()->getLocale()->getSiteId() );
+		$values['stock.siteid'] = $this->getContext()->getLocale()->getSiteId();
 		return $this->createItemBase( $values );
+	}
+
+
+	/**
+	 * Returns the item specified by its code and domain/type
+	 *
+	 * @param string $code Code of the item
+	 * @param string[] $ref List of domains to fetch list items and referenced items for
+	 * @param string|null $domain Domain of the item if necessary to identify the item uniquely
+	 * @param string|null $type Type code of the item if necessary to identify the item uniquely
+	 * @param boolean $default True to add default criteria
+	 * @return \Aimeos\MShop\Common\Item\Iface Item object
+	 */
+	public function findItem( $code, array $ref = [], $domain = null, $type = null, $default = false )
+	{
+		$list = array( 'stock.productcode' => $code, 'stock.type' => $type );
+		return $this->findItemBase( $list, $ref, $default );
 	}
 
 
@@ -140,15 +165,13 @@ class Standard
 	 *
 	 * @param \Aimeos\MShop\Stock\Item\Iface $item Stock item which should be saved
 	 * @param boolean $fetch True if the new ID should be returned in the item
+	 * @return \Aimeos\MShop\Stock\Item\Iface Updated item including the generated ID
 	 */
-	public function saveItem( \Aimeos\MShop\Common\Item\Iface $item, $fetch = true )
+	public function saveItem( \Aimeos\MShop\Stock\Item\Iface $item, $fetch = true )
 	{
-		$iface = '\\Aimeos\\MShop\\Stock\\Item\\Iface';
-		if( !( $item instanceof $iface ) ) {
-			throw new \Aimeos\MShop\Stock\Exception( sprintf( 'Object is not of required type "%1$s"', $iface ) );
+		if( !$item->isModified() ) {
+			return $item;
 		}
-
-		if( !$item->isModified() ) { return; }
 
 		$context = $this->getContext();
 
@@ -160,6 +183,7 @@ class Standard
 		{
 			$id = $item->getId();
 			$date = date( 'Y-m-d H:i:s' );
+			$columns = $this->getObject()->getSaveAttributes();
 
 			if( $id === null )
 			{
@@ -200,6 +224,7 @@ class Standard
 				 * @see mshop/stock/manager/standard/stocklevel
 				 */
 				$path = 'mshop/stock/manager/standard/insert';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ) );
 			}
 			else
 			{
@@ -237,22 +262,30 @@ class Standard
 				 * @see mshop/stock/manager/standard/stocklevel
 				 */
 				$path = 'mshop/stock/manager/standard/update';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ), false );
 			}
 
-			$stmt = $this->getCachedStatement( $conn, $path );
-			$stmt->bind( 1, $item->getProductCode() );
-			$stmt->bind( 2, $context->getLocale()->getSiteId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 3, $item->getTypeId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 4, $item->getStocklevel(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 5, $item->getDateBack() );
-			$stmt->bind( 6, $date ); //mtime
-			$stmt->bind( 7, $context->getEditor() );
+			$idx = 1;
+			$stmt = $this->getCachedStatement( $conn, $path, $sql );
+
+			foreach( $columns as $name => $entry ) {
+				$stmt->bind( $idx++, $item->get( $name ), $entry->getInternalType() );
+			}
+
+			$stmt->bind( $idx++, $item->getProductCode() );
+			$stmt->bind( $idx++, $item->getType() );
+			$stmt->bind( $idx++, $item->getStockLevel(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			$stmt->bind( $idx++, $item->getDateBack() );
+			$stmt->bind( $idx++, $item->getTimeFrame() );
+			$stmt->bind( $idx++, $date ); //mtime
+			$stmt->bind( $idx++, $context->getEditor() );
+			$stmt->bind( $idx++, $context->getLocale()->getSiteId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 
 			if( $id !== null ) {
-				$stmt->bind( 8, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+				$stmt->bind( $idx++, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 				$item->setId( $id ); // modified false
 			} else {
-				$stmt->bind( 8, $date ); //ctime
+				$stmt->bind( $idx++, $date ); //ctime
 			}
 
 			$stmt->execute()->finish();
@@ -307,15 +340,18 @@ class Standard
 			$dbm->release( $conn, $dbname );
 			throw $e;
 		}
+
+		return $item;
 	}
 
 
 	/**
-	 * Removes multiple items specified by ids in the array.
+	 * Removes multiple items.
 	 *
-	 * @param array $ids List of IDs
+	 * @param \Aimeos\MShop\Common\Item\Iface[]|string[] $itemIds List of item objects or IDs of the items
+	 * @return \Aimeos\MShop\Stock\Manager\Iface Manager object for chaining method calls
 	 */
-	public function deleteItems( array $ids )
+	public function deleteItems( array $itemIds )
 	{
 		/** mshop/stock/manager/standard/delete/mysql
 		 * Deletes the items matched by the given IDs from the database
@@ -349,21 +385,23 @@ class Standard
 		 * @see mshop/stock/manager/standard/stocklevel
 		 */
 		$path = 'mshop/stock/manager/standard/delete';
-		$this->deleteItemsBase( $ids, $path );
+
+		return $this->deleteItemsBase( $itemIds, $path );
 	}
 
 
 	/**
 	 * Creates a stock item object for the given item id.
 	 *
-	 * @param integer $id Id of the stock item
+	 * @param string $id Id of the stock item
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
+	 * @param boolean $default Add default criteria
 	 * @return \Aimeos\MShop\Stock\Item\Iface Returns the product stock item of the given id
 	 * @throws \Aimeos\MShop\Exception If item couldn't be found
 	 */
-	public function getItem( $id, array $ref = array() )
+	public function getItem( $id, array $ref = [], $default = false )
 	{
-		return $this->getItemBase( 'stock.id', $id, $ref );
+		return $this->getItemBase( 'stock.id', $id, $ref, $default );
 	}
 
 
@@ -371,13 +409,12 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/stock/manager/submanagers';
-
-		return $this->getResourceTypeBase( 'stock', $path, array( 'type' ), $withsub );
+		return $this->getResourceTypeBase( 'stock', $path, [], $withsub );
 	}
 
 
@@ -385,7 +422,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array Returns a list of attribtes implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -408,7 +445,7 @@ class Standard
 		 */
 		$path = 'mshop/stock/manager/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array( 'type' ), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -418,11 +455,11 @@ class Standard
 	 * @param \Aimeos\MW\Criteria\Iface $search Search criteria object
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
 	 * @param integer|null &$total Number of items that are available in total
-	 * @return array List of stock items implementing \Aimeos\MShop\Stock\Item\Iface
+	 * @return \Aimeos\MShop\Stock\Item\Iface[] List of stock items
 	 */
-	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = array(), &$total = null )
+	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = [], &$total = null )
 	{
-		$items = $map = $typeIds = array();
+		$items = [];
 		$context = $this->getContext();
 
 		$dbm = $context->getDatabaseManager();
@@ -432,7 +469,38 @@ class Standard
 		try
 		{
 			$required = array( 'stock' );
+
+			/** mshop/stock/manager/sitemode
+			 * Mode how items from levels below or above in the site tree are handled
+			 *
+			 * By default, only items from the current site are fetched from the
+			 * storage. If the ai-sites extension is installed, you can create a
+			 * tree of sites. Then, this setting allows you to define for the
+			 * whole stock domain if items from parent sites are inherited,
+			 * sites from child sites are aggregated or both.
+			 *
+			 * Available constants for the site mode are:
+			 * * 0 = only items from the current site
+			 * * 1 = inherit items from parent sites
+			 * * 2 = aggregate items from child sites
+			 * * 3 = inherit and aggregate items at the same time
+			 *
+			 * You also need to set the mode in the locale manager
+			 * (mshop/locale/manager/standard/sitelevel) to one of the constants.
+			 * If you set it to the same value, it will work as described but you
+			 * can also use different modes. For example, if inheritance and
+			 * aggregation is configured the locale manager but only inheritance
+			 * in the domain manager because aggregating items makes no sense in
+			 * this domain, then items wil be only inherited. Thus, you have full
+			 * control over inheritance and aggregation in each domain.
+			 *
+			 * @param integer Constant from Aimeos\MShop\Locale\Manager\Base class
+			 * @category Developer
+			 * @since 2018.01
+			 * @see mshop/locale/manager/standard/sitelevel
+			 */
 			$level = \Aimeos\MShop\Locale\Manager\Base::SITE_ALL;
+			$level = $context->getConfig()->get( 'mshop/stock/manager/sitemode', $level );
 
 			/** mshop/stock/manager/standard/search/mysql
 			 * Retrieves the records matched by the given criteria in the database
@@ -550,10 +618,8 @@ class Standard
 
 			$results = $this->searchItemsBase( $conn, $search, $cfgPathSearch, $cfgPathCount, $required, $total, $level );
 
-			while( ( $row = $results->fetch() ) !== false )
-			{
-				$map[ $row['stock.id'] ] = $row;
-				$typeIds[ $row['stock.typeid'] ] = null;
+			while( ( $row = $results->fetch() ) !== false ) {
+				$items[(string) $row['stock.id']] = $this->createItemBase( $row );
 			}
 
 			$dbm->release( $conn, $dbname );
@@ -562,28 +628,6 @@ class Standard
 		{
 			$dbm->release( $conn, $dbname );
 			throw $e;
-		}
-
-		if( !empty( $typeIds ) )
-		{
-			$typeManager = $this->getSubManager( 'type' );
-
-			$typeSearch = $typeManager->createSearch();
-			$typeSearch->setConditions( $typeSearch->compare( '==', 'stock.type.id', array_keys( $typeIds ) ) );
-			$typeSearch->setSlice( 0, $search->getSliceSize() );
-
-			$typeItems = $typeManager->searchItems( $typeSearch );
-
-			foreach( $map as $id => $row )
-			{
-				if( isset( $typeItems[ $row['stock.typeid'] ] ) )
-				{
-					$row['stock.type'] = $typeItems[ $row['stock.typeid'] ]->getCode();
-					$row['stock.typename'] = $typeItems[$row['stock.typeid']]->getName();
-				}
-
-				$items[$id] = $this->createItemBase( $row );
-			}
 		}
 
 		return $items;
@@ -713,49 +757,21 @@ class Standard
 
 
 	/**
-	 * Decreases the stock level of the product for the type.
+	 * Decreases the stock level for the given product codes/quantity pairs and type
 	 *
-	 * @param string $productCode Unique code of a product
-	 * @param string $typeCode Unique code of the type
-	 * @param integer $amount Amount the stock level should be decreased
+	 * @param array $codeqty Associative list of product codes as keys and quantities as values
+	 * @param string $type Unique code of the stock type
+	 * @return \Aimeos\MShop\Stock\Manager\Iface Manager object for chaining method calls
 	 */
-	public function decrease( $productCode, $typeCode, $amount )
-	{
-		$this->increase( $productCode, $typeCode, -$amount );
-	}
-
-
-	/**
-	 * Increases the stock level of the product for the type.
-	 *
-	 * @param string $productCode Unique code of a product
-	 * @param string $typeCode Unique code of the type
-	 * @param integer $amount Amount the stock level should be increased
-	 */
-	public function increase( $productCode, $typeCode, $amount )
+	public function decrease( array $codeqty, $type = 'default' )
 	{
 		$context = $this->getContext();
+		$translations = ['stock.siteid' => '"siteid"'];
+		$types = ['stock.siteid' => $this->searchConfig['stock.siteid']['internaltype']];
 
-		$search = $this->createSearch();
-		$expr = array(
-			$search->compare( '==', 'stock.productcode', $productCode ),
-			$search->compare( '==', 'stock.siteid', $context->getLocale()->getSitePath() ),
-			$search->compare( '==', 'stock.typeid', $this->getStockTypeIds( $typeCode ) ),
-		);
-		$search->setConditions( $search->combine( '&&', $expr ) );
-
-		$types = array(
-			'stock.productcode' => $this->searchConfig['stock.productcode']['internaltype'],
-			'stock.siteid' => $this->searchConfig['stock.siteid']['internaltype'],
-			'stock.typeid' => $this->searchConfig['stock.typeid']['internaltype'],
-		);
-		$translations = array(
-			'stock.productcode' => '"productcode"',
-			'stock.siteid' => '"siteid"',
-			'stock.typeid' => '"typeid"',
-		);
-
-		$conditions = $search->getConditionString( $types, $translations );
+		$search = $this->getObject()->createSearch();
+		$search->setConditions( $search->compare( '==', 'stock.siteid', $context->getLocale()->getSitePath() ) );
+		$conditions = $search->getConditionSource( $types, $translations );
 
 		$dbm = $context->getDatabaseManager();
 		$dbname = $this->getResourceName();
@@ -784,7 +800,7 @@ class Standard
 			 * the current site and all parent sites if the stock level is
 			 * inherited by one of the parent sites.
 			 *
-			 * Each time the stock level is updated, the modification time is
+			 * Each time the stock level is updated, the modify date/time is
 			 * set to the current timestamp and the editor field is updated.
 			 *
 			 * @param string SQL statement for increasing/decreasing the stock level
@@ -798,13 +814,19 @@ class Standard
 			 * @see mshop/stock/manager/standard/count/ansi
 			 */
 			$path = 'mshop/stock/manager/standard/stocklevel';
-			$stmt = $conn->create( str_replace( ':cond', $conditions, $this->getSqlConfig( $path ) ) );
 
-			$stmt->bind( 1, $amount, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 2, date( 'Y-m-d H:i:s' ) ); //mtime
-			$stmt->bind( 3, $context->getEditor() );
+			foreach( $codeqty as $code => $qty )
+			{
+				$stmt = $conn->create( str_replace( ':cond', $conditions, $this->getSqlConfig( $path ) ) );
 
-			$stmt->execute()->finish();
+				$stmt->bind( 1, $qty, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+				$stmt->bind( 2, date( 'Y-m-d H:i:s' ) ); //mtime
+				$stmt->bind( 3, $context->getEditor() );
+				$stmt->bind( 4, $code );
+				$stmt->bind( 5, $type );
+
+				$stmt->execute()->finish();
+			}
 
 			$dbm->release( $conn, $dbname );
 		}
@@ -813,47 +835,36 @@ class Standard
 			$dbm->release( $conn, $dbname );
 			throw $e;
 		}
+
+		return $this;
+	}
+
+
+	/**
+	 * Increases the stock level for the given product codes/quantity pairs and type
+	 *
+	 * @param array $codeqty Associative list of product codes as keys and quantities as values
+	 * @param string $type Unique code of the type
+	 * @return \Aimeos\MShop\Stock\Manager\Iface Manager object for chaining method calls
+	 */
+	public function increase( array $codeqty, $type = 'default' )
+	{
+		foreach( $codeqty as $code => $qty ) {
+			$codeqty[$code] = -$qty;
+		}
+
+		return $this->getObject()->decrease( $codeqty, $type );
 	}
 
 
 	/**
 	 * Creates new stock item object.
 	 *
-	 * @param array $values Possible optional array keys can be given:
-	 * id, parentid, siteid, typeid, stocklevel, backdate
+	 * @param array $values Possible optional array keys can be given: id, parentid, siteid, type, stocklevel, backdate
 	 * @return \Aimeos\MShop\Stock\Item\Standard New stock item object
 	 */
-	protected function createItemBase( array $values = array() )
+	protected function createItemBase( array $values = [] )
 	{
 		return new \Aimeos\MShop\Stock\Item\Standard( $values );
-	}
-
-
-	/**
-	 * Returns the type IDs for the given stock type
-	 *
-	 * @param string $typeCode Unique stock type code
-	 * @return array List of stock type IDs
-	 * @throws \Aimeos\MShop\Stock\Exception If stock type isn't found
-	 */
-	protected function getStockTypeIds( $typeCode )
-	{
-		if( !isset( $this->typeIds[$typeCode] ) )
-		{
-			$typeManager = $this->getSubManager( 'type' );
-
-			$search = $typeManager->createSearch();
-			$search->setConditions( $search->compare( '==', 'stock.type.code', $typeCode ) );
-
-			$result = $typeManager->searchItems( $search );
-
-			if( empty( $result ) ) {
-				throw new \Aimeos\MShop\Stock\Exception( sprintf( 'No stock type for code "%1$s" found', $typeCode ) );
-			}
-
-			$this->typeIds[$typeCode] = array_keys( $result );
-		}
-
-		return $this->typeIds[$typeCode];
 	}
 }

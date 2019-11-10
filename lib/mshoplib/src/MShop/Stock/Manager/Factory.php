@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MShop
  * @subpackage Stock
  */
@@ -30,7 +30,7 @@ class Factory
 	 * @throws \Aimeos\MShop\Stock\Exception|\Aimeos\MShop\Exception If requested manager
 	 * implementation couldn't be found or initialisation fails
 	 */
-	public static function createManager( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
+	public static function create( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
 	{
 		/** mshop/stock/manager/name
 		 * Class name of the used stock manager implementation
@@ -71,14 +71,14 @@ class Factory
 
 		if( ctype_alnum( $name ) === false )
 		{
-			$classname = is_string( $name ) ? '\\Aimeos\\MShop\\Stock\\Manager\\' . $name : '<not a string>';
+			$classname = is_string( $name ) ? '\Aimeos\MShop\Stock\Manager\\' . $name : '<not a string>';
 			throw new \Aimeos\MShop\Stock\Exception( sprintf( 'Invalid characters in class name "%1$s"', $classname ) );
 		}
 
-		$iface = '\\Aimeos\\MShop\\Stock\\Manager\\Iface';
-		$classname = '\\Aimeos\\MShop\\Stock\\Manager\\' . $name;
+		$iface = \Aimeos\MShop\Stock\Manager\Iface::class;
+		$classname = '\Aimeos\MShop\Stock\Manager\\' . $name;
 
-		$manager = self::createManagerBase( $context, $classname, $iface );
+		$manager = self::createManager( $context, $classname, $iface );
 
 		/** mshop/stock/manager/decorators/excludes
 		 * Excludes decorators added by the "common" option from the stock manager
@@ -120,7 +120,8 @@ class Factory
 		 *  mshop/stock/manager/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the stock controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the stock
+		 * manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2017.01
@@ -139,13 +140,13 @@ class Factory
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the stock manager.
+		 * ("\Aimeos\MShop\Stock\Manager\Decorator\*") around the stock manager.
 		 *
 		 *  mshop/stock/manager/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the stock
-		 * controller.
+		 * "\Aimeos\MShop\Stock\Manager\Decorator\Decorator2" only to the stock
+		 * manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2017.01

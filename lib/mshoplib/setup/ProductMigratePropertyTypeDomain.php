@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018
  */
 
 
@@ -24,7 +24,7 @@ class ProductMigratePropertyTypeDomain extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPreDependencies()
 	{
-		return array();
+		return [];
 	}
 
 
@@ -42,7 +42,7 @@ class ProductMigratePropertyTypeDomain extends \Aimeos\MW\Setup\Task\Base
 	/**
 	 * Executes the task for MySQL databases.
 	 */
-	protected function mysql()
+	public function migrate()
 	{
 		$this->process( $this->mysql );
 	}
@@ -60,9 +60,13 @@ class ProductMigratePropertyTypeDomain extends \Aimeos\MW\Setup\Task\Base
 
 		if( $this->schema->tableExists( 'mshop_product_property_type' ) )
 		{
-			$result = $this->conn->create( $stmt )->execute();
+			$conn = $this->acquire( 'db-product' );
+
+			$result = $conn->create( $stmt )->execute();
 			$cntRows = $result->affectedRows();
 			$result->finish();
+
+			$this->release( $conn, 'db-product' );
 
 			if( $cntRows ) {
 				$this->status( sprintf( '%1$d/%1$d', $cntRows ) );

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Plugin
  */
@@ -20,7 +20,6 @@ namespace Aimeos\MShop\Plugin\Provider;
  */
 class Exception extends \Aimeos\MShop\Plugin\Exception
 {
-
 	private $errorCodes;
 
 
@@ -32,7 +31,7 @@ class Exception extends \Aimeos\MShop\Plugin\Exception
 	 * @param \Exception|null $previous Previously thrown exception
 	 * @param array $errorCodes List of error codes for error handling
 	 */
-	public function __construct( $message = '', $code = 0, \Exception $previous = null, $errorCodes = array() )
+	public function __construct( $message = '', $code = 0, \Exception $previous = null, $errorCodes = [] )
 	{
 		parent::__construct( $message, $code, $previous );
 

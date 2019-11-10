@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2014-2015
+ * @copyright Aimeos (aimeos.org), 2014-2018
  * @package MShop
  * @subpackage Product
  */
@@ -18,14 +18,13 @@ namespace Aimeos\MShop\Product\Manager\Property\Type;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Type\Base
-	implements \Aimeos\MShop\Product\Manager\Property\Type\Iface
+	implements \Aimeos\MShop\Product\Manager\Property\Type\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
 		'product.property.type.id' => array(
 			'code' => 'product.property.type.id',
 			'internalcode' => 'mproprty."id"',
-			'internaldeps' => array( 'LEFT JOIN "mshop_product_property_type" AS mproprty ON ( mpropr."typeid" = mproprty."id" )' ),
-			'label' => 'Product property type ID',
+			'label' => 'Property type ID',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
@@ -33,59 +32,69 @@ class Standard
 		'product.property.type.siteid' => array(
 			'code' => 'product.property.type.siteid',
 			'internalcode' => 'mproprty."siteid"',
-			'label' => 'Product property type site ID',
+			'label' => 'Property type site ID',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
+		'product.property.type.label' => array(
+			'code' => 'product.property.type.label',
+			'internalcode' => 'mproprty."label"',
+			'label' => 'Property type label',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
 		'product.property.type.code' => array(
 			'code' => 'product.property.type.code',
 			'internalcode' => 'mproprty."code"',
-			'label' => 'Product property type code',
+			'label' => 'Property type code',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'product.property.type.domain' => array(
 			'code' => 'product.property.type.domain',
 			'internalcode' => 'mproprty."domain"',
-			'label' => 'Product property type domain',
+			'label' => 'Property type domain',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'product.property.type.label' => array(
-			'code' => 'product.property.type.label',
-			'internalcode' => 'mproprty."label"',
-			'label' => 'Product property type label',
-			'type' => 'string',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'product.property.type.position' => array(
+			'code' => 'product.property.type.position',
+			'internalcode' => 'mproprty."pos"',
+			'label' => 'Property type position',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
 		'product.property.type.status' => array(
 			'code' => 'product.property.type.status',
 			'internalcode' => 'mproprty."status"',
-			'label' => 'Product property type status',
+			'label' => 'Property type status',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'product.property.type.mtime'=> array(
-			'code'=>'product.property.type.mtime',
-			'internalcode'=>'mproprty."mtime"',
-			'label'=>'Product property type modification date',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'product.property.type.ctime' => array(
+			'code' => 'product.property.type.ctime',
+			'internalcode' => 'mproprty."ctime"',
+			'label' => 'Property type create date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'product.property.type.ctime'=> array(
-			'code'=>'product.property.type.ctime',
-			'internalcode'=>'mproprty."ctime"',
-			'label'=>'Product property type creation date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'product.property.type.mtime' => array(
+			'code' => 'product.property.type.mtime',
+			'internalcode' => 'mproprty."mtime"',
+			'label' => 'Property type modify date',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'product.property.type.editor'=> array(
-			'code'=>'product.property.type.editor',
-			'internalcode'=>'mproprty."editor"',
-			'label'=>'Product property type editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'product.property.type.editor' => array(
+			'code' => 'product.property.type.editor',
+			'internalcode' => 'mproprty."editor"',
+			'label' => 'Property type editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
 
@@ -105,16 +114,17 @@ class Standard
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param array $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Product\Manager\Property\Type\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/product/manager/property/type/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array() ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, [] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/product/manager/property/type/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/product/manager/property/type/standard/delete' );
 	}
 
 
@@ -122,13 +132,12 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/product/manager/property/type/submanagers';
-
-		return $this->getResourceTypeBase( 'product/property/type', $path, array(), $withsub );
+		return $this->getResourceTypeBase( 'product/property/type', $path, [], $withsub );
 	}
 
 
@@ -136,7 +145,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array List of attribute items implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -159,7 +168,7 @@ class Standard
 		 */
 		$path = 'mshop/product/manager/property/type/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -241,12 +250,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap global decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the product property type manager.
+		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the product property
+		 * type manager.
 		 *
 		 *  mshop/product/manager/property/type/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the product controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the product
+		 * property type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2015.01
@@ -265,13 +276,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the product property type manager.
+		 * ("\Aimeos\MShop\Product\Manager\Property\Type\Decorator\*") around the
+		 * product property type manager.
 		 *
 		 *  mshop/product/manager/property/type/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the product
-		 * controller.
+		 * "\Aimeos\MShop\Product\Manager\Property\Type\Decorator\Decorator2" only
+		 * to the product property type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2015.01

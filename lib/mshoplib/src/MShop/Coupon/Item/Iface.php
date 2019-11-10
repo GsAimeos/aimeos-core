@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Coupon
  */
@@ -18,7 +18,9 @@ namespace Aimeos\MShop\Coupon\Item;
  * @package MShop
  * @subpackage Coupon
  */
-interface Iface extends \Aimeos\MShop\Common\Item\Iface, \Aimeos\MShop\Common\Item\Time\Iface
+interface Iface
+	extends \Aimeos\MShop\Common\Item\Iface, \Aimeos\MShop\Common\Item\Config\Iface,
+		\Aimeos\MShop\Common\Item\Time\Iface, \Aimeos\MShop\Common\Item\Status\Iface
 {
 	/**
 	 * Returns the label of the coupon if available.
@@ -49,35 +51,4 @@ interface Iface extends \Aimeos\MShop\Common\Item\Iface, \Aimeos\MShop\Common\It
 	 * @return \Aimeos\MShop\Coupon\Item\Iface Coupon item for chaining method calls
 	 */
 	public function setProvider( $provider );
-
-	/**
-	 * Returns the configuration of the coupon item.
-	 *
-	 * @return array Custom configuration values
-	 */
-	public function getConfig();
-
-	/**
-	 * Sets the new configuration for the coupon item.
-	 *
-	 * @param array $config Custom configuration values
-	 * @return \Aimeos\MShop\Coupon\Item\Iface Coupon item for chaining method calls
-	 */
-	public function setConfig( array $config );
-
-	/**
-	 * Returns the status of the coupon item.
-	 *
-	 * @return integer Status of the item
-	 */
-	public function getStatus();
-
-	/**
-	 * Sets the new status of the coupon item.
-	 *
-	 * @param integer $status Status of the item
-	 * @return \Aimeos\MShop\Coupon\Item\Iface Coupon item for chaining method calls
-	 */
-	public function setStatus( $status );
-
 }

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -180,6 +180,28 @@ class Bootstrap
 
 
 	/**
+	 * Returns the available extensions
+	 *
+	 * @return array List of available extension names
+	 */
+	public function getExtensions()
+	{
+		$list = [];
+
+		foreach( $this->manifests as $path => $manifest )
+		{
+			if( isset( $manifest['name'] ) && $manifest['name'] != '' ) {
+				$list[] = $manifest['name'];
+			} else {
+				$list[] = basename( $path );
+			}
+		}
+
+		return $list;
+	}
+
+
+	/**
 	 * Returns the list of paths where setup tasks are stored.
 	 *
 	 * @param string $site Name of the site like "default", "unitperf" and "unittest"
@@ -231,7 +253,7 @@ class Bootstrap
 			{
 				$name = $file->getFilename();
 
-				if( $file->isFile() && preg_match('/^[a-z]{2,3}(_[A-Z]{2})?$/', $name ) ) {
+				if( $file->isFile() && preg_match( '/^[a-z]{2,3}(_[A-Z]{2})?$/', $name ) ) {
 					$list[$name] = null;
 				}
 			}
@@ -266,12 +288,10 @@ class Bootstrap
 
 			foreach( $dir as $dirinfo )
 			{
-				if( $dirinfo->isDot() !== false ) {
-					continue;
-				}
-
-				$manifest = $this->getManifestFile( $dirinfo->getPathName() );
-				if( $manifest === false ) {
+				if( $dirinfo->isDir() === false || $dirinfo->isDot() !== false
+					|| substr( $dirinfo->getFilename(), 0, 1 ) === '.'
+					|| ( $manifest = $this->getManifestFile( $dirinfo->getPathName() ) ) === false
+				) {
 					continue;
 				}
 
@@ -293,7 +313,7 @@ class Bootstrap
 	{
 		$manifestFile = $dir . DIRECTORY_SEPARATOR . 'manifest.php';
 
-		if( is_dir( $dir ) && file_exists( $manifestFile ) ) {
+		if( file_exists( $manifestFile ) ) {
 			return include $manifestFile;
 		}
 

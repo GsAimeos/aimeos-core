@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Service
  */
@@ -42,10 +42,10 @@ interface Iface extends \Aimeos\MShop\Service\Provider\Iface, \Aimeos\MShop\Serv
 	 *
 	 * @param \Aimeos\MShop\Order\Item\Iface $order Order invoice object
 	 * @param array $params Request parameter if available
-	 * @return \Aimeos\MShop\Common\Item\Helper\Form\Standard Form object with URL, action and parameters to redirect to
+	 * @return \Aimeos\MShop\Common\Helper\Form\Standard Form object with URL, action and parameters to redirect to
 	 * 	(e.g. to an external server of the payment provider or to a local success page)
 	 */
-	public function process( \Aimeos\MShop\Order\Item\Iface $order, array $params = array() );
+	public function process( \Aimeos\MShop\Order\Item\Iface $order, array $params = [] );
 
 	/**
 	 * Refunds the money for the given order if supported.
@@ -54,4 +54,13 @@ interface Iface extends \Aimeos\MShop\Service\Provider\Iface, \Aimeos\MShop\Serv
 	 * @return void
 	 */
 	public function refund( \Aimeos\MShop\Order\Item\Iface $order );
+
+	/**
+	 * Executes the payment again for the given order if supported.
+	 * This requires support of the payment gateway and token based payment
+	 *
+	 * @param \Aimeos\MShop\Order\Item\Iface $order Order invoice object
+	 * @return void
+	 */
+	public function repay( \Aimeos\MShop\Order\Item\Iface $order );
 }

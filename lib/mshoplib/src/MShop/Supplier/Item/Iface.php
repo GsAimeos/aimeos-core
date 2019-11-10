@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Supplier
  */
@@ -19,7 +19,8 @@ namespace Aimeos\MShop\Supplier\Item;
  * @subpackage Supplier
  */
 interface Iface
-	extends \Aimeos\MShop\Common\Item\ListRef\Iface
+	extends \Aimeos\MShop\Common\Item\Iface, \Aimeos\MShop\Common\Item\AddressRef\Iface,
+		\Aimeos\MShop\Common\Item\ListRef\Iface, \Aimeos\MShop\Common\Item\Status\Iface
 {
 	/**
 	 * Returns the label of the supplier item.
@@ -50,19 +51,4 @@ interface Iface
 	 * @return \Aimeos\MShop\Supplier\Item\Iface Supplier item for chaining method calls
 	 */
 	public function setCode( $value );
-
-	/**
-	 * Returns the status of the item
-	 *
-	 * @return integer Status of the item
-	 */
-	public function getStatus();
-
-	/**
-	 * Sets the status of the item
-	 *
-	 * @param integer $value Status of the item
-	 * @return \Aimeos\MShop\Supplier\Item\Iface Supplier item for chaining method calls
-	 */
-	public function setStatus( $value );
 }

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Common
  */
@@ -30,7 +30,7 @@ class Standard
 	 * @param string $prefix Property prefix when converting to array
 	 * @param array $values List of attributes that belong to the provider common address item
 	 */
-	public function __construct( $prefix, array $values = array( ) )
+	public function __construct( $prefix, array $values = [] )
 	{
 		parent::__construct( $prefix, $values );
 
@@ -62,10 +62,11 @@ class Standard
 	 */
 	public function setParentId( $parentid )
 	{
-		if( $parentid == $this->getParentId() ) { return $this; }
-
-		$this->values[$this->prefix . 'parentid'] = (string) $parentid;
-		$this->setModified();
+		if( (string) $parentid !== $this->getParentId() )
+		{
+			$this->values[$this->prefix . 'parentid'] = (string) $parentid;
+			$this->setModified();
+		}
 
 		return $this;
 	}
@@ -94,53 +95,60 @@ class Standard
 	 */
 	public function setPosition( $position )
 	{
-		if( $position == $this->getPosition() ) { return $this; }
-
-		$this->values[$this->prefix . 'position'] = (int) $position;
-		$this->setModified();
+		if( (int) $position !== $this->getPosition() )
+		{
+			$this->values[$this->prefix . 'position'] = (int) $position;
+			$this->setModified();
+		}
 
 		return $this;
 	}
 
 
-	/**
-	 * Sets the item values from the given array.
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Common\Item\Address\Iface Address item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case $this->prefix . 'parentid': $this->setParentId( $value ); break;
-				case $this->prefix . 'position': $this->setPosition( $value ); break;
-				default: $unknown[$key] = $value;
+				case $this->prefix . 'parentid': !$private ?: $item = $item->setParentId( $value ); break;
+				case $this->prefix . 'position': $item = $item->setPosition( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$properties = parent::toArray();
+		$list = parent::toArray( $private );
 
-		$properties[$this->prefix . 'parentid'] = $this->getParentId();
-		$properties[$this->prefix . 'position'] = $this->getPosition();
+		$list[$this->prefix . 'position'] = $this->getPosition();
 
-		return $properties;
+		if( $private === true ) {
+			$list[$this->prefix . 'parentid'] = $this->getParentId();
+		}
+
+		return $list;
 	}
 
 }

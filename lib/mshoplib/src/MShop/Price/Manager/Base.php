@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Price
  */
@@ -19,15 +19,19 @@ namespace Aimeos\MShop\Price\Manager;
  * @subpackage Price
  */
 abstract class Base
-	extends \Aimeos\MShop\Common\Manager\ListRef\Base
+	extends \Aimeos\MShop\Common\Manager\Base
 {
+	use \Aimeos\MShop\Common\Manager\ListRef\Traits;
+	use \Aimeos\MShop\Common\Manager\PropertyRef\Traits;
+
+
 	/**
 	 * Returns the price item with the lowest price for the given quantity.
 	 *
-	 * @param array $priceItems List of price items implementing \Aimeos\MShop\Price\Item\Iface
+	 * @param \Aimeos\MShop\Price\Item\Iface[] $priceItems List of price items
 	 * @param integer $quantity Number of products
 	 * @param string|null $currencyId Three letter ISO currency code or null for all
-	 * @return \Aimeos\MShop\Price\Iface Price item with the lowest price
+	 * @return \Aimeos\MShop\Price\Item\Iface Price item with the lowest price
 	 * @throws \Aimeos\MShop\Price\Exception if no price item is available
 	 */
 	public function getLowestPrice( array $priceItems, $quantity, $currencyId = null )
@@ -35,13 +39,14 @@ abstract class Base
 		$priceList = $this->getPriceList( $priceItems, $currencyId );
 
 		if( ( $price = reset( $priceList ) ) === false ) {
-			throw new \Aimeos\MShop\Price\Exception( sprintf( 'Price item not available' ) );
+			$msg = $this->getContext()->getI18n()->dt( 'mshop', 'Price item not available' );
+			throw new \Aimeos\MShop\Price\Exception( $msg );
 		}
 
 		if( $price->getQuantity() > $quantity )
 		{
-			$msg = sprintf( 'Price for the given quantity "%1$d" not available', $quantity );
-			throw new \Aimeos\MShop\Price\Exception( $msg );
+			$msg = $this->getContext()->getI18n()->dt( 'mshop', 'Price for the given quantity "%1$d" not available' );
+			throw new \Aimeos\MShop\Price\Exception( sprintf( $msg, $quantity ) );
 		}
 
 		foreach( $priceList as $qty => $priceItem )
@@ -58,22 +63,18 @@ abstract class Base
 	/**
 	 * Returns the price items sorted by quantity
 	 *
-	 * @param array $priceItems List of price items implementing \Aimeos\MShop\Price\Item\Iface
+	 * @param \Aimeos\MShop\Price\Item\Iface[] $priceItems List of price items
 	 * @param string|null $currencyId Three letter ISO currency code or null for all
 	 * @return array Associative list of quantity as keys and price item as value
 	 * @throws \Aimeos\MShop\Price\Exception If an object is no price item
 	 */
 	protected function getPriceList( array $priceItems, $currencyId )
 	{
-		$list = array();
+		$list = [];
 
 		foreach( $priceItems as $priceItem )
 		{
-			$iface = '\\Aimeos\\MShop\\Price\\Item\\Iface';
-
-			if( ( $priceItem instanceof $iface ) === false ) {
-				throw new \Aimeos\MShop\Price\Exception( sprintf( 'Object is not of required type "%1$s"', $iface ) );
-			}
+			self::checkClass( \Aimeos\MShop\Price\Item\Iface::class, $priceItem );
 
 			if( $currencyId !== null && $currencyId !== $priceItem->getCurrencyId() ) {
 				continue;

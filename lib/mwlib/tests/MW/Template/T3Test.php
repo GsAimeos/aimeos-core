@@ -8,9 +8,9 @@ namespace Aimeos\MW\Template;
  *
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
-class T3Test extends \PHPUnit_Framework_TestCase
+class T3Test extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -42,8 +42,8 @@ class T3Test extends \PHPUnit_Framework_TestCase
 
 	public function testToString()
 	{
-		$template = $this->object->get('NAME');
-		$this->assertInstanceOf( '\\Aimeos\\MW\\Template\\Iface', $template );
+		$template = $this->object->get( 'NAME' );
+		$this->assertInstanceOf( \Aimeos\MW\Template\Iface::class, $template );
 
 		$this->assertEquals( 'Name', $template->str() );
 	}

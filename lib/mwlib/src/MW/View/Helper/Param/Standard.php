@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage View
  */
@@ -31,7 +31,7 @@ class Standard
 	 * @param \Aimeos\MW\View\Iface $view View instance with registered view helpers
 	 * @param array $params Associative list of key/value pairs
 	 */
-	public function __construct( $view, array $params = array() )
+	public function __construct( $view, array $params = [] )
 	{
 		parent::__construct( $view );
 
@@ -44,9 +44,10 @@ class Standard
 	 *
 	 * @param string|null $name Name of the parameter key or null for all parameters
 	 * @param mixed $default Default value if parameter key is not available
+	 * @param boolean $escape Escape HTML if single parameter is returned
 	 * @return mixed Parameter value or associative list of key/value pairs
 	 */
-	public function transform( $name = null, $default = null )
+	public function transform( $name = null, $default = null, $escape = true )
 	{
 		if( $name === null ) {
 			return $this->params;
@@ -64,6 +65,10 @@ class Standard
 			}
 		}
 
-		return $param;
+		if( is_array( $param ) || $escape === false ) {
+			return $param;
+		}
+
+		return htmlspecialchars( $param, ENT_NOQUOTES, 'UTF-8' );
 	}
 }

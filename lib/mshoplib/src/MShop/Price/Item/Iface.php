@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Price
  */
@@ -19,7 +19,9 @@ namespace Aimeos\MShop\Price\Item;
  * @subpackage Price
  */
 interface Iface
-	extends \Aimeos\MShop\Common\Item\ListRef\Iface, \Aimeos\MShop\Common\Item\Typeid\Iface
+	extends \Aimeos\MShop\Common\Item\Iface, \Aimeos\MShop\Common\Item\Domain\Iface,
+		\Aimeos\MShop\Common\Item\ListRef\Iface, \Aimeos\MShop\Common\Item\PropertyRef\Iface,
+		\Aimeos\MShop\Common\Item\Status\Iface, \Aimeos\MShop\Common\Item\TypeRef\Iface
 {
 	/**
 	 * Add the given price to the current one.
@@ -59,19 +61,26 @@ interface Iface
 	public function compare( \Aimeos\MShop\Price\Item\Iface $price );
 
 	/**
-	 * Returns the domain the price is valid for.
+	 * Returns the decimal precision of the price
 	 *
-	 * @return string Domain name
+	 * @return integer Number of decimal digits
 	 */
-	public function getDomain();
+	public function getPrecision();
 
 	/**
-	 * Sets the new domain the price is valid for.
+	 * Returns the label of the item
 	 *
-	 * @param string $domain Domain name
+	 * @return string Label of the item
+	 */
+	public function getLabel();
+
+	/**
+	 * Sets the label of the item
+	 *
+	 * @param string $label Label of the item
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
-	public function setDomain( $domain );
+	public function setLabel( $label );
 
 	/**
 	 * Returns the quantity.
@@ -83,7 +92,7 @@ interface Iface
 	/**
 	 * Sets the quantity.
 	 *
-	 * @param integer Quantity
+	 * @param integer $quantity Quantity
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setQuantity( $quantity );
@@ -98,7 +107,7 @@ interface Iface
 	/**
 	 * Sets the new amount of money.
 	 *
-	 * @param integer|double $price Amount with two digits precision
+	 * @param string|integer|double $price Amount with two digits precision
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setValue( $price );
@@ -113,7 +122,7 @@ interface Iface
 	/**
 	 * Sets the new costs.
 	 *
-	 * @param integer|double $price Amount with two digits precision
+	 * @param string|integer|double $price Amount with two digits precision
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setCosts( $price );
@@ -128,7 +137,7 @@ interface Iface
 	/**
 	 * Sets the new rebate amount.
 	 *
-	 * @param integer|double $price Rebate amount with two digits precision
+	 * @param string|integer|double $price Rebate amount with two digits precision
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setRebate( $price );
@@ -141,12 +150,27 @@ interface Iface
 	public function getTaxRate();
 
 	/**
+	 * Returns all tax rates in percent.
+	 *
+	 * @return string[] Tax rates for the price
+	 */
+	 public function getTaxRates();
+
+	/**
 	 * Sets the new tax rate in percent.
 	 *
-	 * @param string $taxrate Tax rate with two digits precision
+	 * @param string|integer|double $taxrate Tax rate with two digits precision
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setTaxRate( $taxrate );
+
+	/**
+	 * Sets the new tax rates in percent
+	 *
+	 * @param array $taxrates Tax rates with name as key and values with two digits precision
+	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
+	 */
+	public function setTaxRates( array $taxrates );
 
 	/**
 	 * Returns the tax rate flag.
@@ -162,7 +186,7 @@ interface Iface
 	 *
 	 * @param boolean $flag True if tax is included in the price value, costs and rebate, false if not
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
-	*/
+	 */
 	public function setTaxFlag( $flag );
 
 	/**
@@ -179,7 +203,7 @@ interface Iface
 	/**
 	 * Sets the tax amount
 	 *
-	 * @param integer|double $value Tax value with up to four digits precision
+	 * @param string|integer|double $value Tax value with up to four digits precision
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setTaxValue( $value );
@@ -194,25 +218,9 @@ interface Iface
 	/**
 	 * Sets the currency ID.
 	 *
-	 * @param string|null $currencyid Three letter ISO currency code (e.g. EUR)
+	 * @param string $currencyid Three letter ISO currency code (e.g. EUR)
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 * @throws \Aimeos\MShop\Exception If the currency ID is invalid
 	 */
 	public function setCurrencyId( $currencyid );
-
-	/**
-	 * Returns the status of the item
-	 *
-	 * @return integer Status of the item
-	 */
-	public function getStatus();
-
-	/**
-	 * Sets the status of the item
-	 *
-	 * @param integer $status Status of the item
-	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
-	 */
-	public function setStatus( $status );
-
 }

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Order
  */
@@ -20,10 +20,6 @@ namespace Aimeos\MShop\Order\Item\Base\Service;
  */
 class Standard extends Base implements Iface
 {
-	private $price;
-	private $values;
-
-
 	/**
 	 * Initializes the order base service item
 	 *
@@ -31,53 +27,55 @@ class Standard extends Base implements Iface
 	 * @param array $values Values to be set on initialisation
 	 * @param array $attributes Attributes to be set on initialisation
 	 */
-	public function __construct( \Aimeos\MShop\Price\Item\Iface $price, array $values = array(), array $attributes = array() )
+	public function __construct( \Aimeos\MShop\Price\Item\Iface $price, array $values = [], array $attributes = [] )
 	{
 		parent::__construct( $price, $values, $attributes );
-
-		$this->values = $values;
-		$this->price = $price;
 	}
 
 
 	/**
-	 * Clones internal objects of the order base service item.
+	 * Returns the ID of the site the item is stored
+	 *
+	 * @return string|null Site ID (or null if not available)
 	 */
-	public function __clone()
+	public function getSiteId()
 	{
-		$this->price = clone $this->price;
+		return $this->get( 'order.base.service.siteid' );
+	}
+
+
+	/**
+	 * Sets the site ID of the item.
+	 *
+	 * @param string $value Unique site ID of the item
+	 * @return \Aimeos\MShop\Order\Item\Base\Service\Iface Order base service item for chaining method calls
+	 */
+	public function setSiteId( $value )
+	{
+		return $this->set( 'order.base.service.siteid', (string) $value );
 	}
 
 
 	/**
 	 * Returns the order base ID of the order service if available.
 	 *
-	 * @return integer|null Base ID of the item.
+	 * @return string|null Base ID of the item.
 	 */
 	public function getBaseId()
 	{
-		if( isset( $this->values['order.base.service.baseid'] ) ) {
-			return (int) $this->values['order.base.service.baseid'];
-		}
-
-		return null;
+		return $this->get( 'order.base.service.baseid' );
 	}
 
 
 	/**
 	 * Sets the order service base ID of the order service item.
 	 *
-	 * @param integer|null $value Order service base ID
+	 * @param string $value Order service base ID
 	 * @return \Aimeos\MShop\Order\Item\Base\Service\Iface Order base service item for chaining method calls
 	 */
 	public function setBaseId( $value )
 	{
-		if( $value == $this->getBaseId() ) { return $this; }
-
-		$this->values['order.base.service.baseid'] = ( $value !== null ? (int) $value : null );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.service.baseid', (string) $value );
 	}
 
 
@@ -88,11 +86,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getServiceId()
 	{
-		if( isset( $this->values['order.base.service.serviceid'] ) ) {
-			return (string) $this->values['order.base.service.serviceid'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.service.serviceid', '' );
 	}
 
 
@@ -104,12 +98,7 @@ class Standard extends Base implements Iface
 	 */
 	public function setServiceId( $servid )
 	{
-		if( $servid == $this->getServiceId() ) { return $this; }
-
-		$this->values['order.base.service.serviceid'] = (string) $servid;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.service.serviceid', (string) $servid );
 	}
 
 
@@ -120,11 +109,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getCode()
 	{
-		if( isset( $this->values['order.base.service.code'] ) ) {
-			return (string) $this->values['order.base.service.code'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.service.code', '' );
 	}
 
 
@@ -136,12 +121,7 @@ class Standard extends Base implements Iface
 	 */
 	public function setCode( $code )
 	{
-		if( $code == $this->getCode() ) { return $this; }
-
-		$this->values['order.base.service.code'] = (string) $this->checkCode( $code );;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.service.code', $this->checkCode( $code ) );
 	}
 
 
@@ -152,11 +132,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getName()
 	{
-		if( isset( $this->values['order.base.service.name'] ) ) {
-			return (string) $this->values['order.base.service.name'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.service.name', '' );
 	}
 
 
@@ -168,12 +144,7 @@ class Standard extends Base implements Iface
 	 */
 	public function setName( $name )
 	{
-		if( $name == $this->getName() ) { return $this; }
-
-		$this->values['order.base.service.name'] = (string) $name;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.service.name', (string) $name );
 	}
 
 
@@ -184,11 +155,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getType()
 	{
-		if( isset( $this->values['order.base.service.type'] ) ) {
-			return (string) $this->values['order.base.service.type'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.service.type', '' );
 	}
 
 
@@ -200,12 +167,7 @@ class Standard extends Base implements Iface
 	 */
 	public function setType( $type )
 	{
-		if( $type == $this->getType() ) { return $this; }
-
-		$this->values['order.base.service.type'] = (string) $type;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.service.type', $this->checkCode( $type ) );
 	}
 
 
@@ -216,11 +178,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getMediaUrl()
 	{
-		if( isset( $this->values['order.base.service.mediaurl'] ) ) {
-			return (string) $this->values['order.base.service.mediaurl'];
-		}
-
-		return '';
+		return (string) $this->get( 'order.base.service.mediaurl', '' );
 	}
 
 
@@ -232,97 +190,92 @@ class Standard extends Base implements Iface
 	 */
 	public function setMediaUrl( $value )
 	{
-		if( $value == $this->getMediaUrl() ) { return $this; }
-
-		$this->values['order.base.service.mediaurl'] = (string) $value;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.service.mediaurl', (string) $value );
 	}
 
 
 	/**
-	 * Returns the price object which belongs to the service item.
+	 * Returns the position of the service in the order.
 	 *
-	 * @return \Aimeos\MShop\Price\Item\Iface Price item
+	 * @return integer|null Service position in the order from 0-n
 	 */
-	public function getPrice()
+	public function getPosition()
 	{
-		return $this->price;
+		return $this->get( 'order.base.service.position' );
 	}
 
 
 	/**
-	 * Sets a new price object for the service item.
+	 * Sets the position of the service within the list of ordered servicees
 	 *
-	 * @param \Aimeos\MShop\Price\Item\Iface $price Price item
+	 * @param integer|null $value Service position in the order from 0-n or null for resetting the position
 	 * @return \Aimeos\MShop\Order\Item\Base\Service\Iface Order base service item for chaining method calls
+	 * @throws \Aimeos\MShop\Order\Exception If the position is invalid
 	 */
-	public function setPrice( \Aimeos\MShop\Price\Item\Iface $price )
+	public function setPosition( $value )
 	{
-		if( $price === $this->price ) { return $this; }
+		if( $value < 0 ) {
+			throw new \Aimeos\MShop\Order\Exception( sprintf( 'Order service position "%1$s" must be greater than 0', $value ) );
+		}
 
-		$this->price = $price;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'order.base.service.position', ( $value !== null ? (int) $value : null ) );
 	}
 
 
-	/**
-	 * Sets the item values from the given array.
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Order\Item\Base\Service\Iface Order service item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'order.base.service.baseid': $this->setBaseId( $value ); break;
-				case 'order.base.service.code': $this->setCode( $value ); break;
-				case 'order.base.service.serviceid': $this->setServiceId( $value ); break;
-				case 'order.base.service.name': $this->setName( $value ); break;
-				case 'order.base.service.mediaurl': $this->setMediaUrl( $value ); break;
-				case 'order.base.service.type': $this->setType( $value ); break;
-				case 'order.base.service.price': $this->price->setValue( $value ); break;
-				case 'order.base.service.costs': $this->price->setCosts( $value ); break;
-				case 'order.base.service.rebate': $this->price->setRebate( $value ); break;
-				case 'order.base.service.taxrate': $this->price->setTaxRate( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'order.base.service.siteid': !$private ?: $item = $item->setSiteId( $value ); break;
+				case 'order.base.service.baseid': !$private ?: $item = $item->setBaseId( $value ); break;
+				case 'order.base.service.serviceid': !$private ?: $item = $item->setServiceId( $value ); break;
+				case 'order.base.service.type': $item = $item->setType( $value ); break;
+				case 'order.base.service.code': $item = $item->setCode( $value ); break;
+				case 'order.base.service.name': $item = $item->setName( $value ); break;
+				case 'order.base.service.position': $item = $item->setPosition( $value ); break;
+				case 'order.base.service.mediaurl': $item = $item->setMediaUrl( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values.
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
-		$price = $this->price;
-
-		$list['order.base.service.baseid'] = $this->getBaseId();
-		$list['order.base.service.code'] = $this->getCode();
-		$list['order.base.service.serviceid'] = $this->getServiceId();
-		$list['order.base.service.name'] = $this->getName();
-		$list['order.base.service.mediaurl'] = $this->getMediaUrl();
 		$list['order.base.service.type'] = $this->getType();
-		$list['order.base.service.price'] = $price->getValue();
-		$list['order.base.service.costs'] = $price->getCosts();
-		$list['order.base.service.rebate'] = $price->getRebate();
-		$list['order.base.service.taxrate'] = $price->getTaxRate();
+		$list['order.base.service.code'] = $this->getCode();
+		$list['order.base.service.name'] = $this->getName();
+		$list['order.base.service.position'] = $this->getPosition();
+		$list['order.base.service.mediaurl'] = $this->getMediaUrl();
+
+		if( $private === true )
+		{
+			$list['order.base.service.baseid'] = $this->getBaseId();
+			$list['order.base.service.serviceid'] = $this->getServiceId();
+		}
 
 		return $list;
 	}
@@ -336,6 +289,7 @@ class Standard extends Base implements Iface
 	 */
 	public function copyFrom( \Aimeos\MShop\Service\Item\Iface $service )
 	{
+		$this->setSiteId( $service->getSiteId() );
 		$this->setCode( $service->getCode() );
 		$this->setName( $service->getName() );
 		$this->setType( $service->getType() );
@@ -347,8 +301,6 @@ class Standard extends Base implements Iface
 			$this->setMediaUrl( $item->getUrl() );
 		}
 
-		$this->setModified();
-
-		return $this;
+		return $this->setModified();
 	}
 }

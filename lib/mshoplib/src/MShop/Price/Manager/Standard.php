@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Price
  */
@@ -20,7 +20,7 @@ namespace Aimeos\MShop\Price\Manager;
  */
 class Standard
 	extends \Aimeos\MShop\Price\Manager\Base
-	implements \Aimeos\MShop\Price\Manager\Iface
+	implements \Aimeos\MShop\Price\Manager\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
 		'price.id' => array(
@@ -38,13 +38,12 @@ class Standard
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		'price.typeid' => array(
+		'price.type' => array(
 			'label' => 'Price type ID',
-			'code' => 'price.typeid',
-			'internalcode' => 'mpri."typeid"',
+			'code' => 'price.type',
+			'internalcode' => 'mpri."type"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
-			'public' => false,
 		),
 		'price.currencyid' => array(
 			'code' => 'price.currencyid',
@@ -98,8 +97,8 @@ class Standard
 		'price.taxrate' => array(
 			'code' => 'price.taxrate',
 			'internalcode' => 'mpri."taxrate"',
-			'label' => 'Price tax in percent',
-			'type' => 'decimal',
+			'label' => 'Price tax rates as JSON encoded string',
+			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'price.status' => array(
@@ -109,29 +108,53 @@ class Standard
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'price.mtime'=> array(
-			'code'=>'price.mtime',
-			'internalcode'=>'mpri."mtime"',
-			'label'=>'Price modification date',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'price.mtime' => array(
+			'code' => 'price.mtime',
+			'internalcode' => 'mpri."mtime"',
+			'label' => 'Price modify date',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'price.ctime'=> array(
-			'code'=>'price.ctime',
-			'internalcode'=>'mpri."ctime"',
-			'label'=>'Price creation date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'price.ctime' => array(
+			'code' => 'price.ctime',
+			'internalcode' => 'mpri."ctime"',
+			'label' => 'Price create date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'price.editor'=> array(
-			'code'=>'price.editor',
-			'internalcode'=>'mpri."editor"',
-			'label'=>'Price editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'price.editor' => array(
+			'code' => 'price.editor',
+			'internalcode' => 'mpri."editor"',
+			'label' => 'Price editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
+		'price:has' => array(
+			'code' => 'price:has()',
+			'internalcode' => '(
+				SELECT mprili_has."id" FROM mshop_price_list AS mprili_has
+				WHERE mpri."id" = mprili_has."parentid" AND :site AND :key LIMIT 1
+			)',
+			'label' => 'Price has list item, parameter(<domain>[,<list type>[,<reference ID>)]]',
+			'type' => 'null',
+			'internaltype' => 'null',
+			'public' => false,
+		),
+		'price:prop' => array(
+			'code' => 'price:prop()',
+			'internalcode' => '(
+				SELECT mpripr_prop."id" FROM mshop_price_property AS mpripr_prop
+				WHERE mpri."id" = mpripr_prop."parentid" AND :site AND :key LIMIT 1
+			)',
+			'label' => 'Price has property item, parameter(<property type>[,<language code>[,<property value>]])',
+			'type' => 'null',
+			'internaltype' => 'null',
+			'public' => false,
 		),
 	);
 
+	private $currencyId;
+	private $precision;
 	private $taxflag;
 
 
@@ -143,7 +166,9 @@ class Standard
 	public function __construct( \Aimeos\MShop\Context\Item\Iface $context )
 	{
 		parent::__construct( $context );
+
 		$this->setResourceName( 'db-price' );
+		$this->currencyId = $context->getLocale()->getCurrencyId();
 
 		/** mshop/price/taxflag
 		 * Configuration setting if prices are inclusive or exclusive tax
@@ -158,36 +183,104 @@ class Standard
 		 * @since 2016.02
 		 */
 		$this->taxflag = $context->getConfig()->get( 'mshop/price/taxflag', true );
+
+		/** mshop/price/precision
+		 * Number of decimal digits prices contain
+		 *
+		 * Sets the number of decimal digits price values will contain. Internally,
+		 * prices are calculated as double values with high precision but these
+		 * values will be rounded after calculation to the configured number of digits.
+		 *
+		 * @param integer Positive number of digits
+		 * @category Developer
+		 * @since 2019.04
+		 */
+		$this->precision = $context->getConfig()->get( 'mshop/price/precision', 2 );
+
+		$level = \Aimeos\MShop\Locale\Manager\Base::SITE_ALL;
+		$level = $context->getConfig()->get( 'mshop/price/manager/sitemode', $level );
+
+		$siteIds = $this->getSiteIds( $level );
+		$self = $this;
+
+
+		$this->searchConfig['price:has']['function'] = function( &$source, array $params ) use ( $self, $siteIds ) {
+
+			foreach( $params as $key => $param ) {
+				$params[$key] = trim( $param, '\'' );
+			}
+
+			$source = str_replace( ':site', $self->toExpression( 'mprili_has."siteid"', $siteIds ), $source );
+			$str = $self->toExpression( 'mprili_has."key"', join( '|', $params ), isset( $params[2] ) ? '==' : '=~' );
+			$source = str_replace( ':key', $str, $source );
+
+			return $params;
+		};
+
+
+		$this->searchConfig['price:prop']['function'] = function( &$source, array $params ) use ( $self, $siteIds ) {
+
+			foreach( $params as $key => $param ) {
+				$params[$key] = trim( $param, '\'' );
+			}
+
+			$params[2] = ( isset( $params[2] ) ? md5( $params[2] ) : null );
+			$source = str_replace( ':site', $self->toExpression( 'mpripr_prop."siteid"', $siteIds ), $source );
+			$str = $self->toExpression( 'mpripr_prop."key"', join( '|', $params ), isset( $params[2] ) ? '==' : '=~' );
+			$source = str_replace( ':key', $str, $source );
+
+			return $params;
+		};
 	}
 
 
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param array $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Price\Manager\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/price/manager/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array( 'type', 'lists' ) ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, ['type', 'property', 'lists'] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/price/manager/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/price/manager/standard/delete' );
 	}
+
+
+	/**
+	 * Creates a new empty item instance
+	 *
+	 * @param array $values Values the item should be initialized with
+	 * @return \Aimeos\MShop\Price\Item\Iface New price item object
+	 */
+	public function createItem( array $values = [] )
+	{
+		$locale = $this->getContext()->getLocale();
+		$values['price.siteid'] = $locale->getSiteId();
+
+		if( $locale->getCurrencyId() !== null ) {
+			$values['price.currencyid'] = $locale->getCurrencyId();
+		}
+
+		return $this->createItemBase( $values );
+	}
+
 
 
 	/**
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/price/manager/submanagers';
-
-		return $this->getResourceTypeBase( 'price', $path, array( 'type', 'lists' ), $withsub );
+		return $this->getResourceTypeBase( 'price', $path, ['property', 'lists'], $withsub );
 	}
 
 
@@ -195,7 +288,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array List of attribute items implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -218,34 +311,17 @@ class Standard
 		 */
 		$path = 'mshop/price/manager/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array( 'type', 'lists' ), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
 	/**
-	 * Instantiates a new price item object.
+	 * Removes multiple items.
 	 *
-	 * @return \Aimeos\MShop\Price\Item\Iface
+	 * @param \Aimeos\MShop\Common\Item\Iface[]|string[] $itemIds List of item objects or IDs of the items
+	 * @return \Aimeos\MShop\Price\Manager\Iface Manager object for chaining method calls
 	 */
-	public function createItem()
-	{
-		$locale = $this->getContext()->getLocale();
-		$values = array( 'price.siteid' => $locale->getSiteId() );
-
-		if( $locale->getCurrencyId() !== null ) {
-			$values['price.currencyid'] = $locale->getCurrencyId();
-		}
-
-		return $this->createItemBase( $values );
-	}
-
-
-	/**
-	 * Removes multiple items specified by ids in the array.
-	 *
-	 * @param array $ids List of IDs
-	 */
-	public function deleteItems( array $ids )
+	public function deleteItems( array $itemIds )
 	{
 		/** mshop/price/manager/standard/delete/mysql
 		 * Deletes the items matched by the given IDs from the database
@@ -278,21 +354,23 @@ class Standard
 		 * @see mshop/price/manager/standard/count/ansi
 		 */
 		$path = 'mshop/price/manager/standard/delete';
-		$this->deleteItemsBase( $ids, $path );
+
+		return $this->deleteItemsBase( $itemIds, $path )->deleteRefItems( $itemIds );
 	}
 
 
 	/**
 	 * Returns the price item object specificed by its ID.
 	 *
-	 * @param integer $id Unique price ID referencing an existing price
+	 * @param string $id Unique price ID referencing an existing price
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
+	 * @param boolean $default Add default criteria
 	 * @return \Aimeos\MShop\Price\Item\Iface $item Returns the price item of the given id
 	 * @throws \Aimeos\MShop\Exception If item couldn't be found
 	 */
-	public function getItem( $id, array $ref = array() )
+	public function getItem( $id, array $ref = [], $default = false )
 	{
-		return $this->getItemBase( 'price.id', $id, $ref );
+		return $this->getItemBase( 'price.id', $id, $ref, $default );
 	}
 
 
@@ -301,14 +379,15 @@ class Standard
 	 *
 	 * @param \Aimeos\MShop\Price\Item\Iface $item Price item object
 	 * @param boolean $fetch True if the new ID should be returned in the item
-	 *
+	 * @return \Aimeos\MShop\Price\Item\Iface Updated item including the generated ID
 	 * @throws \Aimeos\MShop\Price\Exception If price couldn't be saved
 	 */
-	public function saveItem( \Aimeos\MShop\Common\Item\Iface $item, $fetch = true )
+	public function saveItem( \Aimeos\MShop\Price\Item\Iface $item, $fetch = true )
 	{
-		$iface = '\\Aimeos\\MShop\\Price\\Item\\Iface';
-		if( !( $item instanceof $iface ) ) {
-			throw new \Aimeos\MShop\Price\Exception( sprintf( 'Object is not of required type "%1$s"', $iface ) );
+		if( !$item->isModified() )
+		{
+			$item = $this->savePropertyItems( $item, 'price', $fetch );
+			return $this->saveListItems( $item, 'price', $fetch );
 		}
 
 		$context = $this->getContext();
@@ -321,6 +400,7 @@ class Standard
 		{
 			$id = $item->getId();
 			$date = date( 'Y-m-d H:i:s' );
+			$columns = $this->getObject()->getSaveAttributes();
 
 			if( $id === null )
 			{
@@ -360,6 +440,7 @@ class Standard
 				 * @see mshop/price/manager/standard/count/ansi
 				 */
 				$path = 'mshop/price/manager/standard/insert';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ) );
 			}
 			else
 			{
@@ -396,34 +477,40 @@ class Standard
 				 * @see mshop/price/manager/standard/count/ansi
 				 */
 				$path = 'mshop/price/manager/standard/update';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ), false );
 			}
 
-			$stmt = $this->getCachedStatement( $conn, $path );
+			$idx = 1;
+			$stmt = $this->getCachedStatement( $conn, $path, $sql );
 
-			$stmt->bind( 1, $context->getLocale()->getSiteId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 2, $item->getTypeId() );
-			$stmt->bind( 3, $item->getCurrencyId() );
-			$stmt->bind( 4, $item->getDomain() );
-			$stmt->bind( 5, $item->getLabel() );
-			$stmt->bind( 6, $item->getQuantity(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 7, $item->getValue() );
-			$stmt->bind( 8, $item->getCosts() );
-			$stmt->bind( 9, $item->getRebate() );
-			$stmt->bind( 10, $item->getTaxRate() );
-			$stmt->bind( 11, $item->getStatus(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-			$stmt->bind( 12, $date ); //mtime
-			$stmt->bind( 13, $context->getEditor() );
+			foreach( $columns as $name => $entry ) {
+				$stmt->bind( $idx++, $item->get( $name ), $entry->getInternalType() );
+			}
+
+			$stmt->bind( $idx++, $item->getType() );
+			$stmt->bind( $idx++, $item->getCurrencyId() );
+			$stmt->bind( $idx++, $item->getDomain() );
+			$stmt->bind( $idx++, $item->getLabel() );
+			$stmt->bind( $idx++, $item->getQuantity(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			$stmt->bind( $idx++, $item->getValue() );
+			$stmt->bind( $idx++, $item->getCosts() );
+			$stmt->bind( $idx++, $item->getRebate() );
+			$stmt->bind( $idx++, json_encode( $item->getTaxrates(), JSON_FORCE_OBJECT ) );
+			$stmt->bind( $idx++, $item->getStatus(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			$stmt->bind( $idx++, $date ); //mtime
+			$stmt->bind( $idx++, $context->getEditor() );
+			$stmt->bind( $idx++, $context->getLocale()->getSiteId(), \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 
 			if( $id !== null ) {
-				$stmt->bind( 14, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+				$stmt->bind( $idx++, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 				$item->setId( $id );
 			} else {
-				$stmt->bind( 14, $date ); //ctime
+				$stmt->bind( $idx++, $date ); //ctime
 			}
 
 			$stmt->execute()->finish();
 
-			if( $id === null && $fetch === true )
+			if( $id === null )
 			{
 				/** mshop/price/manager/standard/newid/mysql
 				 * Retrieves the ID generated by the database when inserting a new record
@@ -472,6 +559,9 @@ class Standard
 			$dbm->release( $conn, $dbname );
 			throw $e;
 		}
+
+		$item = $this->savePropertyItems( $item, 'price', $fetch );
+		return $this->saveListItems( $item, 'price', $fetch );
 	}
 
 
@@ -483,9 +573,9 @@ class Standard
 	 * @param integer|null &$total Number of items that are available in total
 	 * @return array List of items implementing \Aimeos\MShop\Price\Item\Iface
 	 */
-	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = array(), &$total = null )
+	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = [], &$total = null )
 	{
-		$map = $typeIds = array();
+		$map = [];
 		$context = $this->getContext();
 
 		$dbm = $context->getDatabaseManager();
@@ -495,7 +585,38 @@ class Standard
 		try
 		{
 			$required = array( 'price' );
+
+			/** mshop/price/manager/sitemode
+			 * Mode how items from levels below or above in the site tree are handled
+			 *
+			 * By default, only items from the current site are fetched from the
+			 * storage. If the ai-sites extension is installed, you can create a
+			 * tree of sites. Then, this setting allows you to define for the
+			 * whole price domain if items from parent sites are inherited,
+			 * sites from child sites are aggregated or both.
+			 *
+			 * Available constants for the site mode are:
+			 * * 0 = only items from the current site
+			 * * 1 = inherit items from parent sites
+			 * * 2 = aggregate items from child sites
+			 * * 3 = inherit and aggregate items at the same time
+			 *
+			 * You also need to set the mode in the locale manager
+			 * (mshop/locale/manager/standard/sitelevel) to one of the constants.
+			 * If you set it to the same value, it will work as described but you
+			 * can also use different modes. For example, if inheritance and
+			 * aggregation is configured the locale manager but only inheritance
+			 * in the domain manager because aggregating items makes no sense in
+			 * this domain, then items wil be only inherited. Thus, you have full
+			 * control over inheritance and aggregation in each domain.
+			 *
+			 * @param integer Constant from Aimeos\MShop\Locale\Manager\Base class
+			 * @category Developer
+			 * @since 2018.01
+			 * @see mshop/locale/manager/standard/sitelevel
+			 */
 			$level = \Aimeos\MShop\Locale\Manager\Base::SITE_ALL;
+			$level = $context->getConfig()->get( 'mshop/price/manager/sitemode', $level );
 
 			/** mshop/price/manager/standard/search/mysql
 			 * Retrieves the records matched by the given criteria in the database
@@ -613,8 +734,12 @@ class Standard
 
 			while( ( $row = $results->fetch() ) !== false )
 			{
-				$map[$row['price.id']] = $row;
-				$typeIds[$row['price.typeid']] = null;
+				if( ( $row['price.taxrates'] = json_decode( $config = $row['price.taxrates'], true ) ) === null )
+				{
+					$msg = sprintf( 'Invalid JSON as result of search for ID "%2$s" in "%1$s": %3$s', 'mshop_price.taxrates', $row['price.id'], $config );
+					$this->getContext()->getLogger()->log( $msg, \Aimeos\MW\Logger\Base::WARN );
+				}
+				$map[(string) $row['price.id']] = $row;
 			}
 
 			$dbm->release( $conn, $dbname );
@@ -625,33 +750,22 @@ class Standard
 			throw $e;
 		}
 
-		if( !empty( $typeIds ) )
+		$propItems = []; $name = 'price/property';
+		if( isset( $ref[$name] ) || in_array( $name, $ref, true ) )
 		{
-			$typeManager = $this->getSubManager( 'type' );
-			$typeSearch = $typeManager->createSearch();
-			$typeSearch->setConditions( $typeSearch->compare( '==', 'price.type.id', array_keys( $typeIds ) ) );
-			$typeSearch->setSlice( 0, $search->getSliceSize() );
-			$typeItems = $typeManager->searchItems( $typeSearch );
-
-			foreach( $map as $id => $row )
-			{
-				if( isset( $typeItems[$row['price.typeid']] ) )
-				{
-					$map[$id]['price.type'] = $typeItems[$row['price.typeid']]->getCode();
-					$map[$id]['price.typename'] = $typeItems[$row['price.typeid']]->getName();
-				}
-			}
+			$propTypes = isset( $ref[$name] ) && is_array( $ref[$name] ) ? $ref[$name] : null;
+			$propItems = $this->getPropertyItems( array_keys( $map ), 'price', $propTypes );
 		}
 
-		return $this->buildItems( $map, $ref, 'price' );
+		return $this->buildItems( $map, $ref, 'price', $propItems );
 	}
 
 
 	/**
-	 * creates a search object and sets base criteria
+	 * Creates a search critera object
 	 *
-	 * @param boolean $default Prepopulate object with default criterias
-	 * @return \Aimeos\MW\Criteria\Iface
+	 * @param boolean $default Add default criteria (optional)
+	 * @return \Aimeos\MW\Criteria\Iface New search criteria object
 	 */
 	public function createSearch( $default = false )
 	{
@@ -694,16 +808,20 @@ class Standard
 	 * Creates a new price item
 	 *
 	 * @param array $values List of attributes for price item
-	 * @param array $listItems List of items implementing \Aimeos\MShop\Common\Item\Lists\Iface
-	 * @param array $refItems List of items implementing \Aimeos\MShop\Common\Item\Iface
+	 * @param \Aimeos\MShop\Common\Item\Lists\Iface[] $listItems List of list items
+	 * @param \Aimeos\MShop\Common\Item\Iface[] $refItems List of referenced items
+	 * @param \Aimeos\MShop\Common\Item\Property\Iface[] $propItems List of property items
 	 * @return \Aimeos\MShop\Price\Item\Iface New price item
 	 */
-	protected function createItemBase( array $values = array(), array $listItems = array(), array $refItems = array() )
+	protected function createItemBase( array $values = [], array $listItems = [], array $refItems = [], array $propItems = [] )
 	{
+		$values['.currencyid'] = $this->currencyId;
+		$values['.precision'] = $this->precision;
+
 		if( !isset( $values['price.taxflag'] ) ) {
 			$values['price.taxflag'] = $this->taxflag;
 		}
 
-		return new \Aimeos\MShop\Price\Item\Standard( $values, $listItems, $refItems );
+		return new \Aimeos\MShop\Price\Item\Standard( $values, $listItems, $refItems, $propItems );
 	}
 }

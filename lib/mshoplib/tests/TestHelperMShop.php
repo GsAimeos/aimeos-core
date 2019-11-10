@@ -3,14 +3,14 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 class TestHelperMShop
 {
 	private static $aimeos;
-	private static $context = array();
+	private static $context = [];
 
 
 	/**
@@ -19,7 +19,7 @@ class TestHelperMShop
 	public static function bootstrap()
 	{
 		self::getAimeos();
-		\Aimeos\MShop\Factory::setCache( false );
+		\Aimeos\MShop::cache( false );
 	}
 
 
@@ -50,7 +50,7 @@ class TestHelperMShop
 		{
 			require_once dirname( dirname( dirname( __DIR__ ) ) ) . DIRECTORY_SEPARATOR . 'Bootstrap.php';
 
-			self::$aimeos = new \Aimeos\Bootstrap( array(), false );
+			self::$aimeos = new \Aimeos\Bootstrap( [], false );
 		}
 
 		return self::$aimeos;
@@ -73,7 +73,7 @@ class TestHelperMShop
 		$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'config';
 		$file = __DIR__ . DIRECTORY_SEPARATOR . 'confdoc.ser';
 
-		$conf = new \Aimeos\MW\Config\PHPArray( array(), $paths );
+		$conf = new \Aimeos\MW\Config\PHPArray( [], $paths );
 		$conf = new \Aimeos\MW\Config\Decorator\Memory( $conf );
 		$conf = new \Aimeos\MW\Config\Decorator\Documentor( $conf, $file );
 		$ctx->setConfig( $conf );
@@ -107,13 +107,57 @@ class TestHelperMShop
 		$ctx->setSession( $session );
 
 
-		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::createManager( $ctx );
+		$mail = new \Aimeos\MW\Mail\None();
+		$ctx->setMail( $mail );
+
+
+		$view = self::createView( $conf );
+		$ctx->setView( $view );
+
+
+		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::create( $ctx );
 		$locale = $localeManager->bootstrap( $site, 'de', '', false );
 		$ctx->setLocale( $locale );
 
 
-		$ctx->setEditor( 'core:unittest' );
+		$ctx->setEditor( 'core:lib/mshoplib' );
 
 		return $ctx;
+	}
+
+
+	/**
+	 * Creates a new view object
+	 *
+	 * @param \Aimeos\MW\Config\Iface $config Configuration object
+	 * @return \Aimeos\MW\View\Iface View object
+	 */
+	protected static function createView( \Aimeos\MW\Config\Iface $config )
+	{
+		$tmplpaths = array_merge_recursive(
+			self::getAimeos()->getCustomPaths( 'lib/custom/templates' ),
+			self::getAimeos()->getCustomPaths( 'client/html/templates' ),
+			self::getAimeos()->getCustomPaths( 'controller/jobs/templates' )
+		);
+
+		$view = new \Aimeos\MW\View\Standard( $tmplpaths );
+
+		$trans = new \Aimeos\MW\Translation\None( 'de_DE' );
+		$helper = new \Aimeos\MW\View\Helper\Translate\Standard( $view, $trans );
+		$view->addHelper( 'translate', $helper );
+
+		$helper = new \Aimeos\MW\View\Helper\Url\Standard( $view, 'http://baseurl' );
+		$view->addHelper( 'url', $helper );
+
+		$helper = new \Aimeos\MW\View\Helper\Number\Standard( $view, '.', '' );
+		$view->addHelper( 'number', $helper );
+
+		$helper = new \Aimeos\MW\View\Helper\Date\Standard( $view, 'Y-m-d' );
+		$view->addHelper( 'date', $helper );
+
+		$helper = new \Aimeos\MW\View\Helper\Config\Standard( $view, $config );
+		$view->addHelper( 'config', $helper );
+
+		return $view;
 	}
 }

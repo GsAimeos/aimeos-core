@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Service
  */
@@ -181,11 +181,23 @@ abstract class Base
 	 *
 	 * @param \Aimeos\MShop\Order\Item\Iface $order Order invoice object to process
 	 * @param array $params Request parameter if available
-	 * @return \Aimeos\MShop\Common\Item\Helper\Form\Standard|null Form object or null
+	 * @return \Aimeos\MShop\Common\Helper\Form\Standard|null Form object or null
 	 */
-	public function process( \Aimeos\MShop\Order\Item\Iface $order, array $params = array() )
+	public function process( \Aimeos\MShop\Order\Item\Iface $order, array $params = [] )
 	{
 		return $this->object->process( $order, $params );
+	}
+
+
+	/**
+	 * Sends the details of all orders to the ERP system for further processing
+	 *
+	 * @param \Aimeos\MShop\Order\Item\Iface[] $orders List of order invoice objects
+	 * @return null
+	 */
+	public function processBatch( array $orders )
+	{
+		return $this->object->processBatch( $orders );
 	}
 
 
@@ -202,6 +214,19 @@ abstract class Base
 
 
 	/**
+	 * Executes the payment again for the given order if supported.
+	 * This requires support of the payment gateway and token based payment
+	 *
+	 * @param \Aimeos\MShop\Order\Item\Iface $order Order invoice object
+	 * @return void
+	 */
+	public function repay( \Aimeos\MShop\Order\Item\Iface $order )
+	{
+		$this->object->repay( $order );
+	}
+
+
+	/**
 	 * Queries for status updates for the given order if supported.
 	 *
 	 * @param \Aimeos\MShop\Order\Item\Iface $order Order invoice object
@@ -213,27 +238,15 @@ abstract class Base
 
 
 	/**
-	 * Sets the communication object for a service provider.
-	 *
-	 * @param \Aimeos\MW\Communication\Iface $communication Object of communication
-	 */
-	public function setCommunication( \Aimeos\MW\Communication\Iface $communication )
-	{
-		parent::setCommunication( $communication );
-
-		$this->object->setCommunication( $communication );
-	}
-
-
-	/**
 	 * Sets the payment attributes in the given service.
 	 *
 	 * @param \Aimeos\MShop\Order\Item\Base\Service\Iface $orderServiceItem Order service item that will be added to the basket
 	 * @param array $attributes Attribute key/value pairs entered by the customer during the checkout process
+	 * @return \Aimeos\MShop\Order\Item\Base\Service\Iface Order service item with attributes added
 	 */
 	public function setConfigFE( \Aimeos\MShop\Order\Item\Base\Service\Iface $orderServiceItem, array $attributes )
 	{
-		$this->object->setConfigFE( $orderServiceItem, $attributes );
+		return $this->object->setConfigFE( $orderServiceItem, $attributes );
 	}
 
 
@@ -251,18 +264,29 @@ abstract class Base
 
 
 	/**
-	 * Updates the orders for which status updates were received via direct requests (like HTTP).
+	 * Updates the order status sent by payment gateway notifications
 	 *
-	 * @param array $params Associative list of request parameters
-	 * @param string|null $body Information sent within the body of the request
-	 * @param string|null &$response Response body for notification requests
-	 * @param array &$header Response headers for notification requests
-	 * @return \Aimeos\MShop\Order\Item\Iface|null Order item if update was successful, null if the given parameters are not valid for this provider
-	 * @throws \Aimeos\MShop\Service\Exception If updating one of the orders failed
+	 * @param \Psr\Http\Message\ServerRequestInterface $request Request object
+	 * @param \Psr\Http\Message\ResponseInterface $response Response object
+	 * @return \Psr\Http\Message\ResponseInterface Response object
 	 */
-	public function updateSync( array $params = array(), $body = null, &$response = null, array &$header = array() )
+	public function updatePush( \Psr\Http\Message\ServerRequestInterface $request, \Psr\Http\Message\ResponseInterface $response )
 	{
-		return $this->object->updateSync( $params, $body, $response, $header );
+		return $this->object->updatePush( $request, $response );
+	}
+
+
+	/**
+	 * Updates the orders for whose status updates have been received by the confirmation page
+	 *
+	 * @param \Psr\Http\Message\ServerRequestInterface $request Request object with parameters and request body
+	 * @param \Aimeos\MShop\Order\Item\Iface $orderItem Order item that should be updated
+	 * @return \Aimeos\MShop\Order\Item\Iface Updated order item
+	 * @throws \Aimeos\MShop\Service\Exception If updating the orders failed
+	 */
+	public function updateSync( \Psr\Http\Message\ServerRequestInterface $request, \Aimeos\MShop\Order\Item\Iface $orderItem )
+	{
+		return $this->object->updateSync( $request, $orderItem );
 	}
 
 
@@ -287,10 +311,6 @@ abstract class Base
 	 */
 	public function __call( $name, array $param )
 	{
-		if( ( $result = @call_user_func_array( array( $this->object, $name ), $param ) ) === false ) {
-			throw new \Aimeos\MShop\Service\Exception( sprintf( 'Method "%1$s" for provider not available', $name ) );
-		}
-
-		return $result;
+		return @call_user_func_array( array( $this->object, $name ), $param );
 	}
 }

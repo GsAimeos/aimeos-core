@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Price
  */
@@ -20,21 +20,26 @@ namespace Aimeos\MShop\Price\Item;
  */
 class Standard extends Base
 {
-	private $values;
+	private $currencyid;
+	private $precision;
+	private $tax;
 
 
 	/**
 	 * Initalizes the object with the given values
 	 *
 	 * @param array $values Associative array of key/value pairs for price, costs, rebate and currencyid
-	 * @param \Aimeos\MShop\Common\Lists\Item\Iface[] $listItems List of list items
+	 * @param \Aimeos\MShop\Common\Item\Lists\Iface[] $listItems List of list items
 	 * @param \Aimeos\MShop\Common\Item\Iface[] $refItems List of referenced items
+	 * @param \Aimeos\MShop\Common\Item\Property\Iface[] $propItems List of property items
 	 */
-	public function __construct( array $values = array(), array $listItems = array(), array $refItems = array() )
+	public function __construct( array $values = [], array $listItems = [], array $refItems = [], array $propItems = [] )
 	{
-		parent::__construct( 'price.', $values, $listItems, $refItems );
+		parent::__construct( 'price.', $values, $listItems, $refItems, $propItems );
 
-		$this->values = $values;
+		$this->currencyid = ( isset( $values['.currencyid'] ) ? $values['.currencyid'] : null );
+		$this->precision = ( isset( $values['.precision'] ) ? $values['.precision'] : 2 );
+		$this->tax = $this->get( 'price.tax' );
 	}
 
 
@@ -45,58 +50,19 @@ class Standard extends Base
 	 */
 	public function getType()
 	{
-		if( isset( $this->values['price.type'] ) ) {
-			return (string) $this->values['price.type'];
-		}
-
-		return null;
+		return $this->get( 'price.type', 'default' );
 	}
 
 
 	/**
-	 * Returns the localized name of the type
+	 * Sets the new type of the price.
 	 *
-	 * @return string|null Localized name of the type
-	 */
-	public function getTypeName()
-	{
-		if( isset( $this->values['price.typename'] ) ) {
-			return (string) $this->values['price.typename'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Returns the type ID of the price.
-	 *
-	 * @return integer|null Type ID of the price
-	 */
-	public function getTypeId()
-	{
-		if( isset( $this->values['price.typeid'] ) ) {
-			return (int) $this->values['price.typeid'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Sets the new type ID of the price.
-	 *
-	 * @param integer $typeid Type ID of the price
+	 * @param string $type Type of the price
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
-	public function setTypeId( $typeid )
+	public function setType( $type )
 	{
-		if( $typeid == $this->getTypeId() ) { return $this; }
-
-		$this->values['price.typeid'] = (int) $typeid;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'price.type', $this->checkCode( $type ) );
 	}
 
 
@@ -107,11 +73,7 @@ class Standard extends Base
 	 */
 	public function getCurrencyId()
 	{
-		if( isset( $this->values['price.currencyid'] ) ) {
-			return (string) $this->values['price.currencyid'];
-		}
-
-		return null;
+		return $this->get( 'price.currencyid' );
 	}
 
 
@@ -124,12 +86,7 @@ class Standard extends Base
 	 */
 	public function setCurrencyId( $currencyid )
 	{
-		if( $currencyid == $this->getCurrencyId() ) { return $this; }
-
-		$this->values['price.currencyid'] = $this->checkCurrencyId( $currencyid, false );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'price.currencyid', $this->checkCurrencyId( $currencyid, false ) );
 	}
 
 
@@ -140,11 +97,7 @@ class Standard extends Base
 	 */
 	public function getDomain()
 	{
-		if( isset( $this->values['price.domain'] ) ) {
-			return (string) $this->values['price.domain'];
-		}
-
-		return '';
+		return (string) $this->get( 'price.domain', '' );
 	}
 
 
@@ -156,12 +109,7 @@ class Standard extends Base
 	 */
 	public function setDomain( $domain )
 	{
-		if( $domain == $this->getDomain() ) { return $this; }
-
-		$this->values['price.domain'] = (string) $domain;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'price.domain', (string) $domain );
 	}
 
 
@@ -172,11 +120,7 @@ class Standard extends Base
 	 */
 	public function getLabel()
 	{
-		if( isset( $this->values['price.label'] ) ) {
-			return (string) $this->values['price.label'];
-		}
-
-		return '';
+		return (string) $this->get( 'price.label', '' );
 	}
 
 
@@ -188,12 +132,7 @@ class Standard extends Base
 	 */
 	public function setLabel( $label )
 	{
-		if( $label == $this->getLabel() ) { return $this; }
-
-		$this->values['price.label'] = (string) $label;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'price.label', (string) $label );
 	}
 
 
@@ -204,11 +143,7 @@ class Standard extends Base
 	 */
 	public function getQuantity()
 	{
-		if( isset( $this->values['price.quantity'] ) ) {
-			return (int) $this->values['price.quantity'];
-		}
-
-		return 1;
+		return (int) $this->get( 'price.quantity', 1 );
 	}
 
 
@@ -220,12 +155,7 @@ class Standard extends Base
 	 */
 	public function setQuantity( $quantity )
 	{
-		if( $quantity == $this->getQuantity() ) { return $this; }
-
-		$this->values['price.quantity'] = (int) $quantity;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'price.quantity', (int) $quantity );
 	}
 
 
@@ -236,28 +166,19 @@ class Standard extends Base
 	 */
 	public function getValue()
 	{
-		if( isset( $this->values['price.value'] ) ) {
-			return (string) $this->values['price.value'];
-		}
-
-		return '0.00';
+		return (string) $this->get( 'price.value', '0.00' );
 	}
 
 
 	/**
 	 * Sets the new amount of money.
 	 *
-	 * @param integer|double $price Amount with two digits precision
+	 * @param string|integer|double $price Amount with two digits precision
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setValue( $price )
 	{
-		if( $price == $this->getValue() ) { return $this; }
-
-		$this->values['price.value'] = $this->checkPrice( $price );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'price.value', $this->checkPrice( $price ) );
 	}
 
 
@@ -268,28 +189,19 @@ class Standard extends Base
 	 */
 	public function getCosts()
 	{
-		if( isset( $this->values['price.costs'] ) ) {
-			return (string) $this->values['price.costs'];
-		}
-
-		return '0.00';
+		return (string) $this->get( 'price.costs', '0.00' );
 	}
 
 
 	/**
 	 * Sets the new costs.
 	 *
-	 * @param integer|double $price Amount with two digits precision
+	 * @param string|integer|double $price Amount with two digits precision
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setCosts( $price )
 	{
-		if( $price == $this->getCosts() ) { return $this; }
-
-		$this->values['price.costs'] = $this->checkPrice( $price );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'price.costs', $this->checkPrice( $price ) );
 	}
 
 
@@ -300,28 +212,19 @@ class Standard extends Base
 	 */
 	public function getRebate()
 	{
-		if( isset( $this->values['price.rebate'] ) ) {
-			return (string) $this->values['price.rebate'];
-		}
-
-		return '0.00';
+		return (string) $this->get( 'price.rebate', '0.00' );
 	}
 
 
 	/**
 	 * Sets the new rebate amount.
 	 *
-	 * @param string $price Rebate amount with two digits precision
+	 * @param string|integer|double $price Rebate amount with two digits precision
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setRebate( $price )
 	{
-		if( $price == $this->getRebate() ) { return $this; }
-
-		$this->values['price.rebate'] = $this->checkPrice( $price );
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'price.rebate', $this->checkPrice( $price ) );
 	}
 
 
@@ -332,28 +235,49 @@ class Standard extends Base
 	 */
 	public function getTaxRate()
 	{
-		if( isset( $this->values['price.taxrate'] ) ) {
-			return (string) $this->values['price.taxrate'];
-		}
-
-		return '0.00';
+		$list = (array) $this->get( 'price.taxrates', [] );
+		return ( isset( $list[''] ) ? (string) $list[''] : '0.00' );
 	}
+
+
+	/**
+	 * Returns all tax rates in percent.
+	 *
+	 * @return string[] Tax rates for the price
+	 */
+	 public function getTaxRates()
+	 {
+		return (array) $this->get( 'price.taxrates', [] );
+	 }
 
 
 	/**
 	 * Sets the new tax rate.
 	 *
-	 * @param string $taxrate Tax rate with two digits precision
+	 * @param string|integer|double $taxrate Tax rate with two digits precision
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setTaxRate( $taxrate )
 	{
-		if( $taxrate == $this->getTaxRate() ) { return $this; }
+		return $this->setTaxRates( ['' => $taxrate] );
+	}
 
-		$this->values['price.taxrate'] = $this->checkPrice( $taxrate );
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Sets the new tax rates in percent
+	 *
+	 * @param array $taxrates Tax rates with name as key and values with two digits precision
+	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
+	 */
+	public function setTaxRates( array $taxrates )
+	{
+		foreach( $taxrates as $name => $taxrate )
+		{
+			unset( $taxrates[$name] ); // change index 0 to ''
+			$taxrates[$name ?: ''] = $this->checkPrice( $taxrate );
+		}
+
+		return $this->set( 'price.taxrates', $taxrates );
 	}
 
 
@@ -366,11 +290,7 @@ class Standard extends Base
 	 */
 	public function getTaxFlag()
 	{
-		if( isset( $this->values['price.taxflag'] ) ) {
-			return (bool) $this->values['price.taxflag'];
-		}
-
-		return true;
+		return (bool) $this->get( 'price.taxflag', true );
 	}
 
 
@@ -379,15 +299,10 @@ class Standard extends Base
 	 *
 	 * @param boolean $flag True if tax is included in the price value, costs and rebate, false if not
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
-	*/
+	 */
 	public function setTaxFlag( $flag )
 	{
-		if( $flag == $this->getTaxFlag() ) { return $this; }
-
-		$this->values['price.taxflag'] = (bool) $flag;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'price.taxflag', (bool) $flag );
 	}
 
 
@@ -399,9 +314,9 @@ class Standard extends Base
 	 */
 	public function getTaxValue()
 	{
-		if( !isset( $this->values['price.tax'] ) )
+		if( $this->tax === null )
 		{
-			$taxrate = $this->getTaxRate();
+			$taxrate = array_sum( $this->getTaxRates() );
 
 			if( $this->getTaxFlag() !== false ) {
 				$tax = ( $this->getValue() + $this->getCosts() ) / ( 100 + $taxrate ) * $taxrate;
@@ -409,25 +324,23 @@ class Standard extends Base
 				$tax = ( $this->getValue() + $this->getCosts() ) * $taxrate / 100;
 			}
 
-			$this->values['price.tax'] = $this->formatNumber( $tax, 4 );
+			$this->tax = $this->formatNumber( $tax, $this->precision + 2 );
+			parent::setModified();
 		}
 
-		return (string) $this->values['price.tax'];
+		return $this->tax;
 	}
 
 
 	/**
 	 * Sets the tax amount
 	 *
-	 * @param integer|double $value Tax value with up to four digits precision
+	 * @param string|integer|double $value Tax value with up to four digits precision
 	 */
 	public function setTaxValue( $value )
 	{
-		if( $value == $this->getTaxValue() ) { return $this; }
-
-		$this->values['price.tax'] = $this->checkPrice( $value, 4 );
-		parent::setModified(); // don't unset tax immediately again
-
+		$this->tax = $this->checkPrice( $value, $this->precision + 2 );
+		parent::setModified();
 		return $this;
 	}
 
@@ -439,11 +352,7 @@ class Standard extends Base
 	 */
 	public function getStatus()
 	{
-		if( isset( $this->values['price.status'] ) ) {
-			return (int) $this->values['price.status'];
-		}
-
-		return 0;
+		return (int) $this->get( 'price.status', 1 );
 	}
 
 
@@ -455,22 +364,31 @@ class Standard extends Base
 	 */
 	public function setStatus( $status )
 	{
-		if( $status == $this->getStatus() ) { return $this; }
-
-		$this->values['price.status'] = (int) $status;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'price.status', (int) $status );
 	}
 
 
 	/**
 	 * Sets the modified flag of the object.
+	 *
+	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
 	public function setModified()
 	{
-		parent::setModified();
-		unset( $this->values['price.tax'] );
+		$this->tax = null;
+		return parent::setModified();
+	}
+
+
+	/**
+	 * Tests if the item is available based on status, time, language and currency
+	 *
+	 * @return boolean True if available, false if not
+	 */
+	public function isAvailable()
+	{
+		return parent::isAvailable() && $this->getStatus() > 0
+			&& ( $this->currencyid === null || $this->getCurrencyId() === $this->currencyid );
 	}
 
 
@@ -490,7 +408,7 @@ class Standard extends Base
 		}
 
 		if( $this === $item ) { $item = clone $item; }
-		$taxValue = $this->getTaxValue();
+		$taxValue = $this->getTaxValue(); // use initial value before it gets reset
 
 		$this->setQuantity( 1 );
 		$this->setValue( $this->getValue() + $item->getValue() * $quantity );
@@ -504,7 +422,6 @@ class Standard extends Base
 
 	/**
 	 * Resets the values of the price item.
-	 *
 	 * The currency ID, domain, type and status stays the same.
 	 *
 	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
@@ -516,60 +433,61 @@ class Standard extends Base
 		$this->setCosts( '0.00' );
 		$this->setRebate( '0.00' );
 		$this->setTaxRate( '0.00' );
-		unset( $this->values['price.tax'] );
+		$this->tax = null;
 
 		return $this;
 	}
 
 
-	/**
-	 * Sets the item values from the given array.
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Price\Item\Iface Price item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
-		unset( $list['price.type'], $list['price.typename'] );
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'price.typeid': $this->setTypeId( $value ); break;
-				case 'price.currencyid': $this->setCurrencyId( $value ); break;
-				case 'price.domain': $this->setDomain( $value ); break;
-				case 'price.quantity': $this->setQuantity( $value ); break;
-				case 'price.value': $this->setValue( $value ); break;
-				case 'price.costs': $this->setCosts( $value ); break;
-				case 'price.rebate': $this->setRebate( $value ); break;
-				case 'price.taxvalue': $this->setTaxValue( $value ); break;
-				case 'price.taxrate': $this->setTaxRate( $value ); break;
-				case 'price.taxflag': $this->setTaxFlag( $value ); break;
-				case 'price.status': $this->setStatus( $value ); break;
-				case 'price.label': $this->setLabel( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'price.type': $item = $item->setType( $value ); break;
+				case 'price.currencyid': $item = $item->setCurrencyId( $value ); break;
+				case 'price.domain': $item = $item->setDomain( $value ); break;
+				case 'price.quantity': $item = $item->setQuantity( $value ); break;
+				case 'price.value': $item = $item->setValue( $value ); break;
+				case 'price.costs': $item = $item->setCosts( $value ); break;
+				case 'price.rebate': $item = $item->setRebate( $value ); break;
+				case 'price.taxvalue': $item = $item->setTaxValue( $value ); break;
+				case 'price.taxrates': $item = $item->setTaxRates( (array) $value ); break;
+				case 'price.taxrate': $item = $item->setTaxRate( $value ); break;
+				case 'price.taxflag': $item = $item->setTaxFlag( $value ); break;
+				case 'price.status': $item = $item->setStatus( $value ); break;
+				case 'price.label': $item = $item->setLabel( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
-		$list['price.typeid'] = $this->getTypeId();
 		$list['price.type'] = $this->getType();
-		$list['price.typename'] = $this->getTypeName();
 		$list['price.currencyid'] = $this->getCurrencyId();
 		$list['price.domain'] = $this->getDomain();
 		$list['price.quantity'] = $this->getQuantity();
@@ -577,6 +495,7 @@ class Standard extends Base
 		$list['price.costs'] = $this->getCosts();
 		$list['price.rebate'] = $this->getRebate();
 		$list['price.taxvalue'] = $this->getTaxValue();
+		$list['price.taxrates'] = $this->getTaxRates();
 		$list['price.taxrate'] = $this->getTaxRate();
 		$list['price.taxflag'] = $this->getTaxFlag();
 		$list['price.status'] = $this->getStatus();

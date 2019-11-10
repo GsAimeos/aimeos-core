@@ -3,20 +3,26 @@
 namespace Aimeos\MW\Setup\DBSchema;
 
 
-class Db2Test extends \PHPUnit_Framework_TestCase
+class Db2Test extends \PHPUnit\Framework\TestCase
 {
 	private $mock;
 	private $object;
+	private $dbmStub;
 
 
 	protected function setUp()
 	{
-		$this->mock = $this->getMockBuilder( '\Aimeos\MW\DB\Connection\DBAL' )
+		$this->mock = $this->getMockBuilder( \Aimeos\MW\DB\Connection\PDO::class )
 			->setMethods( array( 'create' ) )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->object = new \Aimeos\MW\Setup\DBSchema\Db2( $this->mock, 'dbname', 'db2' );
+		$this->dbmStub = $this->getMockBuilder( \Aimeos\MW\DB\Manager\PDO::class )
+			->setMethods( array( 'acquire', 'release' ) )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->object = new \Aimeos\MW\Setup\DBSchema\Db2( $this->dbmStub, 'db', 'dbname', 'db2' );
 	}
 
 
@@ -28,15 +34,18 @@ class Db2Test extends \PHPUnit_Framework_TestCase
 
 	public function testTableExists()
 	{
-		$stmt = $this->getMockBuilder( '\Aimeos\MW\DB\Statement\DBAL\Simple' )
+		$stmt = $this->getMockBuilder( \Aimeos\MW\DB\Statement\PDO\Simple::class )
 			->setMethods( array( 'bind', 'execute' ) )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$result = $this->getMockBuilder( '\Aimeos\MW\DB\Result\DBAL' )
+		$result = $this->getMockBuilder( \Aimeos\MW\DB\Result\PDO::class )
 			->setMethods( array( 'fetch' ) )
 			->disableOriginalConstructor()
 			->getMock();
+
+		$this->dbmStub->expects( $this->once() )->method( 'acquire' )->will( $this->returnValue( $this->mock ) );
+		$this->dbmStub->expects( $this->once() )->method( 'release' )->with( $this->equalTo( $this->mock ) );
 
 		$this->mock->expects( $this->once() )->method( 'create' )->will( $this->returnValue( $stmt ) );
 		$stmt->expects( $this->once() )->method( 'execute' )->will( $this->returnValue( $result ) );
@@ -48,21 +57,25 @@ class Db2Test extends \PHPUnit_Framework_TestCase
 
 	public function testSequenceExists()
 	{
+		unset( $this->dbmStub );
 		$this->assertFalse( $this->object->sequenceExists( 'testseqence' ) );
 	}
 
 
 	public function testIndexExists()
 	{
-		$stmt = $this->getMockBuilder( '\Aimeos\MW\DB\Statement\DBAL\Simple' )
+		$stmt = $this->getMockBuilder( \Aimeos\MW\DB\Statement\PDO\Simple::class )
 			->setMethods( array( 'bind', 'execute' ) )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$result = $this->getMockBuilder( '\Aimeos\MW\DB\Result\DBAL' )
+		$result = $this->getMockBuilder( \Aimeos\MW\DB\Result\PDO::class )
 			->setMethods( array( 'fetch' ) )
 			->disableOriginalConstructor()
 			->getMock();
+
+		$this->dbmStub->expects( $this->once() )->method( 'acquire' )->will( $this->returnValue( $this->mock ) );
+		$this->dbmStub->expects( $this->once() )->method( 'release' )->with( $this->equalTo( $this->mock ) );
 
 		$this->mock->expects( $this->once() )->method( 'create' )->will( $this->returnValue( $stmt ) );
 		$stmt->expects( $this->once() )->method( 'execute' )->will( $this->returnValue( $result ) );
@@ -74,15 +87,18 @@ class Db2Test extends \PHPUnit_Framework_TestCase
 
 	public function testConstraintExists()
 	{
-		$stmt = $this->getMockBuilder( '\Aimeos\MW\DB\Statement\DBAL\Simple' )
+		$stmt = $this->getMockBuilder( \Aimeos\MW\DB\Statement\PDO\Simple::class )
 			->setMethods( array( 'bind', 'execute' ) )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$result = $this->getMockBuilder( '\Aimeos\MW\DB\Result\DBAL' )
+		$result = $this->getMockBuilder( \Aimeos\MW\DB\Result\PDO::class )
 			->setMethods( array( 'fetch' ) )
 			->disableOriginalConstructor()
 			->getMock();
+
+		$this->dbmStub->expects( $this->once() )->method( 'acquire' )->will( $this->returnValue( $this->mock ) );
+		$this->dbmStub->expects( $this->once() )->method( 'release' )->with( $this->equalTo( $this->mock ) );
 
 		$this->mock->expects( $this->once() )->method( 'create' )->will( $this->returnValue( $stmt ) );
 		$stmt->expects( $this->once() )->method( 'execute' )->will( $this->returnValue( $result ) );
@@ -94,15 +110,18 @@ class Db2Test extends \PHPUnit_Framework_TestCase
 
 	public function testColumnExists()
 	{
-		$stmt = $this->getMockBuilder( '\Aimeos\MW\DB\Statement\DBAL\Simple' )
+		$stmt = $this->getMockBuilder( \Aimeos\MW\DB\Statement\PDO\Simple::class )
 			->setMethods( array( 'bind', 'execute' ) )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$result = $this->getMockBuilder( '\Aimeos\MW\DB\Result\DBAL' )
+		$result = $this->getMockBuilder( \Aimeos\MW\DB\Result\PDO::class )
 			->setMethods( array( 'fetch' ) )
 			->disableOriginalConstructor()
 			->getMock();
+
+		$this->dbmStub->expects( $this->once() )->method( 'acquire' )->will( $this->returnValue( $this->mock ) );
+		$this->dbmStub->expects( $this->once() )->method( 'release' )->with( $this->equalTo( $this->mock ) );
 
 		$this->mock->expects( $this->once() )->method( 'create' )->will( $this->returnValue( $stmt ) );
 		$stmt->expects( $this->once() )->method( 'execute' )->will( $this->returnValue( $result ) );
@@ -121,18 +140,22 @@ class Db2Test extends \PHPUnit_Framework_TestCase
 			'CHARACTER_MAXIMUM_LENGTH' => 16,
 			'COLUMN_DEFAULT' => 'default',
 			'IS_NULLABLE' => 'NO',
+			'CHARACTER_SET_NAME' => null,
 			'COLLATION_NAME' => null,
 		);
 
-		$stmt = $this->getMockBuilder( '\Aimeos\MW\DB\Statement\DBAL\Simple' )
+		$stmt = $this->getMockBuilder( \Aimeos\MW\DB\Statement\PDO\Simple::class )
 			->setMethods( array( 'bind', 'execute' ) )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$result = $this->getMockBuilder( '\Aimeos\MW\DB\Result\DBAL' )
+		$result = $this->getMockBuilder( \Aimeos\MW\DB\Result\PDO::class )
 			->setMethods( array( 'fetch' ) )
 			->disableOriginalConstructor()
 			->getMock();
+
+		$this->dbmStub->expects( $this->once() )->method( 'acquire' )->will( $this->returnValue( $this->mock ) );
+		$this->dbmStub->expects( $this->once() )->method( 'release' )->with( $this->equalTo( $this->mock ) );
 
 		$this->mock->expects( $this->once() )->method( 'create' )->will( $this->returnValue( $stmt ) );
 		$stmt->expects( $this->once() )->method( 'execute' )->will( $this->returnValue( $result ) );

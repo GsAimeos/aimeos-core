@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Jsb2
  */
@@ -21,7 +21,7 @@ namespace Aimeos\MW\Jsb2;
  */
 class Standard
 {
-	private $registeredPackages = array();
+	private $registeredPackages = [];
 	private $baseURL = '';
 	private $basePath = '';
 
@@ -31,9 +31,9 @@ class Standard
 	 *
 	 * @param string $filename Path to manifest file
 	 * @param string $baseURL Base URL for HTML output
-	 * @param array $filter Which packages  schould NOT be returned
+	 * @param string[] $filter Which packages should NOT be returned
 	 */
-	public function __construct( $filename, $baseURL = "", $filter = array() )
+	public function __construct( $filename, $baseURL = "", $filter = [] )
 	{
 		$manifest = $this->getManifest( $filename );
 
@@ -48,11 +48,11 @@ class Standard
 	 * Returns the list of URLs for packages files with given filter.
 	 *
 	 * @param string $type Specific filetypes to create output
-	 * @return array List of URLs for the package files
+	 * @return string[] List of URLs for the package files
 	 */
 	public function getFiles( $type )
 	{
-		$files = array();
+		$files = [];
 
 		foreach( $this->registeredPackages as $filetype => $packageList )
 		{
@@ -76,11 +76,11 @@ class Standard
 	 *
 	 * @param string $type Specific filetypes to create output
 	 * @param string $version URL version string with %s placeholder for the file time
-	 * @return array List of URLs for the package files
+	 * @return string[] List of URLs for the package files
 	 */
 	public function getUrls( $type, $version = '?v=%s' )
 	{
-		$files = array();
+		$files = [];
 
 		foreach( $this->registeredPackages as $filetype => $packageList )
 		{
@@ -134,12 +134,12 @@ class Standard
 	 * @param \stdClass $package Object with "fileIncludes" property containing a
 	 * 	list of file objects with "path" and "text" properties
 	 * @param string $version Version string that should be added to the URLs suitable for sprintf()
-	 * @return array List of URLs to the files from the package
+	 * @return string[] List of URLs to the files from the package
 	 * @throws \Aimeos\MW\Jsb2\Exception If the file modification timestamp couldn't be determined
 	 */
 	protected function getFileUrls( \stdClass $package, $version = '?v=%s' )
 	{
-		$list = array();
+		$list = [];
 
 		foreach( $package->fileIncludes as $singleFile )
 		{
@@ -160,11 +160,11 @@ class Standard
 	 * Get the packages from a JSON decoded manifest and validates them.
 	 *
 	 * @param object JSON decoded manifest
-	 * @param array $filter What packages should NOT be returned
+	 * @param string[] $filter What packages should NOT be returned
 	 */
-	protected function getPackages( $manifest, $filter = array() )
+	protected function getPackages( $manifest, $filter = [] )
 	{
-		$packageContainer = array();
+		$packageContainer = [];
 
 		if( !isset( $manifest->pkgs ) || !is_array( $manifest->pkgs ) ) {
 			throw new \Aimeos\MW\Jsb2\Exception( 'No packages found' );

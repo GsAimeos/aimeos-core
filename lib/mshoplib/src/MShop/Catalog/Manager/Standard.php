@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Catalog
  */
@@ -23,100 +23,123 @@ class Standard extends Base
 {
 	private $searchConfig = array(
 		'id' => array(
-			'code'=>'catalog.id',
-			'internalcode'=>'mcat."id"',
-			'label'=>'Catalog node ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'code' => 'catalog.id',
+			'internalcode' => 'mcat."id"',
+			'label' => 'ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
+		),
+		'catalog.siteid' => array(
+			'code' => 'catalog.siteid',
+			'internalcode' => 'mcat."siteid"',
+			'label' => 'Site ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
+		),
+		'parentid' => array(
+			'code' => 'catalog.parentid',
+			'internalcode' => 'mcat."parentid"',
+			'label' => 'Parent ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
+		),
+		'level' => array(
+			'code' => 'catalog.level',
+			'internalcode' => 'mcat."level"',
+			'label' => 'Tree level',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
+		),
+		'left' => array(
+			'code' => 'catalog.left',
+			'internalcode' => 'mcat."nleft"',
+			'label' => 'Left value',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
+		),
+		'right' => array(
+			'code' => 'catalog.right',
+			'internalcode' => 'mcat."nright"',
+			'label' => 'Right value',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
 		),
 		'label' => array(
-			'code'=>'catalog.label',
-			'internalcode'=>'mcat."label"',
-			'label'=>'Catalog node label',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
-		),
-		'config' => array(
-			'code' => 'catalog.config',
-			'internalcode' => 'mcat."config"',
-			'label' => 'Catalog node config',
+			'code' => 'catalog.label',
+			'internalcode' => 'mcat."label"',
+			'label' => 'Label',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'code' => array(
-			'code'=>'catalog.code',
-			'internalcode'=>'mcat."code"',
-			'label'=>'Catalog node code',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'code' => 'catalog.code',
+			'internalcode' => 'mcat."code"',
+			'label' => 'Code',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
+		'catalog.target' => array(
+			'code' => 'catalog.target',
+			'internalcode' => 'mcat."target"',
+			'label' => 'URL target',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'status' => array(
-			'code'=>'catalog.status',
-			'internalcode'=>'mcat."status"',
-			'label'=>'Catalog node status',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'code' => 'catalog.status',
+			'internalcode' => 'mcat."status"',
+			'label' => 'Status',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'parentid' => array(
-			'code'=>'catalog.parentid',
-			'internalcode'=>'mcat."parentid"',
-			'label'=>'Catalog node parentid',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'config' => array(
+			'code' => 'catalog.config',
+			'internalcode' => 'mcat."config"',
+			'label' => 'Config',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
-		'level' => array(
-			'code'=>'catalog.level',
-			'internalcode'=>'mcat."level"',
-			'label'=>'Catalog node tree level',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
-			'public' => false,
-		),
-		'left' => array(
-			'code'=>'catalog.left',
-			'internalcode'=>'mcat."nleft"',
-			'label'=>'Catalog node left value',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
-			'public' => false,
-		),
-		'right' => array(
-			'code'=>'catalog.right',
-			'internalcode'=>'mcat."nright"',
-			'label'=>'Catalog node right value',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
-			'public' => false,
-		),
-		'catalog.siteid' => array(
-			'code'=>'catalog.siteid',
-			'internalcode'=>'mcat."siteid"',
-			'label'=>'Catalog node site ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
-			'public' => false,
-		),
-		'catalog.ctime'=> array(
-			'label' => 'Catalog creation time',
+		'catalog.ctime' => array(
+			'label' => 'Create date/time',
 			'code' => 'catalog.ctime',
 			'internalcode' => 'mcat."ctime"',
 			'type' => 'datetime',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'catalog.mtime'=> array(
-			'label' => 'Catalog modification time',
+		'catalog.mtime' => array(
+			'label' => 'Modify date/time',
 			'code' => 'catalog.mtime',
 			'internalcode' => 'mcat."mtime"',
 			'type' => 'datetime',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'catalog.editor'=> array(
-			'code'=>'catalog.editor',
-			'internalcode'=>'mcat."editor"',
-			'label'=>'Catalog editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'catalog.editor' => array(
+			'code' => 'catalog.editor',
+			'internalcode' => 'mcat."editor"',
+			'label' => 'Editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
+		),
+		'catalog:has' => array(
+			'code' => 'catalog:has()',
+			'internalcode' => '(
+				SELECT mcatli_has."id" FROM mshop_catalog_list AS mcatli_has
+				WHERE mcat."id" = mcatli_has."parentid" AND :site AND :key LIMIT 1
+			)',
+			'label' => 'Catalog has list item, parameter(<domain>[,<list type>[,<reference ID>)]]',
+			'type' => 'null',
+			'internaltype' => 'null',
+			'public' => false,
 		),
 	);
 
@@ -130,23 +153,43 @@ class Standard extends Base
 	{
 		parent::__construct( $context, $this->searchConfig );
 		$this->setResourceName( 'db-catalog' );
+
+		$level = \Aimeos\MShop\Locale\Manager\Base::SITE_ALL;
+		$level = $context->getConfig()->get( 'mshop/catalog/manager/sitemode', $level );
+
+		$siteIds = $this->getSiteIds( $level );
+		$self = $this;
+
+
+		$this->searchConfig['catalog:has']['function'] = function( &$source, array $params ) use ( $self, $siteIds ) {
+
+			foreach( $params as $key => $param ) {
+				$params[$key] = trim( $param, '\'' );
+			}
+
+			$source = str_replace( ':site', $self->toExpression( 'mcatli_has."siteid"', $siteIds ), $source );
+			$str = $self->toExpression( 'mcatli_has."key"', join( '|', $params ), isset( $params[2] ) ? '==' : '=~' );
+			$source = str_replace( ':key', $str, $source );
+
+			return $params;
+		};
 	}
 
 
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param integer[] $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Catalog\Manager\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$context = $this->getContext();
 		$config = $context->getConfig();
-		$search = $this->createSearch();
+		$search = $this->getObject()->createSearch();
 
-		$path = 'mshop/catalog/manager/submanagers';
-		foreach( $config->get( $path, array( 'lists' ) ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $config->get( 'mshop/catalog/manager/submanagers', ['lists'] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
 		$dbm = $context->getDatabaseManager();
@@ -191,7 +234,7 @@ class Standard extends Base
 			$translations = array( 'siteid' => '"siteid"' );
 
 			$search->setConditions( $search->compare( '==', 'siteid', $siteids ) );
-			$sql = str_replace( ':siteid', $search->getConditionString( $types, $translations ), $sql );
+			$sql = str_replace( ':siteid', $search->getConditionSource( $types, $translations ), $sql );
 
 			$stmt = $conn->create( $sql );
 			$stmt->bind( 1, 0, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
@@ -205,18 +248,20 @@ class Standard extends Base
 			$dbm->release( $conn, $dbname );
 			throw $e;
 		}
+
+		return $this;
 	}
 
 
 	/**
-	 * Creates new item object.
+	 * Creates a new empty item instance
 	 *
-	 * @return \Aimeos\MShop\Common\Item\Iface New item object
+	 * @param array $values Values the item should be initialized with
+	 * @return \Aimeos\MShop\Catalog\Item\Iface New catalog item object
 	 */
-	public function createItem()
+	public function createItem( array $values = [] )
 	{
-		$values = array( 'siteid' => $this->getContext()->getLocale()->getSiteId() );
-
+		$values['siteid'] = $this->getContext()->getLocale()->getSiteId();
 		return $this->createItemBase( $values );
 	}
 
@@ -225,7 +270,7 @@ class Standard extends Base
 	 * Creates a search object.
 	 *
 	 * @param boolean $default Add default criteria
-	 * @return \Aimeos\MW\Criteria\Iface Returns the Search object
+	 * @return \Aimeos\MW\Criteria\Iface Returns the search object
 	 */
 	public function createSearch( $default = false )
 	{
@@ -238,38 +283,47 @@ class Standard extends Base
 
 
 	/**
-	 * Deletes the item specified by its ID.
+	 * Deletes the item.
 	 *
-	 * @param mixed $id ID of the item object
+	 * @param \Aimeos\MShop\Common\Item\Iface|string $itemId Item object or ID of the item object
+	 * @return \Aimeos\MShop\Catalog\Manager\Iface Manager object for chaining method calls
 	 */
 	public function deleteItem( $id )
 	{
-		$siteid = $this->getContext()->getLocale()->getSiteId();
 		$this->begin();
+		$this->lock();
 
 		try
 		{
+			$siteid = $this->getContext()->getLocale()->getSiteId();
 			$this->createTreeManager( $siteid )->deleteNode( $id );
+			$this->unlock();
 			$this->commit();
 		}
 		catch( \Exception $e )
 		{
+			$this->unlock();
 			$this->rollback();
 			throw $e;
 		}
+
+		return $this;
 	}
 
 
 	/**
-	 * Removes multiple items specified by ids in the array.
+	 * Removes multiple items.
 	 *
-	 * @param array $ids List of IDs
+	 * @param \Aimeos\MShop\Common\Item\Iface[]|string[] $itemIds List of item objects or IDs of the items
+	 * @return \Aimeos\MShop\Catalog\Manager\Iface Manager object for chaining method calls
 	 */
-	public function deleteItems( array $ids )
+	public function deleteItems( array $itemIds )
 	{
-		foreach( $ids as $id ) {
-			$this->deleteItem( $id );
+		foreach( $itemIds as $itemId ) {
+			$this->getObject()->deleteItem( $itemId );
 		}
+
+		return $this->deleteRefItems( $itemIds );
 	}
 
 
@@ -280,25 +334,27 @@ class Standard extends Base
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
 	 * @param string|null $domain Domain of the item if necessary to identify the item uniquely
 	 * @param string|null $type Type code of the item if necessary to identify the item uniquely
-	 * @return \Aimeos\MShop\Common\Item\Iface Item object
+	 * @param boolean $default True to add default criteria
+	 * @return \Aimeos\MShop\Catalog\Item\Iface Catalog item object
 	 */
-	public function findItem( $code, array $ref = array(), $domain = null, $type = null )
+	public function findItem( $code, array $ref = [], $domain = null, $type = null, $default = false )
 	{
-		return $this->findItemBase( array( 'catalog.code' => $code ), $ref );
+		return $this->findItemBase( array( 'catalog.code' => $code ), $ref, $default );
 	}
 
 
 	/**
 	 * Returns the item specified by its ID.
 	 *
-	 * @param integer $id Unique ID of the catalog item
+	 * @param string $id Unique ID of the catalog item
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
-	 * @return \Aimeos\MShop\Catalog\Item\Iface Returns the catalog item of the given id
+	 * @param boolean $default Add default criteria
+	 * @return \Aimeos\MShop\Catalog\Item\Iface Catalog item of the given ID
 	 * @throws \Aimeos\MShop\Exception If item couldn't be found
 	 */
-	public function getItem( $id, array $ref = array() )
+	public function getItem( $id, array $ref = [], $default = false )
 	{
-		return $this->getItemBase( 'catalog.id', $id, $ref );
+		return $this->getItemBase( 'catalog.id', $id, $ref, $default );
 	}
 
 
@@ -306,12 +362,11 @@ class Standard extends Base
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/catalog/manager/submanagers';
-
 		return $this->getResourceTypeBase( 'catalog', $path, array( 'lists' ), $withsub );
 	}
 
@@ -320,7 +375,7 @@ class Standard extends Base
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array List of attribute items implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -343,7 +398,7 @@ class Standard extends Base
 		 */
 		$path = 'mshop/catalog/manager/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array( 'lists' ), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -353,24 +408,32 @@ class Standard extends Base
 	 * @param \Aimeos\MShop\Catalog\Item\Iface $item Item which should be inserted
 	 * @param string|null $parentId ID of the parent item where the item should be inserted into
 	 * @param string|null $refId ID of the item where the item should be inserted before (null to append)
+	 * @return \Aimeos\MShop\Catalog\Item\Iface $item Updated item including the generated ID
 	 */
 	public function insertItem( \Aimeos\MShop\Catalog\Item\Iface $item, $parentId = null, $refId = null )
 	{
-		$siteid = $this->getContext()->getLocale()->getSiteId();
-		$node = $item->getNode();
 		$this->begin();
+		$this->lock();
 
 		try
 		{
+			$node = $item->getNode();
+			$siteid = $this->getContext()->getLocale()->getSiteId();
+
 			$this->createTreeManager( $siteid )->insertNode( $node, $parentId, $refId );
 			$this->updateUsage( $node->getId(), $item, true );
+			$this->unlock();
 			$this->commit();
 		}
 		catch( \Exception $e )
 		{
+			$this->unlock();
 			$this->rollback();
 			throw $e;
 		}
+
+		$item = $this->saveListItems( $item, 'catalog' );
+		return $this->saveChildren( $item );
 	}
 
 
@@ -381,56 +444,57 @@ class Standard extends Base
 	 * @param string $oldParentId ID of the old parent item which currently contains the item that should be removed
 	 * @param string $newParentId ID of the new parent item where the item should be moved to
 	 * @param string|null $refId ID of the item where the item should be inserted before (null to append)
+	 * @return \Aimeos\MShop\Catalog\Manager\Iface Manager object for chaining method calls
 	 */
 	public function moveItem( $id, $oldParentId, $newParentId, $refId = null )
 	{
-		$siteid = $this->getContext()->getLocale()->getSiteId();
-		$item = $this->getItem( $id );
-
 		$this->begin();
+		$this->lock();
 
 		try
 		{
+			$item = $this->getObject()->getItem( $id );
+			$siteid = $this->getContext()->getLocale()->getSiteId();
+
 			$this->createTreeManager( $siteid )->moveNode( $id, $oldParentId, $newParentId, $refId );
 			$this->updateUsage( $id, $item );
+			$this->unlock();
 			$this->commit();
 		}
 		catch( \Exception $e )
 		{
+			$this->unlock();
 			$this->rollback();
 			throw $e;
 		}
+
+		return $this;
 	}
 
 
 	/**
 	 * Updates an item object.
 	 *
-	 * @param \Aimeos\MShop\Common\Item\Iface $item Item object whose data should be saved
+	 * @param \Aimeos\MShop\Catalog\Item\Iface $item Item object whose data should be saved
 	 * @param boolean $fetch True if the new ID should be returned in the item
+	 * @return \Aimeos\MShop\Catalog\Item\Iface $item Updated item including the generated ID
 	 */
-	public function saveItem( \Aimeos\MShop\Common\Item\Iface $item, $fetch = true )
+	public function saveItem( \Aimeos\MShop\Catalog\Item\Iface $item, $fetch = true )
 	{
-		$iface = '\\Aimeos\\MShop\\Catalog\\Item\\Iface';
-		if( !( $item instanceof $iface ) ) {
-			throw new \Aimeos\MShop\Catalog\Exception( sprintf( 'Object is not of required type "%1$s"', $iface ) );
+		if( !$item->isModified() )
+		{
+			$item = $this->saveListItems( $item, 'catalog', $fetch );
+			return $this->saveChildren( $item );
 		}
 
-		$siteid = $this->getContext()->getLocale()->getSiteId();
 		$node = $item->getNode();
-		$this->begin();
+		$siteid = $this->getContext()->getLocale()->getSiteId();
 
-		try
-		{
-			$this->createTreeManager( $siteid )->saveNode( $node );
-			$this->updateUsage( $node->getId(), $item );
-			$this->commit();
-		}
-		catch( \Exception $e )
-		{
-			$this->rollback();
-			throw $e;
-		}
+		$this->createTreeManager( $siteid )->saveNode( $node );
+		$this->updateUsage( $node->getId(), $item );
+
+		$item = $this->saveListItems( $item, 'catalog', $fetch );
+		return $this->saveChildren( $item );
 	}
 
 
@@ -440,11 +504,11 @@ class Standard extends Base
 	 * @param \Aimeos\MW\Criteria\Iface $search Search criteria object
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
 	 * @param integer|null &$total Number of items that are available in total
-	 * @return array List of items implementing \Aimeos\MShop\Common\Item\Iface
+	 * @return \Aimeos\MShop\Catalog\Item\Iface[] List of catalog items
 	 */
-	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = array(), &$total = null )
+	public function searchItems( \Aimeos\MW\Criteria\Iface $search, array $ref = [], &$total = null )
 	{
-		$nodeMap = $siteMap = array();
+		$nodeMap = $siteMap = [];
 		$context = $this->getContext();
 
 		$dbname = $this->getResourceName();
@@ -454,7 +518,38 @@ class Standard extends Base
 		try
 		{
 			$required = array( 'catalog' );
+
+			/** mshop/catalog/manager/sitemode
+			 * Mode how items from levels below or above in the site tree are handled
+			 *
+			 * By default, only items from the current site are fetched from the
+			 * storage. If the ai-sites extension is installed, you can create a
+			 * tree of sites. Then, this setting allows you to define for the
+			 * whole catalog domain if items from parent sites are inherited,
+			 * sites from child sites are aggregated or both.
+			 *
+			 * Available constants for the site mode are:
+			 * * 0 = only items from the current site
+			 * * 1 = inherit items from parent sites
+			 * * 2 = aggregate items from child sites
+			 * * 3 = inherit and aggregate items at the same time
+			 *
+			 * You also need to set the mode in the locale manager
+			 * (mshop/locale/manager/standard/sitelevel) to one of the constants.
+			 * If you set it to the same value, it will work as described but you
+			 * can also use different modes. For example, if inheritance and
+			 * aggregation is configured the locale manager but only inheritance
+			 * in the domain manager because aggregating items makes no sense in
+			 * this domain, then items wil be only inherited. Thus, you have full
+			 * control over inheritance and aggregation in each domain.
+			 *
+			 * @param integer Constant from Aimeos\MShop\Locale\Manager\Base class
+			 * @category Developer
+			 * @since 2018.01
+			 * @see mshop/locale/manager/standard/sitelevel
+			 */
 			$level = \Aimeos\MShop\Locale\Manager\Base::SITE_PATH;
+			$level = $context->getConfig()->get( 'mshop/catalog/manager/sitemode', $level );
 
 			/** mshop/catalog/manager/standard/search-item/mysql
 			 * Retrieves the records matched by the given criteria in the database
@@ -578,10 +673,14 @@ class Standard extends Base
 			 */
 			$cfgPathCount = 'mshop/catalog/manager/standard/count';
 
+			if( $search->getSortations() === [] ) {
+				$search->setSortations( [$search->sort( '+', 'catalog.left' )] );
+			}
+
 			$results = $this->searchItemsBase( $conn, $search, $cfgPathSearch, $cfgPathCount, $required, $total, $level );
 
 			while( ( $row = $results->fetch() ) !== false ) {
-				$siteMap[$row['siteid']][$row['id']] = new \Aimeos\MW\Tree\Node\Standard( $row );
+				$siteMap[(string) $row['siteid']][(string) $row['id']] = new \Aimeos\MW\Tree\Node\Standard( $row );
 			}
 
 			$sitePath = array_reverse( $this->getContext()->getLocale()->getSitePath() );
@@ -610,11 +709,11 @@ class Standard extends Base
 	/**
 	 * Returns a list of items starting with the given category that are in the path to the root node
 	 *
-	 * @param integer $id ID of item to get the path for
+	 * @param string $id ID of item to get the path for
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
-	 * @return array Associative list of items implementing \Aimeos\MShop\Catalog\Item\Iface with IDs as keys
+	 * @return \Aimeos\MShop\Catalog\Item\Iface[] Associative list of catalog items with IDs as keys
 	 */
-	public function getPath( $id, array $ref = array() )
+	public function getPath( $id, array $ref = [] )
 	{
 		$sitePath = array_reverse( $this->getContext()->getLocale()->getSitePath() );
 
@@ -628,7 +727,7 @@ class Standard extends Base
 
 			if( !empty( $path ) )
 			{
-				$itemMap = array();
+				$itemMap = [];
 
 				foreach( $path as $node ) {
 					$itemMap[$node->getId()] = $node;
@@ -651,7 +750,7 @@ class Standard extends Base
 	 * @param \Aimeos\MW\Criteria\Iface|null $criteria Optional criteria object with conditions
 	 * @return \Aimeos\MShop\Catalog\Item\Iface Catalog item, maybe with subnodes
 	 */
-	public function getTree( $id = null, array $ref = array(), $level = \Aimeos\MW\Tree\Manager\Base::LEVEL_TREE, \Aimeos\MW\Criteria\Iface $criteria = null )
+	public function getTree( $id = null, array $ref = [], $level = \Aimeos\MW\Tree\Manager\Base::LEVEL_TREE, \Aimeos\MW\Criteria\Iface $criteria = null )
 	{
 		$sitePath = array_reverse( $this->getContext()->getLocale()->getSitePath() );
 
@@ -663,7 +762,7 @@ class Standard extends Base
 				continue;
 			}
 
-			$listItems = $listItemMap = $refIdMap = array();
+			$listItems = $listItemMap = $refIdMap = [];
 			$nodeMap = $this->getNodeMap( $node );
 
 			if( count( $ref ) > 0 ) {
@@ -682,23 +781,23 @@ class Standard extends Base
 			$refItemMap = $this->getRefItems( $refIdMap );
 			$nodeid = $node->getId();
 
-			$listItems = array();
+			$listItems = [];
 			if( array_key_exists( $nodeid, $listItemMap ) ) {
 				$listItems = $listItemMap[$nodeid];
 			}
 
-			$refItems = array();
+			$refItems = [];
 			if( array_key_exists( $nodeid, $refItemMap ) ) {
 				$refItems = $refItemMap[$nodeid];
 			}
 
-			$item = $this->createItemBase( array(), $listItems, $refItems, array(), $node );
+			$item = $this->createItemBase( [], $listItems, $refItems, [], $node );
 			$this->createTree( $node, $item, $listItemMap, $refItemMap );
 
 			return $item;
 		}
 
-		throw new \Aimeos\MShop\Catalog\Exception( sprintf( 'Catalog node for ID "%1$s" not available', $id ) );
+		throw new \Aimeos\MShop\Catalog\Exception( sprintf( 'No catalog node for ID "%1$s"', $id ) );
 	}
 
 
@@ -716,12 +815,128 @@ class Standard extends Base
 
 
 	/**
+	 * Saves the children of the given node
+	 *
+	 * @param \Aimeos\MShop\Catalog\Item\Iface $item Catalog item object incl. child items
+	 * @return \Aimeos\MShop\Catalog\Item\Iface Catalog item with saved child items
+	 */
+	protected function saveChildren( \Aimeos\MShop\Catalog\Item\Iface $item )
+	{
+		$rmIds = [];
+		foreach( $item->getChildrenDeleted() as $child ) {
+			$rmIds[] = $child->getId();
+		}
+
+		$this->deleteItems( $rmIds );
+
+		foreach( $item->getChildren() as $child )
+		{
+			if( $child->getId() !== null )
+			{
+				$this->saveItem( $child );
+
+				if( $child->getParentId() !== $item->getParentId() ) {
+					$this->moveItem( $child->getId(), $item->getParentId(), $child->getParentId() );
+				}
+			}
+			else
+			{
+				$this->insertItem( $child, $item->getId() );
+			}
+		}
+
+		return $item;
+	}
+
+
+	/**
+	 * Locks the catalog table against modifications from other connections
+	 *
+	 * @return \Aimeos\MShop\Catalog\Manager\Iface Manager object for chaining method calls
+	 */
+	protected function lock()
+	{
+		/** mshop/catalog/manager/standard/lock/mysql
+		 * SQL statement for locking the catalog table
+		 *
+		 * @see mshop/catalog/manager/standard/lock/ansi
+		 */
+
+		/** mshop/catalog/manager/standard/lock/ansi
+		 * SQL statement for locking the catalog table
+		 *
+		 * Updating the nested set of categories in the catalog table requires locking
+		 * the whole table to avoid data corruption. This statement will be followed by
+		 * insert or update statements and closed by an unlock statement.
+		 *
+		 * @param string Lock SQL statement
+		 * @since 2019.04
+		 * @category Developer
+		 */
+		$path = 'mshop/catalog/manager/standard/lock';
+
+		if( ( $sql = $this->getSqlConfig( $path ) ) !== $path )
+		{
+			$dbname = $this->getResourceName();
+			$dbm = $this->getContext()->getDatabaseManager();
+
+			$conn = $dbm->acquire( $dbname );
+			$conn->create( $sql )->execute()->finish();
+			$dbm->release( $conn, $dbname );
+		}
+
+		return $this;
+	}
+
+
+	/**
+	 * Unlocks the catalog table for modifications from other connections
+	 *
+	 * @return \Aimeos\MShop\Catalog\Manager\Iface Manager object for chaining method calls
+	 */
+	protected function unlock()
+	{
+		/** mshop/catalog/manager/standard/unlock/mysql
+		 * SQL statement for unlocking the catalog table
+		 *
+		 * @see mshop/catalog/manager/standard/unlock/ansi
+		 */
+
+		/** mshop/catalog/manager/standard/unlock/ansi
+		 * SQL statement for unlocking the catalog table
+		 *
+		 * Updating the nested set of categories in the catalog table requires locking
+		 * the whole table to avoid data corruption. This statement will be executed
+		 * after the table is locked and insert or update statements have been sent to
+		 * the database.
+		 *
+		 * @param string Lock SQL statement
+		 * @since 2019.04
+		 * @category Developer
+		 */
+		 $path = 'mshop/catalog/manager/standard/unlock';
+
+		if( ( $sql = $this->getSqlConfig( $path ) ) !== $path )
+		{
+			$dbname = $this->getResourceName();
+			$dbm = $this->getContext()->getDatabaseManager();
+
+			$conn = $dbm->acquire( $dbname );
+			$conn->create( $sql )->execute()->finish();
+			$dbm->release( $conn, $dbname );
+		}
+
+		return $this;
+	}
+
+
+	/**
 	 * Updates the usage information of a node.
 	 *
-	 * @param integer $id Id of the record
+	 * @param string $id Id of the record
 	 * @param \Aimeos\MShop\Catalog\Item\Iface $item Catalog item
 	 * @param boolean $case True if the record shoud be added or false for an update
-	 *
+	 * @return \Aimeos\MShop\Catalog\Manager\Iface Manager object for chaining method calls
 	 */
 	private function updateUsage( $id, \Aimeos\MShop\Catalog\Item\Iface $item, $case = false )
 	{
@@ -735,6 +950,7 @@ class Standard extends Base
 		try
 		{
 			$siteid = $context->getLocale()->getSiteId();
+			$columns = $this->getObject()->getSaveAttributes();
 
 			if( $case !== true )
 			{
@@ -780,6 +996,7 @@ class Standard extends Base
 				 * @see mshop/catalog/manager/standard/insert-usage/ansi
 				 */
 				$path = 'mshop/catalog/manager/standard/update-usage';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ), false );
 			}
 			else
 			{
@@ -825,23 +1042,31 @@ class Standard extends Base
 				 * @see mshop/catalog/manager/standard/update-usage/ansi
 				 */
 				$path = 'mshop/catalog/manager/standard/insert-usage';
+				$sql = $this->addSqlColumns( array_keys( $columns ), $this->getSqlConfig( $path ) );
 			}
 
-			$stmt = $conn->create( $this->getSqlConfig( $path ) );
-			$stmt->bind( 1, json_encode( $item->getConfig() ) );
-			$stmt->bind( 2, $date ); // mtime
-			$stmt->bind( 3, $context->getEditor() );
+			$idx = 1;
+			$stmt = $this->getCachedStatement( $conn, $path, $sql );
+
+			foreach( $columns as $name => $entry ) {
+				$stmt->bind( $idx++, $item->get( $name ), $entry->getInternalType() );
+			}
+
+			$stmt->bind( $idx++, json_encode( $item->getConfig() ) );
+			$stmt->bind( $idx++, $date ); // mtime
+			$stmt->bind( $idx++, $context->getEditor() );
+			$stmt->bind( $idx++, $item->getTarget() );
 
 			if( $case !== true )
 			{
-				$stmt->bind( 4, $siteid, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-				$stmt->bind( 5, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+				$stmt->bind( $idx++, $siteid, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+				$stmt->bind( $idx++, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 			}
 			else
 			{
-				$stmt->bind( 4, $date ); // ctime
-				$stmt->bind( 5, $siteid, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
-				$stmt->bind( 6, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+				$stmt->bind( $idx++, $date ); // ctime
+				$stmt->bind( $idx++, $siteid, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+				$stmt->bind( $idx++, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 			}
 
 			$stmt->execute()->finish();
@@ -853,5 +1078,7 @@ class Standard extends Base
 			$dbm->release( $conn, $dbname );
 			throw $e;
 		}
+
+		return $this;
 	}
 }

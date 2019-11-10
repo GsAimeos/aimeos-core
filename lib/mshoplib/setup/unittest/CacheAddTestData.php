@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -22,18 +22,7 @@ class CacheAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPreDependencies()
 	{
-		return array( 'MShopSetLocale' );
-	}
-
-
-	/**
-	 * Returns the list of task names which depends on this task.
-	 *
-	 * @return array List of task names
-	 */
-	public function getPostDependencies()
-	{
-		return array();
+		return ['MShopSetLocale'];
 	}
 
 
@@ -42,13 +31,10 @@ class CacheAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function migrate()
 	{
-		$iface = '\\Aimeos\\MShop\\Context\\Item\\Iface';
-		if( !( $this->additional instanceof $iface ) ) {
-			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Additionally provided object is not of type "%1$s"', $iface ) );
-		}
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Context\Item\Iface::class, $this->additional );
 
 		$this->msg( 'Adding admin cache test data', 0 );
-		$this->additional->setEditor( 'core:unittest' );
+		$this->additional->setEditor( 'core:lib/mshoplib' );
 
 		$this->addCacheTestData();
 
@@ -63,7 +49,7 @@ class CacheAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	private function addCacheTestData()
 	{
-		$manager = \Aimeos\MAdmin\Cache\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$manager = \Aimeos\MAdmin\Cache\Manager\Factory::create( $this->additional, 'Standard' );
 
 		$ds = DIRECTORY_SEPARATOR;
 		$path = __DIR__ . $ds . 'data' . $ds . 'cache.php';
@@ -72,16 +58,8 @@ class CacheAddTestData extends \Aimeos\MW\Setup\Task\Base
 			throw new \Aimeos\MShop\Exception( sprintf( 'No file "%1$s" found for cache domain', $path ) );
 		}
 
-		$item = $manager->createItem();
-
-		foreach( $testdata['cache'] as $dataset )
-		{
-			$item->setId( $dataset['id'] );
-			$item->setValue( $dataset['value'] );
-			$item->setTimeExpire( $dataset['expire'] );
-			$item->setTags( $dataset['tags'] );
-
-			$manager->saveItem( $item, false );
+		foreach( $testdata['cache'] as $dataset ) {
+			$manager->saveItem( $manager->createItem()->fromArray( $dataset ), false );
 		}
 	}
 

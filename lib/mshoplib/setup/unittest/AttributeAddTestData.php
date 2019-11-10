@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -22,18 +22,7 @@ class AttributeAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPreDependencies()
 	{
-		return array( 'MShopSetLocale', 'TextAddTestData', 'MediaAddTestData' );
-	}
-
-
-	/**
-	 * Returns the list of task names which depends on this task.
-	 *
-	 * @return string[] List of task names
-	 */
-	public function getPostDependencies()
-	{
-		return array( 'CatalogRebuildTestIndex' );
+		return ['MShopSetLocale'];
 	}
 
 
@@ -42,13 +31,10 @@ class AttributeAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function migrate()
 	{
-		$iface = '\\Aimeos\\MShop\\Context\\Item\\Iface';
-		if( !( $this->additional instanceof $iface ) ) {
-			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Additionally provided object is not of type "%1$s"', $iface ) );
-		}
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Context\Item\Iface::class, $this->additional );
 
 		$this->msg( 'Adding attribute test data', 0 );
-		$this->additional->setEditor( 'core:unittest' );
+		$this->additional->setEditor( 'core:lib/mshoplib' );
 
 		$ds = DIRECTORY_SEPARATOR;
 		$path = __DIR__ . $ds . 'data' . $ds . 'attribute.php';
@@ -71,13 +57,12 @@ class AttributeAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	private function addAttributeData( array $testdata )
 	{
-		$attributeManager = \Aimeos\MShop\Attribute\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$attributeManager = \Aimeos\MShop\Attribute\Manager\Factory::create( $this->additional, 'Standard' );
 		$attributeTypeManager = $attributeManager->getSubManager( 'type', 'Standard' );
 
-		$atypeIds = array();
 		$atype = $attributeTypeManager->createItem();
 
-		$this->conn->begin();
+		$attributeManager->begin();
 
 		foreach( $testdata['attribute/type'] as $key => $dataset )
 		{
@@ -88,19 +73,14 @@ class AttributeAddTestData extends \Aimeos\MW\Setup\Task\Base
 			$atype->setStatus( $dataset['status'] );
 
 			$attributeTypeManager->saveItem( $atype );
-			$atypeIds[$key] = $atype->getId();
 		}
 
 		$attribute = $attributeManager->createItem();
 		foreach( $testdata['attribute'] as $key => $dataset )
 		{
-			if( !isset( $atypeIds[$dataset['typeid']] ) ) {
-				throw new \Aimeos\MW\Setup\Exception( sprintf( 'No attribute type ID found for "%1$s"', $dataset['typeid'] ) );
-			}
-
 			$attribute->setId( null );
 			$attribute->setDomain( $dataset['domain'] );
-			$attribute->setTypeId( $atypeIds[$dataset['typeid']] );
+			$attribute->setType( $dataset['type'] );
 			$attribute->setCode( $dataset['code'] );
 			$attribute->setLabel( $dataset['label'] );
 			$attribute->setStatus( $dataset['status'] );
@@ -109,6 +89,6 @@ class AttributeAddTestData extends \Aimeos\MW\Setup\Task\Base
 			$attributeManager->saveItem( $attribute, false );
 		}
 
-		$this->conn->commit();
+		$attributeManager->commit();
 	}
 }

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Service
  */
@@ -19,14 +19,13 @@ namespace Aimeos\MShop\Service\Manager\Lists\Type;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Type\Base
-	implements \Aimeos\MShop\Service\Manager\Lists\Type\Iface
+	implements \Aimeos\MShop\Service\Manager\Lists\Type\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
 		'service.lists.type.id' => array(
 			'code' => 'service.lists.type.id',
 			'internalcode' => 'mserlity."id"',
-			'internaldeps' => array( 'LEFT JOIN "mshop_service_list_type" AS mserlity ON ( mserli."typeid" = mserlity."id" )' ),
-			'label' => 'Service list type id',
+			'label' => 'List type id',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
@@ -34,59 +33,69 @@ class Standard
 		'service.lists.type.siteid' => array(
 			'code' => 'service.lists.type.siteid',
 			'internalcode' => 'mserlity."siteid"',
-			'label' => 'Service list type site id',
+			'label' => 'List type site id',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
+		'service.lists.type.label' => array(
+			'code' => 'service.lists.type.label',
+			'internalcode' => 'mserlity."label"',
+			'label' => 'List type label',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
 		'service.lists.type.code' => array(
 			'code' => 'service.lists.type.code',
 			'internalcode' => 'mserlity."code"',
-			'label' => 'Service list type code',
+			'label' => 'List type code',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'service.lists.type.domain' => array(
 			'code' => 'service.lists.type.domain',
 			'internalcode' => 'mserlity."domain"',
-			'label' => 'Service list type domain',
+			'label' => 'List type domain',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'service.lists.type.label' => array(
-			'code' => 'service.lists.type.label',
-			'internalcode' => 'mserlity."label"',
-			'label' => 'Service list type label',
-			'type' => 'string',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'service.lists.type.position' => array(
+			'code' => 'service.lists.type.position',
+			'internalcode' => 'mserlity."pos"',
+			'label' => 'List type position',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
 		'service.lists.type.status' => array(
 			'code' => 'service.lists.type.status',
 			'internalcode' => 'mserlity."status"',
-			'label' => 'Service list type status',
+			'label' => 'List type status',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'service.lists.type.ctime'=> array(
-			'code'=>'service.lists.type.ctime',
-			'internalcode'=>'mserlity."ctime"',
-			'label'=>'Service list type create date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'service.lists.type.ctime' => array(
+			'code' => 'service.lists.type.ctime',
+			'internalcode' => 'mserlity."ctime"',
+			'label' => 'List type create date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'service.lists.type.mtime'=> array(
-			'code'=>'service.lists.type.mtime',
-			'internalcode'=>'mserlity."mtime"',
-			'label'=>'Service list type modification date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'service.lists.type.mtime' => array(
+			'code' => 'service.lists.type.mtime',
+			'internalcode' => 'mserlity."mtime"',
+			'label' => 'List type modify date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'service.lists.type.editor'=> array(
-			'code'=>'service.lists.type.editor',
-			'internalcode'=>'mserlity."editor"',
-			'label'=>'Service list type editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'service.lists.type.editor' => array(
+			'code' => 'service.lists.type.editor',
+			'internalcode' => 'mserlity."editor"',
+			'label' => 'List type editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
 
@@ -106,16 +115,17 @@ class Standard
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param array $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Service\Manager\Lists\Type\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/service/manager/lists/type/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array() ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, [] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/service/manager/lists/type/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/service/manager/lists/type/standard/delete' );
 	}
 
 
@@ -123,13 +133,12 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/service/manager/lists/type/submanagers';
-
-		return $this->getResourceTypeBase( 'service/lists/type', $path, array(), $withsub );
+		return $this->getResourceTypeBase( 'service/lists/type', $path, [], $withsub );
 	}
 
 
@@ -137,7 +146,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array List of attribute items implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -160,7 +169,7 @@ class Standard
 		 */
 		$path = 'mshop/service/manager/lists/type/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -242,12 +251,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap global decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the service list type manager.
+		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the service list
+		 * type manager.
 		 *
 		 *  mshop/service/manager/lists/type/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the service controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the service
+		 * list type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2014.03
@@ -266,13 +277,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the service list type manager.
+		 * ("\Aimeos\MShop\Service\Manager\Lists\Type\Decorator\*") around the
+		 * service list type manager.
 		 *
 		 *  mshop/service/manager/lists/type/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the service
-		 * controller.
+		 * "\Aimeos\MShop\Service\Manager\Lists\Type\Decorator\Decorator2" only
+		 * to the service list type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2014.03

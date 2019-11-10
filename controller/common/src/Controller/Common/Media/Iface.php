@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018
  * @package Controller
  * @subpackage Common
  */
@@ -27,7 +27,6 @@ interface Iface
 	 */
 	public function __construct( \Aimeos\MShop\Context\Item\Iface $context );
 
-
 	/**
 	 * Stores the uploaded file and adds the references to the media item
 	 *
@@ -37,12 +36,20 @@ interface Iface
 	 * image.
 	 *
 	 * @param \Aimeos\MShop\Media\Item\Iface $item Media item to add the file references to
-	 * @param \Psr\Http\Message\UploadedFileInterface Uploaded file
+	 * @param \Psr\Http\Message\UploadedFileInterface $file Uploaded file
 	 * @param string $fsname Name of the file system to store the files at
-	 * @return void
+	 * @return \Aimeos\MShop\Media\Item\Iface Added media item
 	 */
 	public function add( \Aimeos\MShop\Media\Item\Iface $item, \Psr\Http\Message\UploadedFileInterface $file, $fsname = 'fs-media' );
 
+	/**
+	 * Copies the media item and the referenced files
+	 *
+	 * @param \Aimeos\MShop\Media\Item\Iface $item Media item whose files should be copied
+	 * @param string $fsname Name of the file system to delete the files from
+	 * @return \Aimeos\MShop\Media\Item\Iface Copied media item with new files
+	 */
+	public function copy( \Aimeos\MShop\Media\Item\Iface $item, $fsname = 'fs-media' );
 
 	/**
 	 * Deletes the files referenced by the media item
@@ -52,17 +59,16 @@ interface Iface
 	 *
 	 * @param \Aimeos\MShop\Media\Item\Iface $item Media item whose files should be deleted
 	 * @param string $fsname Name of the file system to delete the files from
-	 * @return void
+	 * @return \Aimeos\MShop\Media\Item\Iface Media item with deleted files
 	 */
 	public function delete( \Aimeos\MShop\Media\Item\Iface $item, $fsname = 'fs-media' );
-
 
 	/**
 	 * Rescales the files (original and preview) referenced by the media item
 	 *
 	 * @param \Aimeos\MShop\Media\Item\Iface $item Media item whose files should be scaled
 	 * @param string $fsname Name of the file system to rescale the files from
-	 * @return void
+	 * @return \Aimeos\MShop\Media\Item\Iface Rescaled media item
 	 */
 	public function scale( \Aimeos\MShop\Media\Item\Iface $item, $fsname = 'fs-media' );
 }

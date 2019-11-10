@@ -3,14 +3,14 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MShop\Supplier\Manager\Address;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object = null;
 	private $editor = '';
@@ -19,7 +19,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	protected function setUp()
 	{
 		$this->editor = \TestHelperMShop::getContext()->getEditor();
-		$supplierManager = \Aimeos\MShop\Supplier\Manager\Factory::createManager( \TestHelperMShop::getContext() );
+		$supplierManager = \Aimeos\MShop\Supplier\Manager\Factory::create( \TestHelperMShop::getContext() );
 		$this->object = $supplierManager->getSubManager( 'address' );
 	}
 
@@ -30,9 +30,9 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	public function testCleanup()
+	public function testClear()
 	{
-		$this->object->cleanup( array( -1 ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->clear( [-1] ) );
 	}
 
 
@@ -48,7 +48,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		foreach( $this->object->getSearchAttributes() as $attribute )
 		{
-			$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\Attribute\\Iface', $attribute );
+			$this->assertInstanceOf( \Aimeos\MW\Criteria\Attribute\Iface::class, $attribute );
 		}
 	}
 
@@ -56,13 +56,13 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testCreateItem()
 	{
 		$item = $this->object->createItem();
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Item\\Address\\Iface', $item );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Address\Iface::class, $item );
 	}
 
 
 	public function testGetItem()
 	{
-		$search = $this->object->createSearch();
+		$search = $this->object->createSearch()->setSlice( 0, 1 );
 		$conditions = array(
 			$search->compare( '~=', 'supplier.address.company', 'Example company' ),
 			$search->compare( '==', 'supplier.address.editor', $this->editor ),
@@ -79,13 +79,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	public function testSaveInvalid()
-	{
-		$this->setExpectedException( '\Aimeos\MShop\Exception' );
-		$this->object->saveItem( new \Aimeos\MShop\Locale\Item\Standard() );
-	}
-
-
 	public function testSaveUpdateDeleteItem()
 	{
 		$search = $this->object->createSearch();
@@ -98,14 +91,13 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$item->setId( null );
 		$this->object->saveItem( $item );
+		$resultSaved = $itemSaved = $this->object->getItem( $item->getId() );
 
-		$itemSaved = $this->object->getItem( $item->getId() );
 		$itemExp = clone $itemSaved;
 
 		$itemExp->setCity( 'Berlin' );
 		$itemExp->setState( 'Berlin' );
-		$this->object->saveItem( $itemExp );
-
+		$resultUpd = $this->object->saveItem( $itemExp );
 		$itemUpd = $this->object->getItem( $itemExp->getId() );
 
 		$this->object->deleteItem( $itemSaved->getId() );
@@ -136,7 +128,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $item->getWebsite(), $itemSaved->getWebsite() );
 		$this->assertEquals( $item->getLongitude(), $itemSaved->getLongitude() );
 		$this->assertEquals( $item->getLatitude(), $itemSaved->getLatitude() );
-		$this->assertEquals( $item->getFlag(), $itemSaved->getFlag() );
 
 		$this->assertEquals( $this->editor, $itemSaved->getEditor() );
 		$this->assertRegExp( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemSaved->getTimeCreated() );
@@ -166,20 +157,22 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $itemExp->getWebsite(), $itemUpd->getWebsite() );
 		$this->assertEquals( $itemExp->getLongitude(), $itemUpd->getLongitude() );
 		$this->assertEquals( $itemExp->getLatitude(), $itemUpd->getLatitude() );
-		$this->assertEquals( $itemExp->getFlag(), $itemUpd->getFlag() );
 
 		$this->assertEquals( $this->editor, $itemUpd->getEditor() );
 		$this->assertEquals( $itemExp->getTimeCreated(), $itemUpd->getTimeCreated() );
 		$this->assertRegExp( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemUpd->getTimeModified() );
 
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultSaved );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultUpd );
+
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getItem( $itemSaved->getId() );
 	}
 
 
 	public function testCreateSearch()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\Iface', $this->object->createSearch() );
+		$this->assertInstanceOf( \Aimeos\MW\Criteria\Iface::class, $this->object->createSearch() );
 	}
 
 
@@ -188,7 +181,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$total = 0;
 		$search = $this->object->createSearch();
 
-		$conditions = array();
+		$conditions = [];
 		$conditions[] = $search->compare( '!=', 'supplier.address.id', null );
 		$conditions[] = $search->compare( '!=', 'supplier.address.siteid', null );
 		$conditions[] = $search->compare( '!=', 'supplier.address.parentid', null );
@@ -218,7 +211,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$search->setConditions( $search->combine( '&&', $conditions ) );
 		$search->setSlice( 0, 1 );
-		$result = $this->object->searchItems( $search, array(), $total );
+		$result = $this->object->searchItems( $search, [], $total );
 		$this->assertEquals( 1, count( $result ) );
 		$this->assertEquals( 1, $total );
 
@@ -230,7 +223,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testGetSubManager()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Exception::class );
 		$this->object->getSubManager( 'unknown' );
 	}
 }

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Common
  */
@@ -23,7 +23,6 @@ class Standard
 	implements \Aimeos\MShop\Common\Item\Type\Iface
 {
 	private $prefix;
-	private $values;
 
 
 	/**
@@ -32,12 +31,11 @@ class Standard
 	 * @param string $prefix Property prefix when converting to array
 	 * @param array $values Initial values of the list type item
 	 */
-	public function __construct( $prefix, array $values = array() )
+	public function __construct( $prefix, array $values = [] )
 	{
 		parent::__construct( $prefix, $values );
 
 		$this->prefix = $prefix;
-		$this->values = $values;
 	}
 
 
@@ -48,11 +46,7 @@ class Standard
 	 */
 	public function getCode()
 	{
-		if( isset( $this->values[$this->prefix . 'code'] ) ) {
-			return (string) $this->values[$this->prefix . 'code'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'code', '' );
 	}
 
 
@@ -64,12 +58,7 @@ class Standard
 	 */
 	public function setCode( $code )
 	{
-		if( $code === $this->getCode() ) { return $this; }
-
-		$this->values[$this->prefix . 'code'] = (string) $this->checkCode( $code );
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'code', $this->checkCode( $code ) );
 	}
 
 
@@ -80,11 +69,7 @@ class Standard
 	 */
 	public function getDomain()
 	{
-		if( isset( $this->values[$this->prefix . 'domain'] ) ) {
-			return (string) $this->values[$this->prefix . 'domain'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'domain', '' );
 	}
 
 
@@ -96,12 +81,7 @@ class Standard
 	 */
 	public function setDomain( $domain )
 	{
-		if( $domain == $this->getDomain() ) { return $this; }
-
-		$this->values[$this->prefix . 'domain'] = (string) $domain;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'domain', (string) $domain );
 	}
 
 
@@ -112,11 +92,7 @@ class Standard
 	 */
 	public function getName()
 	{
-		if( isset( $this->values[$this->prefix . 'name'] ) ) {
-			return (string) $this->values[$this->prefix . 'name'];
-		}
-
-		return $this->getLabel();
+		return (string) $this->get( $this->prefix . 'name', $this->getLabel() );
 	}
 
 
@@ -127,11 +103,7 @@ class Standard
 	 */
 	public function getLabel()
 	{
-		if( isset( $this->values[$this->prefix . 'label'] ) ) {
-			return (string) $this->values[$this->prefix . 'label'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'label', '' );
 	}
 
 
@@ -143,12 +115,30 @@ class Standard
 	 */
 	public function setLabel( $label )
 	{
-		if( $label == $this->getLabel() ) { return $this; }
+		return $this->set( $this->prefix . 'label', (string) $label );
+	}
 
-		$this->values[$this->prefix . 'label'] = (string) $label;
-		$this->setModified();
 
-		return $this;
+	/**
+	 * Returns the position of the item in the list.
+	 *
+	 * @return integer Position of the item in the list
+	 */
+	public function getPosition()
+	{
+		return (int) $this->get( $this->prefix . 'position', 0 );
+	}
+
+
+	/**
+	 * Sets the new position of the item in the list.
+	 *
+	 * @param integer $pos position of the item in the list
+	 * @return \Aimeos\MShop\Common\Item\Iface Item for chaining method calls
+	 */
+	public function setPosition( $pos )
+	{
+		return $this->set( $this->prefix . 'position', (int) $pos );
 	}
 
 
@@ -159,11 +149,7 @@ class Standard
 	 */
 	public function getStatus()
 	{
-		if( isset( $this->values[$this->prefix . 'status'] ) ) {
-			return (int) $this->values[$this->prefix . 'status'];
-		}
-
-		return 0;
+		return (int) $this->get( $this->prefix . 'status', 1 );
 	}
 
 
@@ -175,12 +161,7 @@ class Standard
 	 */
 	public function setStatus( $status )
 	{
-		if( $status == $this->getStatus() ) { return $this; }
-
-		$this->values[$this->prefix . 'status'] = (int) $status;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'status', (int) $status );
 	}
 
 
@@ -196,46 +177,61 @@ class Standard
 
 
 	/**
-	 * Sets the item values from the given array.
+	 * Tests if the item is available based on status, time, language and currency
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @return boolean True if available, false if not
 	 */
-	public function fromArray( array $list )
+	public function isAvailable()
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
-		unset( $list[$this->prefix . 'name'] );
+		return parent::isAvailable() && $this->getStatus() > 0;
+	}
+
+
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
+	 *
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Common\Item\Type\Iface Type item for chaining method calls
+	 */
+	public function fromArray( array &$list, $private = false )
+	{
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case $this->prefix . 'code': $this->setCode( $value ); break;
-				case $this->prefix . 'domain': $this->setDomain( $value ); break;
-				case $this->prefix . 'label': $this->setLabel( $value ); break;
-				case $this->prefix . 'status': $this->setStatus( $value ); break;
-				default: $unknown[$key] = $value;
+				case $this->prefix . 'code': $item = $item->setCode( $value ); break;
+				case $this->prefix . 'domain': $item = $item->setDomain( $value ); break;
+				case $this->prefix . 'label': $item = $item->setLabel( $value ); break;
+				case $this->prefix . 'position': $item = $item->setPosition( $value ); break;
+				case $this->prefix . 'status': $item = $item->setStatus( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns an associative list of item properties.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array List of item properties.
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
 		$list[$this->prefix . 'code'] = $this->getCode();
 		$list[$this->prefix . 'domain'] = $this->getDomain();
 		$list[$this->prefix . 'name'] = $this->getName();
 		$list[$this->prefix . 'label'] = $this->getLabel();
+		$list[$this->prefix . 'position'] = $this->getPosition();
 		$list[$this->prefix . 'status'] = $this->getStatus();
 
 		return $list;

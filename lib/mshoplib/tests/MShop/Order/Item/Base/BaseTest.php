@@ -3,14 +3,14 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MShop\Order\Item\Base;
 
 
-class BaseTest extends \PHPUnit_Framework_TestCase
+class BaseTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $products;
@@ -23,13 +23,13 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 	{
 		$context = \TestHelperMShop::getContext();
 
-		$priceManager = \Aimeos\MShop\Price\Manager\Factory::createManager( $context );
-		$locale = \Aimeos\MShop\Locale\Manager\Factory::createManager( $context )->createItem();
+		$priceManager = \Aimeos\MShop\Price\Manager\Factory::create( $context );
+		$locale = \Aimeos\MShop\Locale\Manager\Factory::create( $context )->createItem();
 
-		$this->object = new \Aimeos\MShop\Order\Item\Base\Standard( $priceManager->createItem(), $locale, array() );
+		$this->object = new \Aimeos\MShop\Order\Item\Base\Standard( $priceManager->createItem(), $locale, [] );
 
 
-		$orderManager = \Aimeos\MShop\Order\Manager\Factory::createManager( $context );
+		$orderManager = \Aimeos\MShop\Order\Manager\Factory::create( $context );
 
 		$orderBaseManager = $orderManager->getSubManager( 'base' );
 		$orderAddressManager = $orderBaseManager->getSubManager( 'address' );
@@ -60,17 +60,17 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 		$prod2->setPrice( $price );
 
 
-		$this->products = array( $prod1, $prod2 );
-		$this->coupons = array( 'OPQR' => array( $prod1 ) );
+		$this->products = [$prod1, $prod2];
+		$this->coupons = ['OPQR' => [$prod1]];
 
 		$this->addresses = array(
-			\Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT => $orderAddressManager->createItem(),
-			\Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_DELIVERY => $orderAddressManager->createItem(),
+			'payment' => [0 => $orderAddressManager->createItem()->setType( 'payment' )->setId( null )],
+			'delivery' => [0 => $orderAddressManager->createItem()->setType( 'delivery' )->setId( null )],
 		);
 
 		$this->services = array(
-			'payment' => $orderServiceManager->createItem(),
-			'delivery' => $orderServiceManager->createItem(),
+			'payment' => [0 => $orderServiceManager->createItem()->setType( 'payment' )->setCode( 'testpay' )->setId( null )],
+			'delivery' => [1 => $orderServiceManager->createItem()->setType( 'delivery' )->setCode( 'testship' )->setId( null )],
 		);
 	}
 
@@ -81,260 +81,399 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 	}
 
 
+	public function testMagicMethods()
+	{
+		$this->assertFalse( isset( $this->object->test ) );
+		$this->assertEquals( null, $this->object->test );
+
+		$this->object->test = 'value';
+
+		$this->assertTrue( isset( $this->object->test ) );
+		$this->assertEquals( 'value', $this->object->test );
+	}
+
+
+	public function testGetSet()
+	{
+		$this->assertEquals( false, $this->object->get( 'test', false ) );
+
+		$this->object->set( 'test', 'value' );
+
+		$this->assertEquals( 'value', $this->object->get( 'test', false ) );
+	}
+
+
 	public function testIsModified()
 	{
 		$this->assertFalse( $this->object->isModified() );
 	}
 
 
-	public function testGetProducts()
-	{
-		foreach( $this->products as $product ) {
-			$this->object->addProduct( $product );
-		}
-
-		$this->assertSame( $this->products, $this->object->getProducts() );
-		$this->assertSame( $this->products[1], $this->object->getProduct( 1 ) );
-	}
-
-
 	public function testAddProductAppend()
 	{
-		foreach( $this->products as $product ) {
-			$this->object->addProduct( $product );
-		}
+		$this->object->setProducts( $this->products );
 
 		$products = $this->object->getProducts();
 		$product = $this->createProduct( 'prodid3' );
 		$products[] = $product;
 
-		$pos = $this->object->addProduct( $product );
+		$result = $this->object->addProduct( $product );
 
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
 		$this->assertSame( $products, $this->object->getProducts() );
-		$this->assertSame( $product, $this->object->getProduct( $pos ) );
+		$this->assertSame( $product, $this->object->getProduct( 2 ) );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
 
 	public function testAddProductInsert()
 	{
-		foreach( $this->products as $product ) {
-			$this->object->addProduct( $product );
-		}
+		$this->object->setProducts( $this->products );
 
 		$products = $this->object->getProducts();
-		$product = $this->createProduct( 'prodid3' );
-		array_splice( $products, 1, 0, array( $product ) );
+		$products[1] = $this->createProduct( 'prodid3' );
 
-		$pos = $this->object->addProduct( $product, 1 );
+		$result = $this->object->addProduct( $products[1], 1 );
 
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertSame( $products[1], $this->object->getProduct( 1 ) );
 		$this->assertEquals( $products, $this->object->getProducts() );
-		$this->assertSame( $product, $this->object->getProduct( $pos ) );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
 
 	public function testAddProductInsertEnd()
 	{
-		foreach( $this->products as $product ) {
-			$this->object->addProduct( $product );
-		}
+		$this->object->setProducts( $this->products );
 
 		$products = $this->object->getProducts();
 		$product = $this->createProduct( 'prodid3' );
-		array_splice( $products, 2, 0, array( $product ) );
+		$products[] = $product;
 
-		$pos = $this->object->addProduct( $product, 2 );
+		$result = $this->object->addProduct( $product, 2 );
 
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
 		$this->assertEquals( $products, $this->object->getProducts() );
-		$this->assertSame( $product, $this->object->getProduct( $pos ) );
+		$this->assertSame( $product, $this->object->getProduct( 2 ) );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
 
 	public function testAddProductSame()
 	{
-		foreach( $this->products as $product ) {
-			$this->object->addProduct( $product );
-		}
+		$product = $this->createProduct( 'prodid3' )->setQuantity( 5 );
 
-		$products = $this->object->getProducts();
-		$product = $this->createProduct( 'prodid3' );
-		$product->setQuantity( 5 );
-		$products[] = $product;
+		$this->object->addProduct( $product );
+		$this->object->addProduct( $product );
 
-		$pos1 = $this->object->addProduct( $product );
-		$pos2 = $this->object->addProduct( $product );
-
-		$this->assertEquals( $products, $this->object->getProducts() );
-		$this->assertEquals( 10, $this->object->getProduct( $pos2 )->getQuantity() );
-		$this->assertEquals( $pos1, $pos2 );
+		$this->assertEquals( 10, $this->object->getProduct( 0 )->getQuantity() );
+		$this->assertEquals( [0 => $product], $this->object->getProducts() );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
 
 	public function testAddProductStablePosition()
 	{
-		foreach( $this->products as $product ) {
-			$this->object->addProduct( $product );
-		}
+		$this->object->setProducts( $this->products );
 
-		$product = $this->createProduct( 'prodid3' );
-		$product->setQuantity( 5 );
+		$product = $this->createProduct( 'prodid3' )->setQuantity( 5 );
 		$this->object->addProduct( $product );
 
-		$this->object->deleteProduct( 0 );
 		$testProduct = $this->object->getProduct( 1 );
-
+		$this->object->deleteProduct( 0 );
 		$this->object->deleteProduct( 1 );
-		$this->object->addProduct( $testProduct, 1 );
+		$result = $this->object->addProduct( $testProduct, 1 );
 
-		$expected = array( 1 => $testProduct, 2 => $product );
-		$this->assertEquals( $expected, $this->object->getProducts() );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( [1 => $testProduct, 2 => $product], $this->object->getProducts() );
 	}
 
 
 	public function testDeleteProduct()
 	{
-		foreach( $this->products as $product ) {
-			$this->object->addProduct( $product );
-		}
+		$this->object->addProduct( $this->products[0] );
+		$result = $this->object->deleteProduct( 0 );
 
-		unset( $this->products[1] );
-		$this->object->deleteProduct( 1 );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertSame( [], $this->object->getProducts() );
+		$this->assertTrue( $this->object->isModified() );
+	}
+
+
+	public function testGetProducts()
+	{
+		$this->object->setProducts( $this->products );
+
+		$this->assertSame( $this->products, $this->object->getProducts() );
+		$this->assertSame( $this->products[1], $this->object->getProduct( 1 ) );
+	}
+
+
+	public function testSetProducts()
+	{
+		$result = $this->object->setProducts( $this->products );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
 		$this->assertSame( $this->products, $this->object->getProducts() );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
 
-	public function testGetAddress()
+	public function testAddAddress()
 	{
-		foreach( $this->addresses as $type => $address ) {
-			$address->setId( null );
-			$this->object->setAddress( $address, $type );
-		}
+		$type = \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT;
+		$result = $this->object->addAddress( $this->addresses[$type][0], $type );
 
-		$this->assertEquals( $this->addresses, $this->object->getAddresses() );
-
-		$address = $this->object->getAddress( \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT );
-		$this->assertEquals( $this->addresses[\Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT], $address );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( $this->addresses[$type], $this->object->getAddress( $type ) );
+		$this->assertTrue( $this->object->isModified() );
 	}
 
 
-	public function testSetAddress()
+	public function testAddAddressMultiple()
 	{
-		foreach( $this->addresses as $type => $address ) {
-			$this->object->setAddress( $address, $type );
-		}
+		$this->object->addAddress( $this->addresses['payment'][0], 'payment' );
+		$result = $this->object->addAddress( $this->addresses['payment'][0], 'payment' );
 
-		$orderManager = \Aimeos\MShop\Order\Manager\Factory::createManager( \TestHelperMShop::getContext() );
-		$orderAddressManager = $orderManager->getSubManager( 'base' )->getSubManager( 'address' );
-		$address = $orderAddressManager->createItem();
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( 2, count( $this->object->getAddress( 'payment' ) ) );
+		$this->assertTrue( $this->object->isModified() );
+	}
 
-		$result = $this->object->setAddress( $address, \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT );
-		$item = $this->object->getAddress( \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT );
 
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Order\\Item\\Base\\Address\\Iface', $result );
-		$this->assertEquals( $result, $item );
-		$this->assertEquals( \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT, $item->getType() );
-		$this->assertTrue( $item->isModified() );
-		$this->assertNull( $item->getId() );
+	public function testAddAddressPosition()
+	{
+		$type = \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT;
+
+		$this->object->addAddress( $this->addresses[$type][0], $type );
+		$result = $this->object->addAddress( $this->addresses[$type][0], $type, 0 );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( $this->addresses[$type], $this->object->getAddress( $type ) );
+		$this->assertTrue( $this->object->isModified() );
 	}
 
 
 	public function testDeleteAddress()
 	{
-		foreach( $this->addresses as $type => $address ) {
-			$this->object->setAddress( $address, $type );
-		}
+		$type = \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT;
+		$this->object->setAddresses( $this->addresses );
+		$result = $this->object->deleteAddress( $type );
 
-		$this->object->getAddress( \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT );
-		$this->object->deleteAddress( \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( [], $this->object->getAddress( $type ) );
 		$this->assertTrue( $this->object->isModified() );
-
-		$this->setExpectedException( '\\Aimeos\\MShop\\Order\\Exception' );
-		$this->object->getAddress( \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT );
 	}
 
 
-	public function testGetService()
+	public function testDeleteAddressPosition()
 	{
-		foreach( $this->services as $type => $service ) {
-			$service->setId( null );
-			$this->object->setService( $service, $type );
-		}
+		$type = \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT;
+		$this->object->setAddresses( $this->addresses );
 
-		$this->assertEquals( $this->services, $this->object->getServices() );
+		$result = $this->object->deleteAddress( $type, 0 );
 
-		$type = 'payment';
-		$this->assertEquals( $this->services[$type], $this->object->getService( $type ) );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( [], $this->object->getAddress( $type ) );
+		$this->assertTrue( $this->object->isModified() );
 	}
 
 
-	public function testSetService()
+	public function testDeleteAddressPositionInvalid()
 	{
-		foreach( $this->services as $type => $service ) {
-			$this->object->setService( $service, $type );
-		}
+		$type = \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT;
+		$this->object->setAddresses( $this->addresses );
 
-		$type = 'delivery';
-		$orderManager = \Aimeos\MShop\Order\Manager\Factory::createManager( \TestHelperMShop::getContext() );
-		$orderServiceManager = $orderManager->getSubManager( 'base' )->getSubManager( 'service' );
-		$service = $orderServiceManager->createItem();
+		$result = $this->object->deleteAddress( $type, 1 );
 
-		$result = $this->object->setService( $service, $type );
-		$item = $this->object->getService( $type );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( $this->addresses[$type], $this->object->getAddress( $type ) );
+	}
 
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Order\\Item\\Base\\Service\\Iface', $result );
-		$this->assertEquals( $result, $item );
-		$this->assertEquals( $type, $item->getType() );
-		$this->assertTrue( $item->isModified() );
-		$this->assertNull( $item->getId() );
+
+	public function testGetAddress()
+	{
+		$this->object->setAddresses( $this->addresses );
+		$type = \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT;
+
+		$this->assertEquals( $this->addresses[$type], $this->object->getAddress( $type ) );
+	}
+
+
+	public function testGetAddressSingle()
+	{
+		$this->object->setAddresses( $this->addresses );
+		$type = \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT;
+
+		$this->assertEquals( $this->addresses[$type][0], $this->object->getAddress( $type, 0 ) );
+	}
+
+
+	public function testGetAddressException()
+	{
+		$this->setExpectedException( \Aimeos\MShop\Order\Exception::class );
+		$this->object->getAddress( \Aimeos\MShop\Order\Item\Base\Address\Base::TYPE_PAYMENT, 0 );
+	}
+
+
+	public function testSetAddresses()
+	{
+		$result = $this->object->setAddresses( $this->addresses );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( $this->addresses, $this->object->getAddresses() );
+		$this->assertTrue( $this->object->isModified() );
+	}
+
+
+	public function testAddService()
+	{
+		$type = \Aimeos\MShop\Order\Item\Base\Service\Base::TYPE_PAYMENT;
+		$result = $this->object->addService( $this->services[$type][0], $type );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( 1, count( $this->object->getService( $type ) ) );
+		$this->assertTrue( $this->object->isModified() );
+	}
+
+
+	public function testAddServicePosition()
+	{
+		$type = \Aimeos\MShop\Order\Item\Base\Service\Base::TYPE_PAYMENT;
+
+		$this->object->addService( $this->services[$type][0], $type );
+		$result = $this->object->addService( $this->services[$type][0], $type, 0 );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( 1, count( $this->object->getService( $type ) ) );
+		$this->assertTrue( $this->object->isModified() );
 	}
 
 
 	public function testDeleteService()
 	{
-		foreach( $this->services as $type => $service ) {
-			$this->object->setService( $service, $type );
-		}
+		$type = \Aimeos\MShop\Order\Item\Base\Service\Base::TYPE_PAYMENT;
+		$this->object->setServices( $this->services );
 
-		$this->object->getService( \Aimeos\MShop\Order\Item\Base\Service\Base::TYPE_PAYMENT );
-		$this->object->deleteService( \Aimeos\MShop\Order\Item\Base\Service\Base::TYPE_PAYMENT );
+		$result = $this->object->deleteService( $type );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( [], $this->object->getService( $type ) );
 		$this->assertTrue( $this->object->isModified() );
-
-		$this->setExpectedException( '\\Aimeos\\MShop\\Order\\Exception' );
-		$this->object->getService( \Aimeos\MShop\Order\Item\Base\Service\Base::TYPE_PAYMENT );
 	}
 
 
-	public function testCoupons()
+	public function testDeleteServicePosition()
 	{
-		foreach( $this->coupons as $code => $products ) {
-			$this->object->addCoupon( $code, $products );
-		}
+		$type = \Aimeos\MShop\Order\Item\Base\Service\Base::TYPE_PAYMENT;
+		$this->object->setServices( $this->services );
 
-		foreach( $this->object->getCoupons() as $coupon => $products ) {
-			$this->assertEquals( $this->coupons[$coupon], $products );
-		}
+		$result = $this->object->deleteService( $type, 0 );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( [], $this->object->getService( $type ) );
+		$this->assertTrue( $this->object->isModified() );
+	}
+
+
+	public function testDeleteServicePositionInvalid()
+	{
+		$type = \Aimeos\MShop\Order\Item\Base\Service\Base::TYPE_PAYMENT;
+		$this->object->setServices( $this->services );
+
+		$result = $this->object->deleteService( $type, 1 );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( $this->services[$type], $this->object->getService( $type ) );
+	}
+
+
+	public function testGetService()
+	{
+		$this->object->setServices( $this->services );
+
+		$payments = $this->object->getService( \Aimeos\MShop\Order\Item\Base\Service\Base::TYPE_PAYMENT );
+		$deliveries = $this->object->getService( \Aimeos\MShop\Order\Item\Base\Service\Base::TYPE_DELIVERY );
+
+		$this->assertEquals( 2, count( $this->object->getServices() ) );
+		$this->assertEquals( 1, count( $payments ) );
+		$this->assertEquals( 1, count( $deliveries ) );
+
+		$this->assertEquals( $this->services['payment'], $payments );
+		$this->assertEquals( $this->services['delivery'], $deliveries );
+	}
+
+
+	public function testGetServiceSingle()
+	{
+		$this->object->setServices( $this->services );
+
+		$service = $this->object->getService( 'payment', 0 );
+		$this->assertEquals( 'testpay', $service->getCode() );
+	}
+
+
+	public function testGetServiceException()
+	{
+		$this->setExpectedException( \Aimeos\MShop\Order\Exception::class );
+		$this->object->getService( 'payment', 100 );
+	}
+
+
+	public function testSetServices()
+	{
+		$result = $this->object->setServices( $this->services );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( $this->services, $this->object->getServices() );
+		$this->assertTrue( $this->object->isModified() );
+	}
+
+
+	public function testAddCoupon()
+	{
+		$result = $this->object->addCoupon( 'OPQR' );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( ['OPQR' => []], $this->object->getCoupons() );
+		$this->assertTrue( $this->object->isModified() );
 	}
 
 
 	public function testDeleteCoupon()
 	{
-		foreach( $this->coupons as $code => $products ) {
-			$this->object->addCoupon( $code, $products );
-		}
+		$this->object->setCoupons( $this->coupons );
+		$result = $this->object->deleteCoupon( 'OPQR' );
 
-		$this->object->deleteCoupon( 'OPQR' );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( [], $this->object->getCoupons() );
+		$this->assertTrue( $this->object->isModified() );
+	}
 
-		foreach( $this->object->getCoupons() as $coupon => $products ) {
-			$this->assertEquals( array(), $products );
-		}
 
-		$this->object->deleteCoupon( 'OPQR', true );
-		$this->assertEquals( array(), $this->object->getCoupons() );
+	public function testGetCoupons()
+	{
+		$this->object->setCoupons( $this->coupons );
+		$this->assertEquals( $this->coupons, $this->object->getCoupons() );
+	}
 
+
+	public function testSetCoupon()
+	{
+		$result = $this->object->setCoupon( 'OPQR', $this->coupons['OPQR'] );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( ['OPQR' => $this->coupons['OPQR']], $this->object->getCoupons() );
+		$this->assertTrue( $this->object->isModified() );
+	}
+
+
+	public function testSetCoupons()
+	{
+		$result = $this->object->setCoupons( $this->coupons );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $result );
+		$this->assertEquals( $this->coupons, $this->object->getCoupons() );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
@@ -345,12 +484,18 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 			$this->object->addProduct( $product );
 		}
 
-		foreach( $this->addresses as $type => $address ) {
-			$this->object->setAddress( $address, $type );
+		foreach( $this->addresses as $type => $addresses )
+		{
+			foreach( $addresses as $address ) {
+				$this->object->addAddress( $address, $type );
+			}
 		}
 
-		foreach( $this->services as $type => $service ) {
-			$this->object->setService( $service, $type );
+		foreach( $this->services as $type => $services )
+		{
+			foreach( $services as $service ) {
+				$this->object->addService( $service, $type );
+			}
 		}
 
 		$this->object->check( \Aimeos\MShop\Order\Item\Base\Base::PARTS_ALL );
@@ -359,21 +504,21 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 
 	public function testCheckInvalid()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Order\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Order\Exception::class );
 		$this->object->check( -1 );
 	}
 
 
 	public function testCheckAllFailure()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Order\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Order\Exception::class );
 		$this->object->check( \Aimeos\MShop\Order\Item\Base\Base::PARTS_ALL );
 	}
 
 
 	public function testCheckProductsFailure()
 	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Order\\Exception' );
+		$this->setExpectedException( \Aimeos\MShop\Order\Exception::class );
 		$this->object->check( \Aimeos\MShop\Order\Item\Base\Base::PARTS_PRODUCT );
 	}
 
@@ -383,11 +528,11 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function createProduct( $code )
 	{
-		$orderManager = \Aimeos\MShop\Order\Manager\Factory::createManager( \TestHelperMShop::getContext() );
+		$orderManager = \Aimeos\MShop\Order\Manager\Factory::create( \TestHelperMShop::getContext() );
 		$orderProductManager = $orderManager->getSubManager( 'base' )->getSubManager( 'product' );
 		$product = $orderProductManager->createItem();
 
-		$price = \Aimeos\MShop\Price\Manager\Factory::createManager( \TestHelperMShop::getContext() )->createItem();
+		$price = \Aimeos\MShop\Price\Manager\Factory::create( \TestHelperMShop::getContext() )->createItem();
 		$price->setValue( '2.99' );
 
 		$product->setPrice( $price );

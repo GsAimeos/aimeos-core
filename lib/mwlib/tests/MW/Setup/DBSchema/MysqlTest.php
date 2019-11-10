@@ -3,7 +3,7 @@
 namespace Aimeos\MW\Setup\DBSchema;
 
 
-class MysqlTest extends \PHPUnit_Framework_TestCase
+class MysqlTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $dbm;
@@ -33,15 +33,15 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 		$conn->create( $sql )->execute()->finish();
 		$conn->create( 'CREATE INDEX "idx_msdt_smallint" ON "mw_setup_dbschema_test" ("smallint")' )->execute()->finish();
 
-		$this->object = new \Aimeos\MW\Setup\DBSchema\Mysql( $conn, $config->get( 'resource/db/database', 'notfound' ), $adapter );
-
 		$this->dbm->release( $conn );
+
+		$this->object = new \Aimeos\MW\Setup\DBSchema\Mysql( $this->dbm, 'db', $config->get( 'resource/db/database', 'notfound' ), $adapter );
 	}
 
 
 	protected function tearDown()
 	{
-		if( ( $adapter = \TestHelperMw::getConfig()->get( 'resource/db/adapter', false ) ) === 'mysql' )
+		if( \TestHelperMw::getConfig()->get( 'resource/db/adapter', false ) === 'mysql' )
 		{
 			$this->dbm = \TestHelperMw::getDBManager();
 
@@ -92,7 +92,7 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( null, $columnItem->getDefaultValue() );
 		$this->assertTrue( $columnItem->isNullable() );
 
-		$this->setExpectedException('\\Aimeos\\MW\\Setup\\Exception');
+		$this->setExpectedException( \Aimeos\MW\Setup\Exception::class );
 		$this->object->getColumnDetails( 'mw_setup_dbschema_test', 'notexisting' );
 	}
 

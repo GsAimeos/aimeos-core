@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Stock
  */
@@ -20,74 +20,83 @@ namespace Aimeos\MShop\Stock\Manager\Type;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Type\Base
-	implements \Aimeos\MShop\Stock\Manager\Type\Iface
+	implements \Aimeos\MShop\Stock\Manager\Type\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
-		'stock.type.id'=> array(
-			'code'=>'stock.type.id',
-			'internalcode'=>'mstoty."id"',
-			'internaldeps'=>array( 'LEFT JOIN "mshop_stock_type" AS mstoty ON msto."typeid" = mstoty."id"' ),
-			'label'=>'Stock type ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'stock.type.id' => array(
+			'code' => 'stock.type.id',
+			'internalcode' => 'mstoty."id"',
+			'label' => 'Type ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		'stock.type.siteid'=> array(
-			'code'=>'stock.type.siteid',
-			'internalcode'=>'mstoty."siteid"',
-			'label'=>'Stock type site ID',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'stock.type.siteid' => array(
+			'code' => 'stock.type.siteid',
+			'internalcode' => 'mstoty."siteid"',
+			'label' => 'Type site ID',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
-		'stock.type.code'=> array(
-			'code'=>'stock.type.code',
-			'internalcode'=>'mstoty."code"',
-			'label'=>'Stock type code',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'stock.type.label' => array(
+			'code' => 'stock.type.label',
+			'internalcode' => 'mstoty."label"',
+			'label' => 'Type label',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
+		'stock.type.code' => array(
+			'code' => 'stock.type.code',
+			'internalcode' => 'mstoty."code"',
+			'label' => 'Type code',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'stock.type.domain' => array(
 			'code' => 'stock.type.domain',
 			'internalcode' => 'mstoty."domain"',
-			'label' => 'Stock type domain',
+			'label' => 'Type domain',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'stock.type.label'=> array(
-			'code'=>'stock.type.label',
-			'internalcode'=>'mstoty."label"',
-			'label'=>'Stock type label',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'stock.type.position' => array(
+			'code' => 'stock.type.position',
+			'internalcode' => 'mstoty."pos"',
+			'label' => 'Type position',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'stock.type.status'=> array(
-			'code'=>'stock.type.status',
-			'internalcode'=>'mstoty."status"',
-			'label'=>'Stock type status',
-			'type'=> 'integer',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+		'stock.type.status' => array(
+			'code' => 'stock.type.status',
+			'internalcode' => 'mstoty."status"',
+			'label' => 'Type status',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'stock.type.mtime'=> array(
-			'code'=>'stock.type.mtime',
-			'internalcode'=>'mstoty."mtime"',
-			'label'=>'Stock type modification date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'stock.type.ctime' => array(
+			'code' => 'stock.type.ctime',
+			'internalcode' => 'mstoty."ctime"',
+			'label' => 'Type create date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'stock.type.ctime'=> array(
-			'code'=>'stock.type.ctime',
-			'internalcode'=>'mstoty."ctime"',
-			'label'=>'Stock type creation date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'stock.type.mtime' => array(
+			'code' => 'stock.type.mtime',
+			'internalcode' => 'mstoty."mtime"',
+			'label' => 'Type modify date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'stock.type.editor'=> array(
-			'code'=>'stock.type.editor',
-			'internalcode'=>'mstoty."editor"',
-			'label'=>'Stock type editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'stock.type.editor' => array(
+			'code' => 'stock.type.editor',
+			'internalcode' => 'mstoty."editor"',
+			'label' => 'Type editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
 
@@ -107,16 +116,17 @@ class Standard
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param integer[] $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Stock\Manager\Type\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/stock/manager/type/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array() ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, [] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/stock/manager/type/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/stock/manager/type/standard/delete' );
 	}
 
 
@@ -124,13 +134,12 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/stock/manager/type/submanagers';
-
-		return $this->getResourceTypeBase( 'stock/type', $path, array(), $withsub );
+		return $this->getResourceTypeBase( 'stock/type', $path, [], $withsub );
 	}
 
 
@@ -138,7 +147,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array Returns a list of attribtes implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -161,7 +170,7 @@ class Standard
 		 */
 		$path = 'mshop/stock/manager/type/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -243,12 +252,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap global decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the stock type manager.
+		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the stock type
+		 * manager.
 		 *
 		 *  mshop/stock/manager/type/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the product controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the stock
+		 * type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2017.01
@@ -267,13 +278,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the stock type manager.
+		 * ("\Aimeos\MShop\Stock\Manager\Type\Decorator\*") around the stock type
+		 * manager.
 		 *
 		 *  mshop/stock/manager/type/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the stock
-		 * manager.
+		 * "\Aimeos\MShop\Stock\Manager\Type\Decorator\Decorator2" only to the
+		 * stock type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2017.01

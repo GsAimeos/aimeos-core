@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MW
  * @subpackage Config
  */
@@ -21,16 +21,16 @@ class Protect
 	extends \Aimeos\MW\Config\Decorator\Base
 	implements \Aimeos\MW\Config\Decorator\Iface
 {
-	private $prefixes = array();
+	private $prefixes = [];
 
 
 	/**
 	 * Initializes the decorator
 	 *
 	 * @param \Aimeos\MW\Config\Iface $object Config object or decorator
-	 * @param array $prefixes Allowed prefixes for getting and setting values
+	 * @param string[] $prefixes Allowed prefixes for getting and setting values
 	 */
-	public function __construct( \Aimeos\MW\Config\Iface $object, array $prefixes = array() )
+	public function __construct( \Aimeos\MW\Config\Iface $object, array $prefixes = [] )
 	{
 		parent::__construct( $object );
 
@@ -65,13 +65,16 @@ class Protect
 	 *
 	 * @param string $name Path to the requested value like tree/node/classname
 	 * @param mixed $value Value that should be associated with the given path
+	 * @return \Aimeos\MW\Config\Iface Config instance for method chaining
 	 */
 	public function set( $name, $value )
 	{
 		foreach( $this->prefixes as $prefix => $len )
 		{
-			if( strncmp( $name, $prefix, $len ) === 0 ) {
-				return parent::set( $name, $value );
+			if( strncmp( $name, $prefix, $len ) === 0 )
+			{
+				parent::set( $name, $value );
+				return $this;
 			}
 		}
 

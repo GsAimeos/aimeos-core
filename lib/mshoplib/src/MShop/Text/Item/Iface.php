@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Text
  */
@@ -19,23 +19,10 @@ namespace Aimeos\MShop\Text\Item;
  * @subpackage Text
  */
 interface Iface
-	extends \Aimeos\MShop\Common\Item\Iface, \Aimeos\MShop\Common\Item\ListRef\Iface, \Aimeos\MShop\Common\Item\Typeid\Iface
+	extends \Aimeos\MShop\Common\Item\Iface, \Aimeos\MShop\Common\Item\Domain\Iface,
+		\Aimeos\MShop\Common\Item\ListRef\Iface, \Aimeos\MShop\Common\Item\Status\Iface,
+		\Aimeos\MShop\Common\Item\TypeRef\Iface
 {
-	/**
-	 * Returns the domain of the text item.
-	 *
-	 * @return string Domain of the text item
-	 */
-	public function getDomain();
-
-	/**
-	 * Sets the domain of the text item.
-	 *
-	 * @param string $domain Domain of the text item
-	 * @return \Aimeos\MShop\Text\Item\Iface Text item for chaining method calls
-	 */
-	public function setDomain( $domain );
-
 	/**
 	 * Returns the ISO language code.
 	 *
@@ -80,19 +67,4 @@ interface Iface
 	 * @return \Aimeos\MShop\Text\Item\Iface Text item for chaining method calls
 	 */
 	public function setLabel( $label );
-
-	/**
-	 * Returns the status of the text item.
-	 *
-	 * @return integer Status of the text item
-	 */
-	public function getStatus();
-
-	/**
-	 * Sets the status of the text item.
-	 *
-	 * @param integer $status Status of the item
-	 * @return \Aimeos\MShop\Text\Item\Iface Text item for chaining method calls
-	 */
-	public function setStatus( $status );
 }

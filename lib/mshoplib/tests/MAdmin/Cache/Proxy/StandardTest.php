@@ -3,14 +3,14 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MAdmin\Cache\Proxy;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $mock;
 	private $object;
@@ -19,21 +19,19 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	protected function setUp()
 	{
+		\Aimeos\MAdmin::cache( true );
 		$this->context = \TestHelperMShop::getContext();
 
-		$this->mock = $this->getMockBuilder( '\\Aimeos\\MW\\Cache\\DB' )
+		$this->mock = $this->getMockBuilder( \Aimeos\MW\Cache\DB::class )
 			->disableOriginalConstructor()->getMock();
 
-		$manager = $this->getMockBuilder( '\\Aimeos\\MAdmin\\Cache\\Manager\\Standard' )
+		$manager = $this->getMockBuilder( \Aimeos\MAdmin\Cache\Manager\Standard::class )
 			->setConstructorArgs( array( $this->context ) )->getMock();
 
 		$manager->expects( $this->once() )->method( 'getCache' )
 			->will( $this->returnValue( $this->mock ) );
 
-		$name = 'MAdminCacheProxyDefaultTest';
-		$this->context->getConfig()->set( 'madmin/cache/manager/name', $name );
-
-		\Aimeos\MAdmin\Cache\Manager\Factory::injectManager( '\\Aimeos\\MAdmin\\Cache\\Manager\\' . $name, $manager );
+		\Aimeos\MAdmin::inject( 'cache', $manager );
 
 		$this->object = new \Aimeos\MAdmin\Cache\Proxy\Standard( $this->context );
 	}
@@ -41,6 +39,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	protected function tearDown()
 	{
+		\Aimeos\MAdmin::cache( false );
 		unset( $this->object, $this->mock, $this->context );
 	}
 
@@ -96,19 +95,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 			->will( $this->returnValue( array( 't:1' => 'test' ) ) );
 
 		$this->assertEquals( array( 't:1' => 'test' ), $this->object->getMultiple( array( 't:1' ) ) );
-	}
-
-
-	public function testGetMultipleByTags()
-	{
-		$this->mock->expects( $this->once() )->method( 'getMultipleByTags' )
-			->with( $this->equalTo( array( 'tag1', 'tag2' ) ) )
-			->will( $this->returnValue( array( 't:1' => 'test1', 't:2' => 'test2' ) ) );
-
-		$expected = array( 't:1' => 'test1', 't:2' => 'test2' );
-		$result = $this->object->getMultipleByTags( array( 'tag1', 'tag2' ) );
-
-		$this->assertEquals( $expected, $result );
 	}
 
 

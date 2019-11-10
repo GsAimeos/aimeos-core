@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -22,7 +22,7 @@ class LocaleAddTestData extends \Aimeos\MW\Setup\Task\MShopAddLocaleData
 	 */
 	public function getPreDependencies()
 	{
-		return array( 'MShopAddLocaleLangCurData' );
+		return ['MShopAddLocaleLangCurData'];
 	}
 
 
@@ -33,7 +33,7 @@ class LocaleAddTestData extends \Aimeos\MW\Setup\Task\MShopAddLocaleData
 	 */
 	public function getPostDependencies()
 	{
-		return array( 'MShopAddLocaleData' );
+		return ['MShopAddLocaleData'];
 	}
 
 
@@ -42,17 +42,14 @@ class LocaleAddTestData extends \Aimeos\MW\Setup\Task\MShopAddLocaleData
 	 */
 	public function migrate()
 	{
-		$iface = '\\Aimeos\\MShop\\Context\\Item\\Iface';
-		if( !( $this->additional instanceof $iface ) ) {
-			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Additionally provided object is not of type "%1$s"', $iface ) );
-		}
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Context\Item\Iface::class, $this->additional );
 
 		$this->msg( 'Adding test data for MShop locale domain', 0 );
 		$this->status( '' );
 
 
 		// Set editor for further tasks
-		$this->additional->setEditor( 'core:unittest' );
+		$this->additional->setEditor( 'core:lib/mshoplib' );
 
 
 		if( $this->additional->getConfig()->get( 'setup/site' ) === 'unittest' )
@@ -64,11 +61,11 @@ class LocaleAddTestData extends \Aimeos\MW\Setup\Task\MShopAddLocaleData
 				throw new \Aimeos\MW\Setup\Exception( sprintf( 'No data file "%1$s" found', $filename ) );
 			}
 
-			$localeManager = \Aimeos\MShop\Locale\Manager\Factory::createManager( $this->additional );
+			$localeManager = \Aimeos\MShop\Locale\Manager\Factory::create( $this->additional );
 
 			$this->cleanupSites( $localeManager );
 
-			$siteIds = array();
+			$siteIds = [];
 			if( isset( $testdata['locale/site'] ) ) {
 				$siteIds = $this->addLocaleSiteData( $localeManager, $testdata['locale/site'] );
 			}
@@ -94,12 +91,12 @@ class LocaleAddTestData extends \Aimeos\MW\Setup\Task\MShopAddLocaleData
 	 * @param \Aimeos\MShop\Locale\Item\Site\Iface $site Site which can contain sub-sites
 	 * @return \Aimeos\MShop\Locale\Item\Site\Iface[] $sites List with sites
 	 */
-	private function getSites( \Aimeos\MShop\Locale\Item\Site\Iface $site )
+	protected function getSites( \Aimeos\MShop\Locale\Item\Site\Iface $site )
 	{
-		$sites = array( $site );
+		$sites = [$site->getId() => $site];
 
 		foreach( $site->getChildren() as $child ) {
-			$sites = array_merge( $sites, $this->getSites( $child ) );
+			$sites += $this->getSites( $child );
 		}
 
 		return $sites;
@@ -112,14 +109,14 @@ class LocaleAddTestData extends \Aimeos\MW\Setup\Task\MShopAddLocaleData
 	 *
 	 * @param \Aimeos\MShop\Locale\Manager\Iface $localeManager
 	 */
-	private function cleanupSites( $localeManager )
+	protected function cleanupSites( $localeManager )
 	{
 		$localeSiteManager = $localeManager->getSubManager( 'site' );
 
 		$search = $localeSiteManager->createSearch();
 		$search->setConditions( $search->compare( '==', 'locale.site.code', array( 'unittest' ) ) );
 
-		$sites = array();
+		$sites = [];
 
 		foreach( $localeSiteManager->searchItems( $search ) as $site )
 		{
@@ -127,7 +124,7 @@ class LocaleAddTestData extends \Aimeos\MW\Setup\Task\MShopAddLocaleData
 			$sites = array_merge( $sites, $this->getSites( $site ) );
 		}
 
-		foreach( $sites as $site )
+		foreach( array_reverse( $sites ) as $site )
 		{
 			$this->additional->setLocale( $localeManager->bootstrap( $site->getCode(), '', '', false ) );
 			$localeSiteManager->deleteItem( $site->getId() );

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Logger
  */
@@ -25,7 +25,7 @@ class Compose extends \Aimeos\MW\Logger\Base implements \Aimeos\MW\Logger\Iface
 	/**
 	 * Initializes the logger object.
 	 *
-	 * @param array $loggers Instances of logger classes
+	 * @param \Aimeos\MW\Logger\Iface[] $loggers Instances of logger classes
 	 */
 	public function __construct( array $loggers )
 	{
@@ -37,15 +37,18 @@ class Compose extends \Aimeos\MW\Logger\Base implements \Aimeos\MW\Logger\Iface
 	 * Writes a message to the configured log facility.
 	 *
 	 * @param string|array|object $message Message text that should be written to the log facility
-	 * @param integer $priority Priority of the message for filtering
+	 * @param integer $prio Priority of the message for filtering
 	 * @param string $facility Facility for logging different types of messages (e.g. message, auth, user, changelog)
+	 * @return \Aimeos\MW\Logger\Iface Logger object for method chaining
 	 * @throws \Aimeos\MW\Logger\Exception If the priority is invalid
 	 * @see \Aimeos\MW\Logger\Base for available log level constants
 	 */
-	public function log( $message, $priority = \Aimeos\MW\Logger\Base::ERR, $facility = 'message' )
+	public function log( $message, $prio = \Aimeos\MW\Logger\Base::ERR, $facility = 'message' )
 	{
 		foreach( $this->loggers as $logger ) {
-			$logger->log( $message, $priority, $facility );
+			$logger->log( $message, $prio, $facility );
 		}
+
+		return $this;
 	}
 }

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage View
  */
@@ -59,7 +59,7 @@ class Standard
 	 */
 	public function createStream( $resource )
 	{
-		if( class_exists( '\Zend\Diactoros\Stream' ) ) {
+		if( class_exists( \Zend\Diactoros\Stream::class ) ) {
 			return new \Zend\Diactoros\Stream( $resource );
 		}
 
@@ -79,7 +79,7 @@ class Standard
 			throw new \Aimeos\MW\Exception( 'Unable to create temporary file' );
 		}
 
-		if( (int) fwrite( $resource, $content ) === 0 ) {
+		if( fwrite( $resource, (string) $content ) === false ) {
 			throw new \Aimeos\MW\Exception( 'Unable to write to temporary file' );
 		}
 
@@ -103,7 +103,7 @@ class Standard
 	 *
 	 * @param string $version HTTP protocol version
 	 * @return self
-	*/
+	 */
 	public function withProtocolVersion( $version )
 	{
 		$this->response = $this->response->withProtocolVersion( $version );
@@ -117,7 +117,7 @@ class Standard
 	 * @return string[][] Returns an associative array of the message's headers.
 	 *	 Each key MUST be a header name, and each value MUST be an array of
 	 *	 strings for that header.
-	*/
+	 */
 	public function getHeaders()
 	{
 		return $this->response->getHeaders();
@@ -174,7 +174,7 @@ class Standard
 	 * @return self
 	 * @throws \InvalidArgumentException for invalid header names or values.
 	 */
-	public function withHeader($name, $value )
+	public function withHeader( $name, $value )
 	{
 		$this->response = $this->response->withHeader( $name, $value );
 		return $this;

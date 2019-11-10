@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018
  */
 
 
@@ -32,7 +32,7 @@ class OrderAddTimes extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPostDependencies()
 	{
-		return array();
+		return [];
 	}
 
 
@@ -51,7 +51,7 @@ class OrderAddTimes extends \Aimeos\MW\Setup\Task\Base
 		}
 
 		$start = 0;
-		$conn = $this->getConnection( $dbdomain );
+		$conn = $this->acquire( $dbdomain );
 		$select = 'SELECT "id", "ctime" FROM "mshop_order" WHERE "cdate" = \'\' LIMIT 1000 OFFSET :offset';
 		$update = 'UPDATE "mshop_order" SET "cdate" = ?, "cmonth" = ?, "cweek" = ?, "chour" = ? WHERE "id" = ?';
 
@@ -60,7 +60,7 @@ class OrderAddTimes extends \Aimeos\MW\Setup\Task\Base
 		do
 		{
 			$count = 0;
-			$map = array();
+			$map = [];
 			$sql = str_replace( ':offset', $start, $select );
 			$result = $conn->create( $sql )->execute();
 
@@ -76,7 +76,7 @@ class OrderAddTimes extends \Aimeos\MW\Setup\Task\Base
 
 				$stmt->bind( 1, $date );
 				$stmt->bind( 2, substr( $date, 0, 7 ) );
-				$stmt->bind( 3, date_create_from_format( 'Y-m-d', $date )->format( 'Y-W' )  );
+				$stmt->bind( 3, date_create_from_format( 'Y-m-d', $date )->format( 'Y-W' ) );
 				$stmt->bind( 4, substr( $time, 0, 2 ) );
 				$stmt->bind( 5, $id, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
 
@@ -86,6 +86,8 @@ class OrderAddTimes extends \Aimeos\MW\Setup\Task\Base
 			$start += $count;
 		}
 		while( $count === 1000 );
+
+		$this->release( $conn, $dbdomain );
 
 		$this->status( 'done' );
 	}

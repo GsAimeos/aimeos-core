@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Session
  */
@@ -18,7 +18,7 @@ namespace Aimeos\MW\Session;
  * @package MW
  * @subpackage Session
  */
-class PHP implements \Aimeos\MW\Session\Iface
+class PHP extends Base implements \Aimeos\MW\Session\Iface
 {
 	/**
 	 * Returns the value of the requested session key.
@@ -48,10 +48,11 @@ class PHP implements \Aimeos\MW\Session\Iface
 	 *
 	 * @param string $name Key to the value which should be stored in the session
 	 * @param mixed $value Value that should be associated with the given key
-	 * @return void
+	 * @return \Aimeos\MW\Session\Iface Session instance for method chaining
 	 */
 	public function set( $name, $value )
 	{
 		$_SESSION[$name] = $value;
+		return $this;
 	}
 }

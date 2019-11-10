@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Supplier
  */
@@ -19,23 +19,41 @@ namespace Aimeos\MShop\Supplier\Item;
  * @subpackage Supplier
  */
 class Standard
-	extends \Aimeos\MShop\Common\Item\ListRef\Base
+	extends \Aimeos\MShop\Common\Item\Base
 	implements \Aimeos\MShop\Supplier\Item\Iface
 {
-	private $values;
+	use \Aimeos\MShop\Common\Item\ListRef\Traits {
+		__clone as __cloneList;
+	}
+	use \Aimeos\MShop\Common\Item\AddressRef\Traits {
+		__clone as __cloneAddress;
+	}
+
 
 	/**
 	 * Initializes the supplier item object
 	 *
 	 * @param array $values List of attributes that belong to the supplier item
-	 * @param \Aimeos\MShop\Common\Lists\Item\Iface[] $listItems List of list items
+	 * @param \Aimeos\MShop\Common\Item\Lists\Iface[] $listItems List of list items
 	 * @param \Aimeos\MShop\Common\Item\Iface[] $refItems List of referenced items
 	 */
-	public function __construct( array $values = array(), array $listItems = array(), array $refItems = array() )
+	public function __construct( array $values = [], array $listItems = [], array $refItems = [], $addresses = [] )
 	{
-		parent::__construct( 'supplier.', $values, $listItems, $refItems );
+		parent::__construct( 'supplier.', $values );
 
-		$this->values = $values;
+		$this->initListItems( $listItems, $refItems );
+		$this->initAddressItems( $addresses );
+	}
+
+
+	/**
+	 * Creates a deep clone of all objects
+	 */
+	public function __clone()
+	{
+		parent::__clone();
+		$this->__cloneList();
+		$this->__cloneAddress();
 	}
 
 
@@ -46,11 +64,7 @@ class Standard
 	 */
 	public function getLabel()
 	{
-		if( isset( $this->values['supplier.label'] ) ) {
-			return (string) $this->values['supplier.label'];
-		}
-
-		return '';
+		return (string) $this->get( 'supplier.label', '' );
 	}
 
 
@@ -62,12 +76,7 @@ class Standard
 	 */
 	public function setLabel( $value )
 	{
-		if( $value == $this->getLabel() ) { return $this; }
-
-		$this->values['supplier.label'] = (string) $value;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'supplier.label', (string) $value );
 	}
 
 
@@ -78,11 +87,7 @@ class Standard
 	 */
 	public function getCode()
 	{
-		if( isset( $this->values['supplier.code'] ) ) {
-			return (string) $this->values['supplier.code'];
-		}
-
-		return '';
+		return (string) $this->get( 'supplier.code', '' );
 	}
 
 
@@ -94,12 +99,7 @@ class Standard
 	 */
 	public function setCode( $value )
 	{
-		if( $value == $this->getCode() ) { return $this; }
-
-		$this->values['supplier.code'] = (string) $this->checkCode( $value );;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'supplier.code', $this->checkCode( $value ) );
 	}
 
 
@@ -111,11 +111,7 @@ class Standard
 	 */
 	public function getStatus()
 	{
-		if( isset( $this->values['supplier.status'] ) ) {
-			return (int) $this->values['supplier.status'];
-		}
-
-		return 0;
+		return (int) $this->get( 'supplier.status', 1 );
 	}
 
 
@@ -127,12 +123,7 @@ class Standard
 	 */
 	public function setStatus( $value )
 	{
-		if( $value == $this->getStatus() ) { return $this; }
-
-		$this->values['supplier.status'] = (int) $value;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'supplier.status', (int) $value );
 	}
 
 
@@ -148,39 +139,53 @@ class Standard
 
 
 	/**
-	 * Sets the item values from the given array.
+	 * Tests if the item is available based on status, time, language and currency
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @return boolean True if available, false if not
 	 */
-	public function fromArray( array $list )
+	public function isAvailable()
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
+		return parent::isAvailable() && $this->getStatus() > 0;
+	}
+
+
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
+	 *
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Supplier\Item\Iface Supplier item for chaining method calls
+	 */
+	public function fromArray( array &$list, $private = false )
+	{
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'supplier.code': $this->setCode( $value ); break;
-				case 'supplier.label': $this->setLabel( $value ); break;
-				case 'supplier.status': $this->setStatus( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'supplier.code': $item = $item->setCode( $value ); break;
+				case 'supplier.label': $item = $item->setLabel( $value ); break;
+				case 'supplier.status': $item = $item->setStatus( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
 		$list['supplier.code'] = $this->getCode();
 		$list['supplier.label'] = $this->getLabel();

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Context
  */
@@ -46,7 +46,7 @@ interface Iface
 	/**
 	 * Returns the configuration object.
 	 *
-	 * @return \Aimeos\MShop\Config\Iface Configuration object
+	 * @return \Aimeos\MW\Config\Iface Configuration object
 	 */
 	public function getConfig();
 
@@ -74,6 +74,22 @@ interface Iface
 	public function setFilesystemManager( \Aimeos\MW\Filesystem\Manager\Iface $fsManager );
 
 	/**
+	 * Returns the current date and time
+	 * This is especially useful to share the same request time or if applications
+	 * allow to travel in time.
+	 *
+	 * @return string Current date and time as ISO string (YYYY-MM-DD HH:mm:ss)
+	 */
+	public function getDateTime();
+
+	/**
+	 * Sets the current date and time
+	 *
+	 * @param string $datetime Date and time as ISO string (YYYY-MM-DD HH:mm:ss)
+	 */
+	public function setDateTime( $datetime );
+
+	/**
 	 * Returns the file system manager object.
 	 *
 	 * @return \Aimeos\MW\Filesystem\Manager\Iface File system manager object
@@ -91,8 +107,7 @@ interface Iface
 	/**
 	 * Sets the translation/internationalization objects.
 	 *
-	 * @param array $translations Associative list of internationalization objects implementing
-	 * 	\Aimeos\MW\Translation\Iface with locale as key
+	 * @param \Aimeos\MW\Translation\Iface[] $translations Associative list locale as key as items as values
 	 * @return \Aimeos\MShop\Context\Item\Iface Context item for chaining method calls
 	 */
 	public function setI18n( array $translations );
@@ -162,17 +177,32 @@ interface Iface
 	 * Returns the message queue manager object.
 	 *
 	 * @return \Aimeos\MW\MQueue\Manager\Iface Message queue manager object
-	*/
+	 */
 	public function getMessageQueueManager();
 
 	/**
 	 * Returns the message queue object.
 	 *
 	 * @param string $resource Resource name, e.g. "mq-email"
-	 * @apram string $queue Message queue name, e.g. "order/email/payment"
-	 * @return \Aimeos\MW\Queue\Manager\Iface Message queue object
+	 * @param string $queue Message queue name, e.g. "order/email/payment"
+	 * @return \Aimeos\MW\MQueue\Queue\Iface Message queue object
 	 */
 	public function getMessageQueue( $resource, $queue );
+
+	/**
+	 * Sets the process object.
+	 *
+	 * @param \Aimeos\MW\Process\Iface $process Process object
+	 * @return \Aimeos\MShop\Context\Item\Iface Context item for chaining method calls
+	 */
+	public function setProcess( \Aimeos\MW\Process\Iface $process );
+
+	/**
+	 * Returns the process object.
+	 *
+	 * @return \Aimeos\MW\Process\Iface Process object
+	 */
+	public function getProcess();
 
 	/**
 	 * Sets the session object.
@@ -186,7 +216,7 @@ interface Iface
 	 * Returns the session object.
 	 *
 	 * @return \Aimeos\MW\Session\Iface Session object
-	*/
+	 */
 	public function getSession();
 
 	/**
@@ -207,7 +237,7 @@ interface Iface
 	/**
 	 * Sets the account name of the user/editor.
 	 *
-	 * @param string $name Account name of the user/editor
+	 * @param string $name Account name or IP address of the user/editor
 	 * @return \Aimeos\MShop\Context\Item\Iface Context item for chaining method calls
 	 */
 	public function setEditor( $name );
@@ -215,7 +245,7 @@ interface Iface
 	/**
 	 * Returns the account name of the user/editor.
 	 *
-	 * @return string Account name of the user/editor
+	 * @return string Account name or IP address of the user/editor
 	 */
 	public function getEditor();
 

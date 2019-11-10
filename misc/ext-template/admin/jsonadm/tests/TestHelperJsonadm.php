@@ -21,16 +21,6 @@ class TestHelperJsonadm
 	}
 
 
-	public static function getContext( $site = 'unittest' )
-	{
-		if( !isset( self::$context[$site] ) ) {
-			self::$context[$site] = self::createContext( $site );
-		}
-
-		return clone self::$context[$site];
-	}
-
-
 	private static function getAimeos()
 	{
 		if( !isset( self::$aimeos ) )
@@ -38,11 +28,20 @@ class TestHelperJsonadm
 			require_once 'Bootstrap.php';
 			spl_autoload_register( 'Aimeos\\Bootstrap::autoload' );
 
-			$extdir = dirname( dirname( dirname( __DIR__ ) ) );
-			self::$aimeos = new \Aimeos\Bootstrap( array( $extdir ), true );
+			self::$aimeos = new \Aimeos\Bootstrap();
 		}
 
 		return self::$aimeos;
+	}
+
+
+	public static function getContext( $site = 'unittest' )
+	{
+		if( !isset( self::$context[$site] ) ) {
+			self::$context[$site] = self::createContext( $site );
+		}
+
+		return clone self::$context[$site];
 	}
 
 
@@ -92,7 +91,7 @@ class TestHelperJsonadm
 		$ctx->setSession( $session );
 
 
-		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::createManager( $ctx );
+		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::create( $ctx );
 		$locale = $localeManager->bootstrap( $site, 'de', '', false );
 		$ctx->setLocale( $locale );
 
@@ -101,7 +100,7 @@ class TestHelperJsonadm
 		$ctx->setView( $view );
 
 
-		$ctx->setEditor( 'core:admin/jsonadm' );
+		$ctx->setEditor( '<extname>:admin/jsonadm' );
 
 		return $ctx;
 	}
@@ -109,15 +108,35 @@ class TestHelperJsonadm
 
 	protected static function createView( \Aimeos\MW\Config\Iface $config )
 	{
-		$view = new \Aimeos\MW\View\Standard( self::getTemplatePaths() );
+		$tmplpaths = self::getAimeos()->getCustomPaths( 'admin/jsonadm/templates' );
 
+		$view = new \Aimeos\MW\View\Standard( $tmplpaths );
+
+		$helper = new \Aimeos\MW\View\Helper\Access\All( $view );
+		$view->addHelper( 'access', $helper );
+
+		$trans = new \Aimeos\MW\Translation\None( 'de_DE' );
+		$helper = new \Aimeos\MW\View\Helper\Translate\Standard( $view, $trans );
+		$view->addHelper( 'translate', $helper );
+
+		$helper = new \Aimeos\MW\View\Helper\Url\Standard( $view, 'http://baseurl' );
+		$view->addHelper( 'url', $helper );
+
+		$helper = new \Aimeos\MW\View\Helper\Number\Standard( $view, '.', '' );
+		$view->addHelper( 'number', $helper );
+
+		$helper = new \Aimeos\MW\View\Helper\Date\Standard( $view, 'Y-m-d' );
+		$view->addHelper( 'date', $helper );
+
+		$config = new \Aimeos\MW\Config\Decorator\Protect( $config, array( 'admin/jsonadm' ) );
 		$helper = new \Aimeos\MW\View\Helper\Config\Standard( $view, $config );
 		$view->addHelper( 'config', $helper );
 
-		$sepDec = $config->get( 'client/html/common/format/seperatorDecimal', '.' );
-		$sep1000 = $config->get( 'client/html/common/format/seperator1000', ' ' );
-		$helper = new \Aimeos\MW\View\Helper\Number\Standard( $view, $sepDec, $sep1000 );
-		$view->addHelper( 'number', $helper );
+		$helper = new \Aimeos\MW\View\Helper\Request\Standard( $view, new \Zend\Diactoros\ServerRequest() );
+		$view->addHelper( 'request', $helper );
+
+		$helper = new \Aimeos\MW\View\Helper\Response\Standard( $view, new \Zend\Diactoros\Response() );
+		$view->addHelper( 'response', $helper );
 
 		return $view;
 	}

@@ -3,14 +3,14 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MShop\Order\Item\Base;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $locale;
 	private $object;
@@ -25,15 +25,15 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 			'order.base.id' => 1,
 			'order.base.siteid' => 99,
 			'order.base.customerid' => 'testuser',
+			'order.base.customerref' => 'ABC-1234',
 			'order.base.comment' => 'this is a comment from unittest',
-			'order.base.status' => 0,
 			'order.base.mtime' => '2011-01-01 00:00:02',
 			'order.base.ctime' => '2011-01-01 00:00:01',
 			'order.base.editor' => 'unitTestUser'
 		);
 
-		$price = \Aimeos\MShop\Price\Manager\Factory::createManager( $context )->createItem();
-		$this->locale = \Aimeos\MShop\Locale\Manager\Factory::createManager( $context )->createItem();
+		$price = \Aimeos\MShop\Price\Manager\Factory::create( $context )->createItem();
+		$this->locale = \Aimeos\MShop\Locale\Manager\Factory::create( $context )->createItem();
 		$this->object = new \Aimeos\MShop\Order\Item\Base\Standard( $price, $this->locale, $this->values );
 	}
 
@@ -54,25 +54,15 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setId( null );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $return );
 		$this->assertEquals( null, $this->object->getId() );
 		$this->assertTrue( $this->object->isModified() );
 
 		$return = $this->object->setId( 5 );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $return );
 		$this->assertEquals( 5, $this->object->getId() );
 		$this->assertFalse( $this->object->isModified() );
-
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
-		$this->object->setId( 6 );
-	}
-
-
-	public function testSetId2()
-	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
-		$this->object->setId( 'test' );
 	}
 
 
@@ -92,8 +82,24 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setCustomerId( '44' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $return );
 		$this->assertEquals( '44', $this->object->getCustomerId() );
+		$this->assertTrue( $this->object->isModified() );
+	}
+
+
+	public function testGetCustomerReference()
+	{
+		$this->assertEquals( 'ABC-1234', $this->object->getCustomerReference() );
+	}
+
+
+	public function testSetCustomerReference()
+	{
+		$return = $this->object->setCustomerReference( 'XYZ-9876' );
+
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $return );
+		$this->assertEquals( 'XYZ-9876', $this->object->getCustomerReference() );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
@@ -106,10 +112,10 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testSetLocale()
 	{
-		$locale = \Aimeos\MShop\Locale\Manager\Factory::createManager( \TestHelperMShop::getContext() )->createItem();
+		$locale = \Aimeos\MShop\Locale\Manager\Factory::create( \TestHelperMShop::getContext() )->createItem();
 		$return = $this->object->setLocale( $locale );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $return );
 		$this->assertEquals( $locale, $this->object->getLocale() );
 		$this->assertTrue( $this->object->isModified() );
 	}
@@ -137,34 +143,23 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setComment( 'New unit test comment' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $return );
 		$this->assertEquals( 'New unit test comment', $this->object->getComment() );
 		$this->assertTrue( $this->object->isModified() );
 	}
 
-	public function testGetStatus()
-	{
-		$this->assertEquals( 0, $this->object->getStatus() );
-	}
-
-	public function testSetStatus()
-	{
-		$return = $this->object->setStatus( 1 );
-
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Iface', $return );
-		$this->assertEquals( 1, $this->object->getStatus() );
-		$this->assertTrue( $this->object->isModified() );
-	}
 
 	public function testGetTimeModified()
 	{
 		$this->assertEquals( '2011-01-01 00:00:02', $this->object->getTimeModified() );
 	}
 
+
 	public function testGetTimeCreated()
 	{
 		$this->assertEquals( '2011-01-01 00:00:01', $this->object->getTimeCreated() );
 	}
+
 
 	public function testGetEditor()
 	{
@@ -176,37 +171,36 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$item = new \Aimeos\MShop\Order\Item\Base\Standard( new \Aimeos\MShop\Price\Item\Standard(), new \Aimeos\MShop\Locale\Item\Standard() );
 
-		$list = array(
+		$list = $entries = array(
 			'order.base.id' => 1,
+			'order.base.customerref' => 'testref',
 			'order.base.comment' => 'test comment',
 			'order.base.languageid' => 'de',
 			'order.base.customerid' => 3,
-			'order.base.status' => 4,
 		);
 
-		$unknown = $item->fromArray( $list );
+		$item = $item->fromArray( $entries, true );
 
-		$this->assertEquals( array(), $unknown );
-
+		$this->assertEquals( [], $entries );
 		$this->assertEquals( $list['order.base.id'], $item->getId() );
 		$this->assertEquals( $list['order.base.customerid'], $item->getCustomerId() );
 		$this->assertEquals( $list['order.base.languageid'], $item->getLocale()->getLanguageId() );
+		$this->assertEquals( $list['order.base.customerref'], $item->getCustomerReference() );
 		$this->assertEquals( $list['order.base.comment'], $item->getComment() );
-		$this->assertEquals( $list['order.base.status'], $item->getStatus() );
 	}
 
 
 	public function testToArray()
 	{
-		$list = $this->object->toArray();
+		$list = $this->object->toArray( true );
 		$price = $this->object->getPrice();
 
 		$this->assertEquals( $this->object->getId(), $list['order.base.id'] );
 		$this->assertEquals( $this->object->getSiteId(), $list['order.base.siteid'] );
 		$this->assertEquals( $this->object->getCustomerId(), $list['order.base.customerid'] );
 		$this->assertEquals( $this->object->getLocale()->getLanguageId(), $list['order.base.languageid'] );
+		$this->assertEquals( $this->object->getCustomerReference(), $list['order.base.customerref'] );
 		$this->assertEquals( $this->object->getComment(), $list['order.base.comment'] );
-		$this->assertEquals( $this->object->getStatus(), $list['order.base.status'] );
 		$this->assertEquals( $this->object->getTimeCreated(), $list['order.base.ctime'] );
 		$this->assertEquals( $this->object->getTimeModified(), $list['order.base.mtime'] );
 		$this->assertEquals( $this->object->getEditor(), $list['order.base.editor'] );
@@ -224,16 +218,29 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
+	public function testSetModified()
+	{
+		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Iface', $this->object->setModified() );
+		$this->assertEquals( true, $this->object->isModified() );
+	}
+
+
 	public function testFinish()
 	{
 		$return = $this->object->finish();
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $return );
 	}
 
 
 	public function testGetResourceType()
 	{
 		$this->assertEquals( 'order/base', $this->object->getResourceType() );
+	}
+
+
+	public function testSerialize()
+	{
+		$this->assertTrue( is_string( serialize( $this->object ) ) );
 	}
 }

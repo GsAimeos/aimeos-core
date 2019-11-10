@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Common
  */
@@ -13,7 +13,8 @@ namespace Aimeos\MShop\Common\Item\Address;
 
 
 /**
- * Interface for provider common address DTO objects used by the shop.
+ * Interface for provider common address DTO objects used by the shop
+ *
  * @package MShop
  * @subpackage Common
  */
@@ -335,18 +336,35 @@ interface Iface extends \Aimeos\MShop\Common\Item\Iface
 
 
 	/**
-	 * Returns the flag value.
+	 * Returns the longitude coordinate of the customer address
 	 *
-	 * @return integer Generic flag value
+	 * @return float|null Longitude coordinate as decimal value or null
 	 */
-	public function getFlag();
+	public function getLongitude();
 
 
 	/**
-	 * Sets a new flag value.
+	 * Sets the longitude coordinate of the customer address
 	 *
-	 * @param integer $flag New flag value
-	 * @return \Aimeos\MShop\Common\Item\Address\Iface Common address item for chaining method calls
+	 * @param float|null $value Longitude coordinate as decimal value or null
+	 * @return \Aimeos\MShop\Customer\Item\Iface Customer item for chaining method calls
 	 */
-	public function setFlag( $flag );
+	public function setLongitude( $value );
+
+
+	/**
+	 * Returns the latitude coordinate of the customer address
+	 *
+	 * @return float|null Latitude coordinate as decimal value or null
+	 */
+	public function getLatitude();
+
+
+	/**
+	 * Sets the latitude coordinate of the customer address
+	 *
+	 * @param float|null $value Latitude coordinate as decimal value or null
+	 * @return \Aimeos\MShop\Customer\Item\Iface Customer item for chaining method calls
+	 */
+	public function setLatitude( $value );
 }

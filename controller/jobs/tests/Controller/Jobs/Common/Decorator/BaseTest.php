@@ -3,7 +3,7 @@
 /**
  * @copyright Metaways Infosystems GmbH, 2013
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -13,7 +13,7 @@ namespace Aimeos\Controller\Jobs\Common\Decorator;
 /**
  * Test class for \Aimeos\Controller\Jobs\Common\Decorator\BaseTest.
  */
-class BaseTest extends \PHPUnit_Framework_TestCase
+class BaseTest extends \PHPUnit\Framework\TestCase
 {
 	private $stub;
 	private $object;
@@ -30,7 +30,7 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 		$context = \TestHelperJobs::getContext();
 		$aimeos = \TestHelperJobs::getAimeos();
 
-		$this->stub = $this->getMockBuilder( '\\Aimeos\\Controller\\Jobs\\Iface' )
+		$this->stub = $this->getMockBuilder( \Aimeos\Controller\Jobs\Iface::class )
 			->setConstructorArgs( array( $context, $aimeos ) )
 			->getMock();
 
@@ -46,13 +46,13 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 
 	public function testGetContext()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Context\\Item\\Iface', $this->object->getContextPublic() );
+		$this->assertInstanceOf( \Aimeos\MShop\Context\Item\Iface::class, $this->object->getContextPublic() );
 	}
 
 
 	public function testGetAimeos()
 	{
-		$this->assertInstanceOf( '\Aimeos\Bootstrap', $this->object->getAimeosPublic() );
+		$this->assertInstanceOf( \Aimeos\Bootstrap::class, $this->object->getAimeosPublic() );
 	}
 
 

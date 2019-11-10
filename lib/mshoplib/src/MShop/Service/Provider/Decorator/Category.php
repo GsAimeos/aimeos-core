@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018
  * @package MShop
  * @subpackage Service
  */
@@ -12,7 +12,12 @@ namespace Aimeos\MShop\Service\Provider\Decorator;
 
 
 /**
- * 'Category-limiting decorator for service providers.
+ * Category-limiting decorator for service providers
+ *
+ * This decorator interacts with the ServiceUpdate and Autofill basket plugins!
+ * If the delivery/payment option isn't available any more, the ServiceUpdate
+ * plugin will remove it from the basket and the Autofill plugin will add one
+ * of the available options again.
  *
  * @package MShop
  * @subpackage Service
@@ -24,21 +29,21 @@ class Category
 	private $beConfig = array(
 		'category.include' => array(
 			'code' => 'category.include',
-			'internalcode'=> 'category.include',
-			'label'=> 'Code of allowed category and sub-categories for the service item',
-			'type'=> 'string',
-			'internaltype'=> 'string',
-			'default'=> '',
-			'required'=> false,
+			'internalcode' => 'category.include',
+			'label' => 'Code of allowed category and sub-categories for the service item',
+			'type' => 'string',
+			'internaltype' => 'string',
+			'default' => '',
+			'required' => false,
 		),
 		'category.exclude' => array(
 			'code' => 'category.exclude',
-			'internalcode'=> 'category.exclude',
-			'label'=> 'Code of category and sub-categories not allowed for the service item',
-			'type'=> 'string',
-			'internaltype'=> 'string',
-			'default'=> '',
-			'required'=> false,
+			'internalcode' => 'category.exclude',
+			'label' => 'Code of category and sub-categories not allowed for the service item',
+			'type' => 'string',
+			'internaltype' => 'string',
+			'default' => '',
+			'required' => false,
 		),
 	);
 
@@ -67,13 +72,7 @@ class Category
 	 */
 	public function getConfigBE()
 	{
-		$list = $this->getProvider()->getConfigBE();
-
-		foreach( $this->beConfig as $key => $config ) {
-			$list[$key] = new \Aimeos\MW\Criteria\Attribute\Standard( $config );
-		}
-
-		return $list;
+		return array_merge( $this->getProvider()->getConfigBE(), $this->getConfigItems( $this->beConfig ) );
 	}
 
 
@@ -115,7 +114,7 @@ class Category
 		$configCatalogIds = $this->getCatalogIds( explode( ',', $codes ) );
 		$treeCatalogIds = $this->getTreeCatalogIds( $configCatalogIds );
 
-		return ( array_intersect( $catalogIds, $treeCatalogIds ) !== array() );
+		return ( array_intersect( $catalogIds, $treeCatalogIds ) !== [] );
 	}
 
 
@@ -127,7 +126,7 @@ class Category
 	 */
 	protected function getCatalogIds( array $catalogCodes )
 	{
-		$catalogManager = \Aimeos\MShop\Factory::createManager( $this->getContext(), 'catalog' );
+		$catalogManager = \Aimeos\MShop::create( $this->getContext(), 'catalog' );
 
 		$search = $catalogManager->createSearch( true );
 		$expr = array(
@@ -169,7 +168,7 @@ class Category
 	 */
 	protected function getProductIds( \Aimeos\MShop\Order\Item\Base\Iface $basket )
 	{
-		$productIds = array();
+		$productIds = [];
 
 		foreach( $basket->getProducts() as $product ) {
 			$productIds[] = $product->getProductId();
@@ -187,17 +186,22 @@ class Category
 	 */
 	protected function getRefCatalogIds( array $productIds )
 	{
-		$catalogListsManager = \Aimeos\MShop\Factory::createManager( $this->getContext(), 'catalog/lists' );
+		if( empty( $productIds ) ) {
+			return [];
+		}
 
-		$search = $catalogListsManager->createSearch();
-		$expr = array(
-			$search->compare( '==', 'catalog.lists.refid', $productIds ),
-			$search->compare( '==', 'catalog.lists.domain', 'product' ),
-			$search->compare( '==', 'catalog.lists.type.code', 'default' ),
-		);
-		$search->setConditions( $search->combine( '&&', $expr ) );
+		$manager = \Aimeos\MShop::create( $this->getContext(), 'catalog' );
+		$search = $manager->createSearch();
+		$expr = [];
 
-		return array_keys( $catalogListsManager->aggregate( $search, 'catalog.lists.parentid' ) );
+		foreach( $productIds as $id )
+		{
+			$func = $search->createFunction( 'catalog:has', ['product', 'default', $id] );
+			$expr[] = $search->compare( '!=', $func, null );
+		}
+
+		$search->setConditions( $search->combine( '||', $expr ) );
+		return array_keys( $manager->searchItems( $search ) );
 	}
 
 
@@ -209,8 +213,8 @@ class Category
 	 */
 	protected function getTreeCatalogIds( array $catalogIds )
 	{
-		$ids = array();
-		$catalogManager = \Aimeos\MShop\Factory::createManager( $this->getContext(), 'catalog' );
+		$ids = [];
+		$catalogManager = \Aimeos\MShop::create( $this->getContext(), 'catalog' );
 
 		foreach( $catalogIds as $catId )
 		{

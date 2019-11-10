@@ -2,14 +2,14 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MShop\Service\Provider\Decorator;
 
 
-class DownloadTest extends \PHPUnit_Framework_TestCase
+class DownloadTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $context;
@@ -21,10 +21,10 @@ class DownloadTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->context = \TestHelperMShop::getContext();
 
-		$servManager = \Aimeos\MShop\Service\Manager\Factory::createManager( $this->context );
+		$servManager = \Aimeos\MShop\Service\Manager\Factory::create( $this->context );
 		$this->servItem = $servManager->createItem();
 
-		$this->mockProvider = $this->getMockBuilder( '\\Aimeos\\MShop\\Service\\Provider\\Decorator\\Example' )
+		$this->mockProvider = $this->getMockBuilder( \Aimeos\MShop\Service\Provider\Decorator\Example::class )
 			->disableOriginalConstructor()->getMock();
 
 		$this->object = new \Aimeos\MShop\Service\Provider\Decorator\Download( $this->mockProvider, $this->context, $this->servItem );
@@ -33,12 +33,14 @@ class DownloadTest extends \PHPUnit_Framework_TestCase
 
 	protected function tearDown()
 	{
-		\Aimeos\MShop\Order\Manager\Factory::injectManager( '\\Aimeos\\MShop\\Order\\Manager\\StandardMock', null );
+		\Aimeos\MShop\Order\Manager\Factory::injectManager( '\Aimeos\MShop\Order\Manager\StandardMock', null );
 	}
 
 
 	public function testGetConfigBE()
 	{
+		$this->mockProvider->expects( $this->once() )->method( 'getConfigBE' )->will( $this->returnValue( [] ) );
+
 		$result = $this->object->getConfigBE();
 
 		$this->assertArrayHasKey( 'download.all', $result );
@@ -49,7 +51,7 @@ class DownloadTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->mockProvider->expects( $this->once() )
 			->method( 'checkConfigBE' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$attributes = array( 'download.all' => '1' );
 		$result = $this->object->checkConfigBE( $attributes );
@@ -63,9 +65,9 @@ class DownloadTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->mockProvider->expects( $this->once() )
 			->method( 'checkConfigBE' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
-		$attributes = array( 'download.all' => array() );
+		$attributes = array( 'download.all' => [] );
 		$result = $this->object->checkConfigBE( $attributes );
 
 		$this->assertEquals( 1, count( $result ) );
@@ -103,6 +105,15 @@ class DownloadTest extends \PHPUnit_Framework_TestCase
 	}
 
 
+	public function testIsAvailableFailureNoArticle()
+	{
+		$manager = \Aimeos\MShop::create( $this->context, 'order/base' );
+		$this->servItem->setConfig( array( 'download.all' => '0' ) );
+
+		$this->assertFalse( $this->object->isAvailable( $manager->createItem() ) );
+	}
+
+
 	/**
 	 * Returns an order base item
 	 *
@@ -110,7 +121,7 @@ class DownloadTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function getOrderBaseItem()
 	{
-		$manager = \Aimeos\MShop\Factory::createManager( $this->context, 'order' );
+		$manager = \Aimeos\MShop::create( $this->context, 'order' );
 
 		$search = $manager->createSearch();
 		$search->setConditions( $search->compare( '==', 'order.datepayment', '2008-02-15 12:34:56' ) );
@@ -120,7 +131,7 @@ class DownloadTest extends \PHPUnit_Framework_TestCase
 			throw new \RuntimeException( 'No order item found' );
 		}
 
-		$baseManager = \Aimeos\MShop\Factory::createManager( $this->context, 'order/base' );
+		$baseManager = \Aimeos\MShop::create( $this->context, 'order/base' );
 		return $baseManager->load( $item->getBaseId() );
 	}
 }

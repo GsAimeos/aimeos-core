@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Container
  */
@@ -26,7 +26,6 @@ class CSV
 	private $enclosure;
 	private $escape;
 	private $lineend;
-	private $endsubst;
 	private $fh;
 	private $data;
 	private $position = 0;
@@ -40,14 +39,15 @@ class CSV
 	 * - csv-enclosure (default: '"')
 	 * - csv-escape (default: '"')
 	 * - csv-lineend (default: LF)
-	 * - csv-lineend-subst (default: ' ')
 	 *
 	 * @param string $resource Path to the actual file
 	 * @param string $name Name of the CSV file
 	 * @param array $options Associative list of key/value pairs for configuration
 	 */
-	public function __construct( $resource, $name, array $options = array() )
+	public function __construct( $resource, $name, array $options = [] )
 	{
+		ini_set( 'auto_detect_line_endings', true );
+
 		if( !is_file( $resource ) && substr( $resource, -4 ) !== '.csv' ) {
 			$resource .= '.csv';
 		}
@@ -67,8 +67,7 @@ class CSV
 		$this->separator = $this->getOption( 'csv-separator', ',' );
 		$this->enclosure = $this->getOption( 'csv-enclosure', '"' );
 		$this->escape = $this->getOption( 'csv-escape', '"' );
-		$this->lineend = $this->getOption( 'csv-lineend', chr( 10 ) );
-		$this->endsubst = $this->getOption( 'csv-lineend-subst', ' ' );
+		$this->lineend = $this->getOption( 'csv-lineend', "\n" );
 		$this->data = $this->getData();
 	}
 
@@ -77,6 +76,7 @@ class CSV
 	 * Closes the CSV file so it's written to disk.
 	 *
 	 * @throws \Aimeos\MW\Container\Exception If the file handle couldn't be flushed or closed
+	 * @return \Aimeos\MW\Container\Content\Iface Container content instance for method chaining
 	 */
 	public function close()
 	{
@@ -87,6 +87,8 @@ class CSV
 		if( fclose( $this->fh ) === false ) {
 			throw new \Aimeos\MW\Container\Exception( sprintf( 'Unable to close file "%1$s"', $this->getResource() ) );
 		}
+
+		return $this;
 	}
 
 
@@ -94,20 +96,28 @@ class CSV
 	 * Adds row to the content object.
 	 *
 	 * @param string[] $data Data to add
+	 * @return \Aimeos\MW\Container\Content\Iface Container content instance for method chaining
 	 */
 	public function add( $data )
 	{
+		$list = [];
+		$data = (array) $data;
+		$max = max( array_keys( $data ) );
 		$enclosure = $this->enclosure;
 
-		foreach( (array) $data as $key => $entry )
-		{
-			$entry = str_replace( $this->lineend, $this->endsubst, $entry );
-			$data[$key] = $enclosure . str_replace( $enclosure, $this->escape . $enclosure, $entry ) . $enclosure;
+		if( is_int( $max ) ) {
+			$list = array_fill( 0, $max, '' );
 		}
 
-		if( fwrite( $this->fh, implode( $this->separator, $data ) . $this->lineend ) === false ) {
+		foreach( $data as $pos => $entry ) {
+			$list[$pos] = $enclosure . str_replace( $enclosure, $this->escape . $enclosure, $entry ) . $enclosure;
+		}
+
+		if( fwrite( $this->fh, implode( $this->separator, $list ) . $this->lineend ) === false ) {
 			throw new \Aimeos\MW\Container\Exception( sprintf( 'Unable to add content to file "%1$s"', $this->getName() ) );
 		}
+
+		return $this;
 	}
 
 

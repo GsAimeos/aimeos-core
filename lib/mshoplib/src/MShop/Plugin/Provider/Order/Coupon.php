@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Plugin
  */
@@ -13,30 +13,45 @@ namespace Aimeos\MShop\Plugin\Provider\Order;
 
 
 /**
- * Update percent rebate value on change.
+ * Updates the basket depending on the coupon
+ *
+ * Executes the coupon providers again on any basket change so they can update
+ * the basket. This is necessary if either the requirement for coupons aren't
+ * met any more or for updating percentual rebates.
+ *
+ * To trace the execution and interaction of the plugins, set the log level to DEBUG:
+ *	madmin/log/manager/standard/loglevel = 7
  *
  * @package MShop
  * @subpackage Plugin
  */
 class Coupon
 	extends \Aimeos\MShop\Plugin\Provider\Factory\Base
-	implements \Aimeos\MShop\Plugin\Provider\Factory\Iface
+	implements \Aimeos\MShop\Plugin\Provider\Iface, \Aimeos\MShop\Plugin\Provider\Factory\Iface
 {
-	protected static $lock = false;
-
-
 	/**
 	 * Subscribes itself to a publisher
 	 *
 	 * @param \Aimeos\MW\Observer\Publisher\Iface $p Object implementing publisher interface
+	 * @return \Aimeos\MShop\Plugin\Provider\Iface Plugin object for method chaining
 	 */
 	public function register( \Aimeos\MW\Observer\Publisher\Iface $p )
 	{
-		$p->addListener( $this, 'addProduct.after' );
-		$p->addListener( $this, 'deleteProduct.after' );
-		$p->addListener( $this, 'setService.after' );
-		$p->addListener( $this, 'addCoupon.after' );
-		$p->addListener( $this, 'check.after' );
+		$plugin = $this->getObject();
+
+		$p->attach( $plugin, 'addProduct.after' );
+		$p->attach( $plugin, 'deleteProduct.after' );
+		$p->attach( $plugin, 'setProducts.after' );
+		$p->attach( $plugin, 'addAddress.after' );
+		$p->attach( $plugin, 'deleteAddress.after' );
+		$p->attach( $plugin, 'setAddresses.after' );
+		$p->attach( $plugin, 'addService.after' );
+		$p->attach( $plugin, 'deleteService.after' );
+		$p->attach( $plugin, 'setServices.after' );
+		$p->attach( $plugin, 'addCoupon.after' );
+		$p->attach( $plugin, 'deleteCoupon.after' );
+
+		return $this;
 	}
 
 
@@ -46,47 +61,35 @@ class Coupon
 	 * @param \Aimeos\MW\Observer\Publisher\Iface $order Shop basket instance implementing publisher interface
 	 * @param string $action Name of the action to listen for
 	 * @param mixed $value Object or value changed in publisher
+	 * @return mixed Modified value parameter
+	 * @throws \Aimeos\MShop\Plugin\Provider\Exception if checks fail
 	 */
 	public function update( \Aimeos\MW\Observer\Publisher\Iface $order, $action, $value = null )
 	{
-		if( !( $order instanceof \Aimeos\MShop\Order\Item\Base\Iface ) )
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Order\Item\Base\Iface::class, $order );
+
+		$notAvailable = [];
+		$context = $this->getContext();
+
+		$manager = \Aimeos\MShop::create( $context, 'coupon' );
+		$codeManager = \Aimeos\MShop::create( $context, 'coupon/code' );
+
+		foreach( $order->getCoupons() as $code => $products )
 		{
-			$msg = $this->getContext()->getI18n()->dt( 'mshop', 'Object is not of required type "%1$s"' );
-			throw new \Aimeos\MShop\Plugin\Exception( sprintf( $msg, '\Aimeos\MShop\Order\Item\Base\Iface' ) );
-		}
+			$search = $manager->createSearch( true )->setSlice( 0, 1 );
+			$expr = array(
+				$search->compare( '==', 'coupon.code.code', $code ),
+				$codeManager->createSearch( true )->getConditions(),
+				$search->getConditions(),
+			);
+			$search->setConditions( $search->combine( '&&', $expr ) );
+			$items = $manager->searchItems( $search );
 
-		$notAvailable = array();
-
-		if( self::$lock === false )
-		{
-			self::$lock = true;
-
-			$couponManager = \Aimeos\MShop\Factory::createManager( $this->getContext(), 'coupon' );
-
-			foreach( $order->getCoupons() as $code => $products )
-			{
-				$search = $couponManager->createSearch( true );
-				$expr = array(
-					$search->compare( '==', 'coupon.code.code', $code ),
-					$search->getConditions(),
-				);
-				$search->setConditions( $search->combine( '&&', $expr ) );
-				$search->setSlice( 0, 1 );
-
-				$results = $couponManager->searchItems( $search );
-
-				if( ( $couponItem = reset( $results ) ) !== false )
-				{
-					$couponProvider = $couponManager->getProvider( $couponItem, $code );
-					$couponProvider->updateCoupon( $order );
-				}
-				else
-				{
-					$notAvailable[$code] = 'coupon.gone';
-				}
+			if( ( $item = reset( $items ) ) !== false ) {
+				$manager->getProvider( $item, $code )->update( $order );
+			} else {
+				$notAvailable[$code] = 'gone';
 			}
-
-			self::$lock = false;
 		}
 
 		if( count( $notAvailable ) > 0 )
@@ -96,7 +99,7 @@ class Coupon
 			throw new \Aimeos\MShop\Plugin\Provider\Exception( $msg, -1, null, $codes );
 		}
 
-		return true;
+		return $value;
 	}
 
 }

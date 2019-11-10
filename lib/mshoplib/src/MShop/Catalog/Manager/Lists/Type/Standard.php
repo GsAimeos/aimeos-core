@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Catalog
  */
@@ -19,74 +19,83 @@ namespace Aimeos\MShop\Catalog\Manager\Lists\Type;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Type\Base
-	implements \Aimeos\MShop\Catalog\Manager\Lists\Type\Iface
+	implements \Aimeos\MShop\Catalog\Manager\Lists\Type\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
 		'catalog.lists.type.id' => array(
-			'code'=>'catalog.lists.type.id',
-			'internalcode'=>'mcatlity."id"',
-			'internaldeps'=>array( 'LEFT JOIN "mshop_catalog_list_type" as mcatlity ON ( mcatli."typeid" = mcatlity."id" )' ),
-			'label'=>'Catalog list type ID',
-			'type'=> 'integer',
+			'code' => 'catalog.lists.type.id',
+			'internalcode' => 'mcatlity."id"',
+			'label' => 'List type ID',
+			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
 		'catalog.lists.type.siteid' => array(
-			'code'=>'catalog.lists.type.siteid',
-			'internalcode'=>'mcatlity."siteid"',
-			'label'=>'Catalog list type site ID',
-			'type'=> 'integer',
+			'code' => 'catalog.lists.type.siteid',
+			'internalcode' => 'mcatlity."siteid"',
+			'label' => 'List type site ID',
+			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
-		),
-		'catalog.lists.type.code' => array(
-			'code'=>'catalog.lists.type.code',
-			'internalcode'=>'mcatlity."code"',
-			'label'=>'Catalog list type code',
-			'type'=> 'string',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
-		),
-		'catalog.lists.type.domain' => array(
-			'code'=>'catalog.lists.type.domain',
-			'internalcode'=>'mcatlity."domain"',
-			'label'=>'Catalog list type domain',
-			'type'=> 'string',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'catalog.lists.type.label' => array(
 			'code' => 'catalog.lists.type.label',
 			'internalcode' => 'mcatlity."label"',
-			'label' => 'Catalog list type label',
+			'label' => 'List type label',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
+		'catalog.lists.type.code' => array(
+			'code' => 'catalog.lists.type.code',
+			'internalcode' => 'mcatlity."code"',
+			'label' => 'List type code',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
+		'catalog.lists.type.domain' => array(
+			'code' => 'catalog.lists.type.domain',
+			'internalcode' => 'mcatlity."domain"',
+			'label' => 'List type domain',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
+		'catalog.lists.type.position' => array(
+			'code' => 'catalog.lists.type.position',
+			'internalcode' => 'mcatlity."pos"',
+			'label' => 'List type position',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
 		'catalog.lists.type.status' => array(
 			'code' => 'catalog.lists.type.status',
 			'internalcode' => 'mcatlity."status"',
-			'label' => 'Catalog list type status',
+			'label' => 'List type status',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'catalog.lists.type.ctime'=> array(
-			'label' => 'Catalog list type creation time',
+		'catalog.lists.type.ctime' => array(
+			'label' => 'List type create date/time',
 			'code' => 'catalog.lists.type.ctime',
 			'internalcode' => 'mcatlity."ctime"',
 			'type' => 'datetime',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'catalog.lists.type.mtime'=> array(
-			'label' => 'Catalog list type modification time',
+		'catalog.lists.type.mtime' => array(
+			'label' => 'List type modify date/time',
 			'code' => 'catalog.lists.type.mtime',
 			'internalcode' => 'mcatlity."mtime"',
 			'type' => 'datetime',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'catalog.lists.type.editor'=> array(
-			'code'=>'catalog.lists.type.editor',
-			'internalcode'=>'mcatlity."editor"',
-			'label'=>'Catalog list type editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'catalog.lists.type.editor' => array(
+			'code' => 'catalog.lists.type.editor',
+			'internalcode' => 'mcatlity."editor"',
+			'label' => 'List type editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
 
@@ -106,16 +115,17 @@ class Standard
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param array $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Catalog\Manager\Lists\Type\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/catalog/manager/lists/type/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array() ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, [] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/catalog/manager/lists/type/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/catalog/manager/lists/type/standard/delete' );
 	}
 
 
@@ -123,13 +133,12 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/catalog/manager/lists/type/submanagers';
-
-		return $this->getResourceTypeBase( 'catalog/lists/type', $path, array(), $withsub );
+		return $this->getResourceTypeBase( 'catalog/lists/type', $path, [], $withsub );
 	}
 
 
@@ -137,7 +146,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also catalogs of sub-managers if true
-	 * @return array List of catalog items implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -160,7 +169,7 @@ class Standard
 		 */
 		$path = 'mshop/catalog/manager/lists/type/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -247,7 +256,8 @@ class Standard
 		 *  mshop/catalog/manager/lists/type/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the catalog controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the catalog
+		 * list type manager..
 		 *
 		 * @param array List of decorator names
 		 * @since 2014.03
@@ -266,13 +276,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the catalog list type manager.
+		 * ("\Aimeos\MShop\Catalog\Manager\Lists\Type\Decorator\*") around the catalog
+		 * list type manager.
 		 *
 		 *  mshop/catalog/manager/lists/type/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the catalog
-		 * controller.
+		 * "\Aimeos\MShop\Catalog\Manager\Lists\Type\Decorator\Decorator2" only to the
+		 * catalog list type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2014.03

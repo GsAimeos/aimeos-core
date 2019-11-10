@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MAdmin
  * @subpackage Cache
  */
@@ -29,7 +29,7 @@ class Factory
 	 * @param string|null $name Manager name
 	 * @return \Aimeos\MAdmin\Cache\Manager\Iface Cache manager object
 	 */
-	public static function createManager( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
+	public static function create( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
 	{
 		/** madmin/cache/manager/name
 		 * Class name of the used cache manager implementation
@@ -70,14 +70,14 @@ class Factory
 
 		if( ctype_alnum( $name ) === false )
 		{
-			$classname = is_string( $name ) ? '\\Aimeos\\MAdmin\\Cache\\Manager\\' . $name : '<not a string>';
+			$classname = is_string( $name ) ? '\Aimeos\MAdmin\Cache\Manager\\' . $name : '<not a string>';
 			throw new \Aimeos\MAdmin\Cache\Exception( sprintf( 'Invalid characters in class name "%1$s"', $classname ) );
 		}
 
-		$iface = '\\Aimeos\\MAdmin\\Cache\\Manager\\Iface';
-		$classname = '\\Aimeos\\MAdmin\\Cache\\Manager\\' . $name;
+		$iface = \Aimeos\MAdmin\Cache\Manager\Iface::class;
+		$classname = '\Aimeos\MAdmin\Cache\Manager\\' . $name;
 
-		$manager = self::createManagerBase( $context, $classname, $iface );
+		$manager = self::createManager( $context, $classname, $iface );
 
 		/** madmin/cache/manager/decorators/excludes
 		 * Excludes decorators added by the "common" option from the cache manager

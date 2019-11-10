@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Service
  */
@@ -12,7 +12,12 @@ namespace Aimeos\MShop\Service\Provider\Decorator;
 
 
 /**
- * Decorator for service providers adding additional costs.
+ * Decorator for service providers adding additional costs
+ *
+ * This decorator interacts with the ServiceUpdate and Autofill basket plugins!
+ * If the delivery/payment option isn't available any more, the ServiceUpdate
+ * plugin will remove it from the basket and the Autofill plugin will add one
+ * of the available options again.
  *
  * @package MShop
  * @subpackage Service
@@ -26,7 +31,7 @@ class Weight
 			'code' => 'weight.min',
 			'internalcode' => 'weight.min',
 			'label' => 'Minimum weight of the package',
-			'type' => 'string',
+			'type' => 'number',
 			'internaltype' => 'float',
 			'default' => '',
 			'required' => false,
@@ -35,7 +40,7 @@ class Weight
 			'code' => 'weight.max',
 			'internalcode' => 'weight.max',
 			'label' => 'Maximum weight of the package',
-			'type' => 'string',
+			'type' => 'number',
 			'internaltype' => 'float',
 			'default' => '',
 			'required' => false,
@@ -69,13 +74,7 @@ class Weight
 	 */
 	public function getConfigBE()
 	{
-		$list = $this->getProvider()->getConfigBE();
-
-		foreach( $this->beConfig as $key => $config ) {
-			$list[$key] = new \Aimeos\MW\Criteria\Attribute\Standard( $config );
-		}
-
-		return $list;
+		return array_merge( $this->getProvider()->getConfigBE(), $this->getConfigItems( $this->beConfig ) );
 	}
 
 
@@ -87,17 +86,17 @@ class Weight
 	 */
 	public function isAvailable( \Aimeos\MShop\Order\Item\Base\Iface $basket )
 	{
-		$prodMap = array();
+		$prodMap = [];
 
 		// basket can contain a product several times in different basket items
 		// product IDs are only those of articles, selections and bundles, not of the variants and bundled products
-		foreach( $basket->getProducts() as $basketItem )
+		foreach( $basket->getProducts() as $orderProduct )
 		{
-			$qty = $basketItem->getQuantity();
-			$code = $basketItem->getProductCode();
+			$qty = $orderProduct->getQuantity();
+			$code = $orderProduct->getProductCode();
 			$prodMap[$code] = ( isset( $prodMap[$code] ) ? $prodMap[$code] + $qty : $qty );
 
-			foreach( $basketItem->getProducts() as $prodItem ) // calculate bundled products
+			foreach( $orderProduct->getProducts() as $prodItem ) // calculate bundled products
 			{
 				$qty = $prodItem->getQuantity();
 				$code = $prodItem->getProductCode();
@@ -105,7 +104,7 @@ class Weight
 			}
 		}
 
-		if ($this->checkWeightScale( $this->getWeight( $prodMap ) ) === false) {
+		if( $this->checkWeightScale( $this->getWeight( $prodMap ) ) === false ) {
 			return false;
 		}
 
@@ -124,11 +123,11 @@ class Weight
 		$min = $this->getConfigValue( array( 'weight.min' ) );
 		$max = $this->getConfigValue( array( 'weight.max' ) );
 
-		if( $min !== null && ( (float) $min) > $basketWeight ) {
+		if( $min !== null && ( (float) $min ) > $basketWeight ) {
 			return false;
 		}
 
-		if( $max !== null && ( (float) $max) < $basketWeight ) {
+		if( $max !== null && ( (float) $max ) < $basketWeight ) {
 			return false;
 		}
 
@@ -145,38 +144,21 @@ class Weight
 	protected function getWeight( array $prodMap )
 	{
 		$weight = 0;
-		$prodIds = array();
-		$context = $this->getContext();
 
-
-		$manager = \Aimeos\MShop\Factory::createManager( $context, 'product' );
-		$search = $manager->createSearch( true );
+		$manager = \Aimeos\MShop::create( $this->getContext(), 'product' );
+		$search = $manager->createSearch( true )->setSlice( 0, count( $prodMap ) );
 		$expr = array(
 			$search->compare( '==', 'product.code', array_keys( $prodMap ) ),
 			$search->getConditions(),
 		);
 		$search->setConditions( $search->combine( '&&', $expr ) );
-		$search->setSlice( 0, 0x7fffffff ); // if more than 100 products are in the basket
 
-		foreach( $manager->searchItems( $search ) as $id => $product ) {
-			$prodIds[$id] = $product->getCode();
+		foreach( $manager->searchItems( $search, ['product/property'] ) as $product )
+		{
+			foreach( $product->getPropertyItems( 'package-weight' ) as $property ) {
+				$weight += ( (float) $property->getValue() ) * $prodMap[$product->getCode()];
+			}
 		}
-
-
-		$propertyManager = \Aimeos\MShop\Factory::createManager( $context, 'product/property' );
-		$search = $propertyManager->createSearch( true );
-		$expr = array(
-			$search->compare( '==', 'product.property.parentid', array_keys( $prodIds ) ),
-			$search->compare( '==', 'product.property.type.code', 'package-weight' ),
-			$search->getConditions(),
-		);
-		$search->setConditions( $search->combine( '&&', $expr ) );
-		$search->setSlice( 0, 0x7fffffff ); // if more than 100 products are in the basket
-
-		foreach( $propertyManager->searchItems( $search ) as $property ) {
-			$weight += ((float) $property->getValue()) * $prodMap[$prodIds[$property->getParentId()]];
-		}
-
 
 		return (double) $weight;
 	}

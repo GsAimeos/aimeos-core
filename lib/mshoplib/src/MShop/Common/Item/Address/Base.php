@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Common
  */
@@ -49,7 +49,6 @@ abstract class Base
 	const SALUTATION_MR = 'mr';
 
 	private $prefix;
-	private $values;
 
 
 	/**
@@ -62,7 +61,6 @@ abstract class Base
 	{
 		parent::__construct( $prefix, $values );
 
-		$this->values = $values;
 		$this->prefix = $prefix;
 	}
 
@@ -76,11 +74,7 @@ abstract class Base
 	 */
 	public function getCompany()
 	{
-		if( isset( $this->values[$this->prefix . 'company'] ) ) {
-			return (string) $this->values[$this->prefix . 'company'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'company', '' );
 	}
 
 
@@ -92,13 +86,9 @@ abstract class Base
 	 */
 	public function setCompany( $company )
 	{
-		if( $company == $this->getCompany() ) { return $this; }
-
-		$this->values[$this->prefix . 'company'] = (string) $company;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'company', (string) $company );
 	}
+
 
 	/**
 	 * Returns the vatid.
@@ -107,11 +97,7 @@ abstract class Base
 	 */
 	public function getVatID()
 	{
-		if( isset( $this->values[$this->prefix . 'vatid'] ) ) {
-			return (string) $this->values[$this->prefix . 'vatid'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'vatid', '' );
 	}
 
 
@@ -123,12 +109,7 @@ abstract class Base
 	 */
 	public function setVatID( $vatid )
 	{
-		if( $vatid == $this->getVatID() ) { return $this; }
-
-		$this->values[$this->prefix . 'vatid'] = (string) $vatid;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'vatid', (string) $vatid );
 	}
 
 
@@ -139,11 +120,7 @@ abstract class Base
 	 */
 	public function getSalutation()
 	{
-		if( isset( $this->values[$this->prefix . 'salutation'] ) ) {
-			return (string) $this->values[$this->prefix . 'salutation'];
-		}
-
-		return \Aimeos\MShop\Common\Item\Address\Base::SALUTATION_UNKNOWN;
+		return (string) $this->get( $this->prefix . 'salutation', \Aimeos\MShop\Common\Item\Address\Base::SALUTATION_UNKNOWN );
 	}
 
 
@@ -155,14 +132,7 @@ abstract class Base
 	 */
 	public function setSalutation( $salutation )
 	{
-		if( $salutation == $this->getSalutation() ) { return $this; }
-
-		$this->checkSalutation( $salutation );
-
-		$this->values[$this->prefix . 'salutation'] = (string) $salutation;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'salutation', (string) $this->checkSalutation( $salutation ) );
 	}
 
 
@@ -173,11 +143,7 @@ abstract class Base
 	 */
 	public function getTitle()
 	{
-		if( isset( $this->values[$this->prefix . 'title'] ) ) {
-			return (string) $this->values[$this->prefix . 'title'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'title', '' );
 	}
 
 
@@ -189,12 +155,7 @@ abstract class Base
 	 */
 	public function setTitle( $title )
 	{
-		if( $title == $this->getTitle() ) { return $this; }
-
-		$this->values[$this->prefix . 'title'] = (string) $title;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'title', (string) $title );
 	}
 
 
@@ -205,11 +166,7 @@ abstract class Base
 	 */
 	public function getFirstname()
 	{
-		if( isset( $this->values[$this->prefix . 'firstname'] ) ) {
-			return (string) $this->values[$this->prefix . 'firstname'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'firstname', '' );
 	}
 
 
@@ -221,12 +178,7 @@ abstract class Base
 	 */
 	public function setFirstname( $firstname )
 	{
-		if( $firstname == $this->getFirstname() ) { return $this; }
-
-		$this->values[$this->prefix . 'firstname'] = (string) $firstname;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'firstname', (string) $firstname );
 	}
 
 
@@ -237,11 +189,7 @@ abstract class Base
 	 */
 	public function getLastname()
 	{
-		if( isset( $this->values[$this->prefix . 'lastname'] ) ) {
-			return (string) $this->values[$this->prefix . 'lastname'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'lastname', '' );
 	}
 
 
@@ -253,12 +201,7 @@ abstract class Base
 	 */
 	public function setLastname( $lastname )
 	{
-		if( $lastname == $this->getLastname() ) { return $this; }
-
-		$this->values[$this->prefix . 'lastname'] = (string) $lastname;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'lastname', (string) $lastname );
 	}
 
 
@@ -269,11 +212,7 @@ abstract class Base
 	 */
 	public function getAddress1()
 	{
-		if( isset( $this->values[$this->prefix . 'address1'] ) ) {
-			return (string) $this->values[$this->prefix . 'address1'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'address1', '' );
 	}
 
 
@@ -285,12 +224,7 @@ abstract class Base
 	 */
 	public function setAddress1( $address1 )
 	{
-		if( $address1 == $this->getAddress1() ) { return $this; }
-
-		$this->values[$this->prefix . 'address1'] = (string) $address1;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'address1', (string) $address1 );
 	}
 
 
@@ -301,11 +235,7 @@ abstract class Base
 	 */
 	public function getAddress2()
 	{
-		if( isset( $this->values[$this->prefix . 'address2'] ) ) {
-			return (string) $this->values[$this->prefix . 'address2'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'address2', '' );
 	}
 
 
@@ -317,12 +247,7 @@ abstract class Base
 	 */
 	public function setAddress2( $address2 )
 	{
-		if( $address2 == $this->getAddress2() ) { return $this; }
-
-		$this->values[$this->prefix . 'address2'] = (string) $address2;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'address2', (string) $address2 );
 	}
 
 
@@ -333,11 +258,7 @@ abstract class Base
 	 */
 	public function getAddress3()
 	{
-		if( isset( $this->values[$this->prefix . 'address3'] ) ) {
-			return (string) $this->values[$this->prefix . 'address3'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'address3', '' );
 	}
 
 
@@ -349,12 +270,7 @@ abstract class Base
 	 */
 	public function setAddress3( $address3 )
 	{
-		if( $address3 == $this->getAddress3() ) { return $this; }
-
-		$this->values[$this->prefix . 'address3'] = (string) $address3;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'address3', (string) $address3 );
 	}
 
 
@@ -365,11 +281,7 @@ abstract class Base
 	 */
 	public function getPostal()
 	{
-		if( isset( $this->values[$this->prefix . 'postal'] ) ) {
-			return (string) $this->values[$this->prefix . 'postal'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'postal', '' );
 	}
 
 
@@ -381,12 +293,7 @@ abstract class Base
 	 */
 	public function setPostal( $postal )
 	{
-		if( $postal == $this->getPostal() ) { return $this; }
-
-		$this->values[$this->prefix . 'postal'] = (string) $postal;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'postal', (string) $postal );
 	}
 
 
@@ -397,11 +304,7 @@ abstract class Base
 	 */
 	public function getCity()
 	{
-		if( isset( $this->values[$this->prefix . 'city'] ) ) {
-			return (string) $this->values[$this->prefix . 'city'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'city', '' );
 	}
 
 
@@ -413,12 +316,7 @@ abstract class Base
 	 */
 	public function setCity( $city )
 	{
-		if( $city == $this->getCity() ) { return $this; }
-
-		$this->values[$this->prefix . 'city'] = (string) $city;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'city', (string) $city );
 	}
 
 
@@ -429,11 +327,7 @@ abstract class Base
 	 */
 	public function getState()
 	{
-		if( isset( $this->values[$this->prefix . 'state'] ) ) {
-			return (string) $this->values[$this->prefix . 'state'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'state', '' );
 	}
 
 
@@ -445,12 +339,7 @@ abstract class Base
 	 */
 	public function setState( $state )
 	{
-		if( $state == $this->getState() ) { return $this; }
-
-		$this->values[$this->prefix . 'state'] = (string) $state;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'state', (string) $state );
 	}
 
 
@@ -461,11 +350,7 @@ abstract class Base
 	 */
 	public function getCountryId()
 	{
-		if( isset( $this->values[$this->prefix . 'countryid'] ) ) {
-			return (string) $this->values[$this->prefix . 'countryid'];
-		}
-
-		return null;
+		return (string) $this->get( $this->prefix . 'countryid' );
 	}
 
 
@@ -477,12 +362,7 @@ abstract class Base
 	 */
 	public function setCountryId( $countryid )
 	{
-		if( $countryid === $this->getCountryId() ) { return $this; }
-
-		$this->values[$this->prefix . 'countryid'] = strtoupper( (string) $countryid );
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'countryid', $this->checkCountryId( $countryid ) );
 	}
 
 
@@ -493,11 +373,7 @@ abstract class Base
 	 */
 	public function getLanguageId()
 	{
-		if( isset( $this->values[$this->prefix . 'languageid'] ) ) {
-			return (string) $this->values[$this->prefix . 'languageid'];
-		}
-
-		return null;
+		return (string) $this->get( $this->prefix . 'languageid' );
 	}
 
 
@@ -509,12 +385,7 @@ abstract class Base
 	 */
 	public function setLanguageId( $langid )
 	{
-		if( $langid === $this->getLanguageId() ) { return $this; }
-
-		$this->values[$this->prefix . 'languageid'] = (string) $langid;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'languageid', $this->checkLanguageId( $langid ) );
 	}
 
 
@@ -525,11 +396,7 @@ abstract class Base
 	 */
 	public function getTelephone()
 	{
-		if( isset( $this->values[$this->prefix . 'telephone'] ) ) {
-			return (string) $this->values[$this->prefix . 'telephone'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'telephone', '' );
 	}
 
 
@@ -541,12 +408,7 @@ abstract class Base
 	 */
 	public function setTelephone( $telephone )
 	{
-		if( $telephone == $this->getTelephone() ) { return $this; }
-
-		$this->values[$this->prefix . 'telephone'] = (string) $telephone;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'telephone', (string) $telephone );
 	}
 
 
@@ -557,11 +419,7 @@ abstract class Base
 	 */
 	public function getEmail()
 	{
-		if( isset( $this->values[$this->prefix . 'email'] ) ) {
-			return (string) $this->values[$this->prefix . 'email'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'email', '' );
 	}
 
 
@@ -573,16 +431,11 @@ abstract class Base
 	 */
 	public function setEmail( $email )
 	{
-		if( $email == $this->getEmail() ) { return $this; }
-
-		if( $email !== '' && preg_match( '/^.+@[a-zA-Z0-9\-]+(\.[a-zA-Z0-9\-]+)*$/', $email ) !== 1 ) {
+		if( $email != '' && preg_match( '/^.+@[a-zA-Z0-9\-]+(\.[a-zA-Z0-9\-]+)*$/', $email ) !== 1 ) {
 			throw new \Aimeos\MShop\Exception( sprintf( 'Invalid characters in email address: "%1$s"', $email ) );
 		}
 
-		$this->values[$this->prefix . 'email'] = (string) $email;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'email', (string) $email );
 	}
 
 
@@ -593,11 +446,7 @@ abstract class Base
 	 */
 	public function getTelefax()
 	{
-		if( isset( $this->values[$this->prefix . 'telefax'] ) ) {
-			return (string) $this->values[$this->prefix . 'telefax'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'telefax', '' );
 	}
 
 
@@ -609,12 +458,7 @@ abstract class Base
 	 */
 	public function setTelefax( $telefax )
 	{
-		if( $telefax == $this->getTelefax() ) { return $this; }
-
-		$this->values[$this->prefix . 'telefax'] = (string) $telefax;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'telefax', (string) $telefax );
 	}
 
 
@@ -625,132 +469,71 @@ abstract class Base
 	 */
 	public function getWebsite()
 	{
-		if( isset( $this->values[$this->prefix . 'website'] ) ) {
-			return (string) $this->values[$this->prefix . 'website'];
-		}
-
-		return '';
+		return (string) $this->get( $this->prefix . 'website', '' );
 	}
 
 
 	/**
 	 * Sets a new website URL.
 	 *
-	 * @param string $website New website URL
+	 * @param string|null $website New website URL
 	 * @return \Aimeos\MShop\Common\Item\Address\Iface Common address item for chaining method calls
 	 */
 	public function setWebsite( $website )
 	{
-		if( $website == $this->getWebsite() ) { return $this; }
-
 		$pattern = '#^([a-z]+://)?[a-zA-Z0-9\-]+(\.[a-zA-Z0-9\-]+)+(:[0-9]+)?(/.*)?$#';
 
-		if( $website !== '' && preg_match( $pattern, $website ) !== 1 ) {
+		if( $website != '' && preg_match( $pattern, $website ) !== 1 ) {
 			throw new \Aimeos\MShop\Exception( sprintf( 'Invalid web site URL "%1$s"', $website ) );
 		}
 
-		$this->values[$this->prefix . 'website'] = (string) $website;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'website', (string) $website );
 	}
 
 
 	/**
 	 * Returns the longitude coordinate of the customer address
 	 *
-	 * @return string|null Longitude coordinate as decimal value or null
+	 * @return float|null Longitude coordinate as decimal value or null
 	 */
 	public function getLongitude()
 	{
-		if( isset( $this->values[$this->prefix . 'longitude'] ) ) {
-			return (string) $this->values[$this->prefix . 'longitude'];
-		}
-
-		return null;
+		return $this->get( $this->prefix . 'longitude' );
 	}
 
 
 	/**
 	 * Sets the longitude coordinate of the customer address
 	 *
-	 * @param string|null $value Longitude coordinate as decimal value or null
+	 * @param float|null $value Longitude coordinate as decimal value or null
 	 * @return \Aimeos\MShop\Customer\Item\Iface Customer item for chaining method calls
 	 */
 	public function setLongitude( $value )
 	{
-		if( $value == '' ) { $value = null; }
-		if( $value === $this->getLongitude() ) { return $this; }
-
-		$this->values[$this->prefix . 'longitude'] = $value;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'longitude', $value !== '' && $value !== null ? (float) $value : null );
 	}
 
 
 	/**
 	 * Returns the latitude coordinate of the customer address
 	 *
-	 * @return string|null Latitude coordinate as decimal value or null
+	 * @return float|null Latitude coordinate as decimal value or null
 	 */
 	public function getLatitude()
 	{
-		if( isset( $this->values[$this->prefix . 'latitude'] ) ) {
-			return (string) $this->values[$this->prefix . 'latitude'];
-		}
-
-		return null;
+		return $this->get( $this->prefix . 'latitude' );
 	}
 
 
 	/**
 	 * Sets the latitude coordinate of the customer address
 	 *
-	 * @param string|null $value Latitude coordinate as decimal value or null
+	 * @param float|null $value Latitude coordinate as decimal value or null
 	 * @return \Aimeos\MShop\Customer\Item\Iface Customer item for chaining method calls
 	 */
 	public function setLatitude( $value )
 	{
-		if( $value == '' ) { $value = null; }
-		if( $value === $this->getLatitude() ) { return $this; }
-
-		$this->values[$this->prefix . 'latitude'] = $value;
-		$this->setModified();
-
-		return $this;
-	}
-
-
-	/**
-	 * Returns the flag value.
-	 *
-	 * @return integer Generic flag value
-	 */
-	public function getFlag()
-	{
-		if( isset( $this->values[$this->prefix . 'flag'] ) ) {
-			return (int) $this->values[$this->prefix . 'flag'];
-		}
-
-		return 0;
-	}
-
-
-	/**
-	 * Sets a new flag value.
-	 *
-	 * @param integer $flag New flag value
-	 * @return \Aimeos\MShop\Common\Item\Address\Iface Common address item for chaining method calls
-	 */
-	public function setFlag( $flag )
-	{
-		if( $flag == $this->getFlag() ) { return $this; }
-
-		$this->values[$this->prefix . 'flag'] = (int) $flag;
-		$this->setModified();
-
-		return $this;
+		return $this->set( $this->prefix . 'latitude', $value !== '' && $value !== null ? (float) $value : null );
 	}
 
 
@@ -793,7 +576,6 @@ abstract class Base
 		$this->setWebsite( $item->getWebsite() );
 		$this->setLongitude( $item->getLongitude() );
 		$this->setLatitude( $item->getLatitude() );
-		$this->setFlag( $item->getFlag() );
 
 		$this->setModified();
 
@@ -801,58 +583,66 @@ abstract class Base
 	}
 
 
-	/**
-	 * Sets the item values from the given array.
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Common\Item\Address\Iface Address item for chaining method calls
 	 */
-	public function fromArray( array $list )
+	public function fromArray( array &$list, $private = false )
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
+			if( strncmp( 'customer.address.', $key, 17 ) !== 0 ) {
+				$key = str_replace( ['order.base.address.', 'customer.'], $this->prefix, $key );
+			} else {
+				$key = str_replace( 'customer.address.', $this->prefix, $key );
+			}
+
 			switch( $key )
 			{
-				case $this->prefix . 'salutation': $this->setSalutation( $value ); break;
-				case $this->prefix . 'company': $this->setCompany( $value ); break;
-				case $this->prefix . 'vatid': $this->setVatID( $value ); break;
-				case $this->prefix . 'title': $this->setTitle( $value ); break;
-				case $this->prefix . 'firstname': $this->setFirstname( $value ); break;
-				case $this->prefix . 'lastname': $this->setLastname( $value ); break;
-				case $this->prefix . 'address1': $this->setAddress1( $value ); break;
-				case $this->prefix . 'address2': $this->setAddress2( $value ); break;
-				case $this->prefix . 'address3': $this->setAddress3( $value ); break;
-				case $this->prefix . 'postal': $this->setPostal( $value ); break;
-				case $this->prefix . 'city': $this->setCity( $value ); break;
-				case $this->prefix . 'state': $this->setState( $value ); break;
-				case $this->prefix . 'countryid': $this->setCountryId( $value ); break;
-				case $this->prefix . 'languageid': $this->setLanguageId( $value ); break;
-				case $this->prefix . 'telephone': $this->setTelephone( $value ); break;
-				case $this->prefix . 'telefax': $this->setTelefax( $value ); break;
-				case $this->prefix . 'email': $this->setEmail( $value ); break;
-				case $this->prefix . 'website': $this->setWebsite( $value ); break;
-				case $this->prefix . 'longitude': $this->setLongitude( $value ); break;
-				case $this->prefix . 'latitude': $this->setLatitude( $value ); break;
-				case $this->prefix . 'flag': $this->setFlag( $value ); break;
-				default: $unknown[$key] = $value;
+				case $this->prefix . 'salutation': $item = $item->setSalutation( $value ); break;
+				case $this->prefix . 'company': $item = $item->setCompany( $value ); break;
+				case $this->prefix . 'vatid': $item = $item->setVatID( $value ); break;
+				case $this->prefix . 'title': $item = $item->setTitle( $value ); break;
+				case $this->prefix . 'firstname': $item = $item->setFirstname( $value ); break;
+				case $this->prefix . 'lastname': $item = $item->setLastname( $value ); break;
+				case $this->prefix . 'address1': $item = $item->setAddress1( $value ); break;
+				case $this->prefix . 'address2': $item = $item->setAddress2( $value ); break;
+				case $this->prefix . 'address3': $item = $item->setAddress3( $value ); break;
+				case $this->prefix . 'postal': $item = $item->setPostal( $value ); break;
+				case $this->prefix . 'city': $item = $item->setCity( $value ); break;
+				case $this->prefix . 'state': $item = $item->setState( $value ); break;
+				case $this->prefix . 'countryid': $item = $item->setCountryId( $value ); break;
+				case $this->prefix . 'languageid': $item = $item->setLanguageId( $value ); break;
+				case $this->prefix . 'telephone': $item = $item->setTelephone( $value ); break;
+				case $this->prefix . 'telefax': $item = $item->setTelefax( $value ); break;
+				case $this->prefix . 'email': $item = $item->setEmail( $value ); break;
+				case $this->prefix . 'website': $item = $item->setWebsite( $value ); break;
+				case $this->prefix . 'longitude': $item = $item->setLongitude( $value ); break;
+				case $this->prefix . 'latitude': $item = $item->setLatitude( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
 		$list[$this->prefix . 'salutation'] = $this->getSalutation();
 		$list[$this->prefix . 'company'] = $this->getCompany();
@@ -874,7 +664,6 @@ abstract class Base
 		$list[$this->prefix . 'website'] = $this->getWebsite();
 		$list[$this->prefix . 'longitude'] = $this->getLongitude();
 		$list[$this->prefix . 'latitude'] = $this->getLatitude();
-		$list[$this->prefix . 'flag'] = $this->getFlag();
 
 		return $list;
 	}
@@ -883,8 +672,8 @@ abstract class Base
 	/**
 	 * Checks the given address salutation is valid
 	 *
-	 * @param integer $value Address salutation defined in \Aimeos\MShop\Common\Item\Address\Base
-	 * @throws \Aimeos\MShop\Common\Exception If salutation is invalid
+	 * @param string $value Address salutation defined in \Aimeos\MShop\Common\Item\Address\Base
+	 * @throws \Aimeos\MShop\Exception If salutation is invalid
 	 */
 	protected function checkSalutation( $value )
 	{
@@ -898,6 +687,6 @@ abstract class Base
 				return $value;
 		}
 
-		throw new \Aimeos\MShop\Common\Exception( sprintf( 'Address salutation "%1$s" not within allowed range', $value ) );
+		throw new \Aimeos\MShop\Exception( sprintf( 'Address salutation "%1$s" not within allowed range', $value ) );
 	}
 }

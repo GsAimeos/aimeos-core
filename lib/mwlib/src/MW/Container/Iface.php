@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Container
  */
@@ -28,19 +28,20 @@ interface Iface extends \Iterator
 	 * @param array $options Associative list of key/value pairs for configuration
 	 * @return null
 	 */
-	public function __construct( $resourcepath, $format, array $options = array() );
+	public function __construct( $resourcepath, $format, array $options = [] );
 
 	/**
 	 * Adds content data to the container.
 	 *
 	 * @param \Aimeos\MW\Container\Content\Iface $content Content object
-	 * @return void
+	 * @return \Aimeos\MW\Container\Iface Container instance for method chaining
 	 */
 	public function add( \Aimeos\MW\Container\Content\Iface $content );
 
 	/**
 	 * Cleans up and saves the container.
-	 * @return void
+	 *
+	 * @return \Aimeos\MW\Container\Iface Container instance for method chaining
 	 */
 	public function close();
 

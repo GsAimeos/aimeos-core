@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -13,7 +13,7 @@ namespace Aimeos\MShop\Order\Item\Base\Coupon;
 /**
  * Test class for \Aimeos\MShop\Order\Item\Base\Coupon\Standard.
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $values;
@@ -61,24 +61,15 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setId( null );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Coupon\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Coupon\Iface::class, $return );
 		$this->assertEquals( null, $this->object->getId() );
 		$this->assertTrue( $this->object->isModified() );
 
 		$return = $this->object->setId( 5 );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Coupon\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Coupon\Iface::class, $return );
 		$this->assertEquals( 5, $this->object->getId() );
 		$this->assertFalse( $this->object->isModified() );
-
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
-		$this->object->setId( 6 );
-	}
-
-	public function testSetId2()
-	{
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
-		$this->object->setId( 'test' );
 	}
 
 	public function testGetSiteId()
@@ -95,7 +86,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setBaseId( 99 );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Coupon\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Coupon\Iface::class, $return );
 		$this->assertEquals( 99, $this->object->getBaseId() );
 		$this->assertTrue( $this->object->isModified() );
 	}
@@ -109,7 +100,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setCode( 'testId' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Coupon\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Coupon\Iface::class, $return );
 		$this->assertEquals( 'testId', $this->object->getCode() );
 		$this->assertTrue( $this->object->isModified() );
 	}
@@ -123,7 +114,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setProductId( 12345 );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Base\Coupon\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Coupon\Iface::class, $return );
 		$this->assertEquals( 12345, $this->object->getProductId() );
 		$this->assertTrue( $this->object->isModified() );
 	}
@@ -154,17 +145,16 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$item = new \Aimeos\MShop\Order\Item\Base\Coupon\Standard();
 
-		$list = array(
+		$list = $entries = array(
 			'order.base.coupon.id' => 1,
 			'order.base.coupon.baseid' => 2,
 			'order.base.coupon.productid' => 3,
 			'order.base.coupon.code' => 'test',
 		);
 
-		$unknown = $item->fromArray( $list );
+		$item = $item->fromArray( $entries, true );
 
-		$this->assertEquals( array(), $unknown );
-
+		$this->assertEquals( [], $entries );
 		$this->assertEquals( $list['order.base.coupon.id'], $item->getId() );
 		$this->assertEquals( $list['order.base.coupon.baseid'], $item->getBaseId() );
 		$this->assertEquals( $list['order.base.coupon.productid'], $item->getProductId() );
@@ -174,7 +164,8 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testToArray()
 	{
-		$array = $this->object->toArray();
+		$array = $this->object->toArray( true );
+
 		$this->assertEquals( count( $this->values ), count( $array ) );
 
 		$this->assertEquals( $this->object->getId(), $array['order.base.coupon.id'] );

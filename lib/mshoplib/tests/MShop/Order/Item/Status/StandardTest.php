@@ -2,7 +2,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 namespace Aimeos\MShop\Order\Item\Status;
@@ -11,7 +11,7 @@ namespace Aimeos\MShop\Order\Item\Status;
 /**
  * Test class for \Aimeos\MShop\Order\Item\Status\Standard.
  */
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $values;
@@ -37,7 +37,6 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		);
 
 		$this->object = new \Aimeos\MShop\Order\Item\Status\Standard( $this->values );
-
 	}
 
 
@@ -61,18 +60,15 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setId( null );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Status\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Status\Iface::class, $return );
 		$this->assertEquals( null, $this->object->getId() );
 		$this->assertTrue( $this->object->isModified() );
 
 		$return = $this->object->setId( 15 );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Status\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Status\Iface::class, $return );
 		$this->assertEquals( 15, $this->object->getId() );
 		$this->assertFalse( $this->object->isModified() );
-
-		$this->setExpectedException( '\\Aimeos\\MShop\\Exception' );
-		$this->object->setId( 6 );
 	}
 
 	public function testGetSiteId()
@@ -89,7 +85,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setParentId( 12 );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Status\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Status\Iface::class, $return );
 		$this->assertEquals( 12, $this->object->getParentId() );
 		$this->assertTrue( $this->object->isModified() );
 	}
@@ -103,7 +99,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setType( 'unittest' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Status\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Status\Iface::class, $return );
 		$this->assertEquals( 'unittest', $this->object->getType() );
 		$this->assertTrue( $this->object->isModified() );
 	}
@@ -117,7 +113,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$return = $this->object->setValue( 'was changed by unittest' );
 
-		$this->assertInstanceOf( '\Aimeos\MShop\Order\Item\Status\Iface', $return );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Status\Iface::class, $return );
 		$this->assertEquals( 'was changed by unittest', $this->object->getValue() );
 		$this->assertTrue( $this->object->isModified() );
 	}
@@ -148,17 +144,16 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$item = new \Aimeos\MShop\Order\Item\Status\Standard();
 
-		$list = array(
+		$list = $entries = array(
 			'order.status.id' => 1,
 			'order.status.parentid' => 2,
 			'order.status.type' => \Aimeos\MShop\Order\Item\Status\Base::STATUS_PAYMENT,
 			'order.status.value' => 'value',
 		);
 
-		$unknown = $item->fromArray( $list );
+		$item = $item->fromArray( $entries, true );
 
-		$this->assertEquals( array(), $unknown );
-
+		$this->assertEquals( [], $entries );
 		$this->assertEquals( $list['order.status.id'], $item->getId() );
 		$this->assertEquals( $list['order.status.parentid'], $item->getParentId() );
 		$this->assertEquals( $list['order.status.type'], $item->getType() );
@@ -168,7 +163,8 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testToArray()
 	{
-		$list = $this->object->toArray();
+		$list = $this->object->toArray( true );
+
 		$this->assertEquals( count( $this->values ), count( $list ) );
 
 		$this->assertEquals( $this->object->getId(), $list['order.status.id'] );

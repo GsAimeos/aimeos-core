@@ -3,25 +3,25 @@
 namespace Aimeos\MW\MQueue;
 
 
-class FactoryTest extends \PHPUnit_Framework_TestCase
+class FactoryTest extends \PHPUnit\Framework\TestCase
 {
 	public function testCreate()
 	{
 		$result = Factory::create( array( 'adapter' => 'None' ) );
-		$this->assertInstanceof( '\Aimeos\MW\MQueue\Iface', $result );
+		$this->assertInstanceof( \Aimeos\MW\MQueue\Iface::class, $result );
 	}
 
 
 	public function testCreateNoAdapter()
 	{
-		$this->setExpectedException( '\Aimeos\MW\MQueue\Exception' );
-		Factory::create( array() );
+		$this->setExpectedException( \Aimeos\MW\MQueue\Exception::class );
+		Factory::create( [] );
 	}
 
 
 	public function testCreateInvalid()
 	{
-		$this->setExpectedException( '\Aimeos\MW\MQueue\Exception' );
+		$this->setExpectedException( \Aimeos\MW\MQueue\Exception::class );
 		Factory::create( array( 'adapter' => 'invalid' ) );
 	}
 }

@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  * @package MW
  * @subpackage MQueue
  */
@@ -20,7 +20,7 @@ namespace Aimeos\MW\MQueue\Manager;
 class Standard implements Iface
 {
 	private $config;
-	private $objects = array();
+	private $objects = [];
 
 
 	/**
@@ -31,6 +31,30 @@ class Standard implements Iface
 	public function __construct( \Aimeos\MW\Config\Iface $config )
 	{
 		$this->config = $config;
+	}
+
+
+	/**
+	 * Cleans up the object
+	 */
+	public function __destruct()
+	{
+		foreach( $this->objects as $object ) {
+			unset( $object );
+		}
+	}
+
+
+	/**
+	 * Clones the objects inside.
+	 */
+	public function __clone()
+	{
+		$this->config = clone $this->config;
+
+		foreach( $this->objects as $resource => $object ) {
+			unset( $this->objects[$resource] );
+		}
 	}
 
 

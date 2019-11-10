@@ -2,14 +2,14 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  */
 
 
 namespace Aimeos\MShop\Service\Provider\Decorator;
 
 
-class CurrencyTest extends \PHPUnit_Framework_TestCase
+class CurrencyTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $basket;
@@ -22,13 +22,13 @@ class CurrencyTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->context = \TestHelperMShop::getContext();
 
-		$servManager = \Aimeos\MShop\Factory::createManager( $this->context, 'service' );
+		$servManager = \Aimeos\MShop::create( $this->context, 'service' );
 		$this->servItem = $servManager->createItem();
 
-		$this->mockProvider = $this->getMockBuilder( '\\Aimeos\\MShop\\Service\\Provider\\Decorator\\Currency' )
+		$this->mockProvider = $this->getMockBuilder( \Aimeos\MShop\Service\Provider\Decorator\Currency::class )
 			->disableOriginalConstructor()->getMock();
 
-		$this->basket = \Aimeos\MShop\Order\Manager\Factory::createManager( $this->context )
+		$this->basket = \Aimeos\MShop\Order\Manager\Factory::create( $this->context )
 			->getSubManager( 'base' )->createItem();
 
 		$this->object = new \Aimeos\MShop\Service\Provider\Decorator\Currency( $this->mockProvider, $this->context, $this->servItem );
@@ -45,7 +45,7 @@ class CurrencyTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->mockProvider->expects( $this->once() )
 			->method( 'getConfigBE' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$result = $this->object->getConfigBE();
 
@@ -58,7 +58,7 @@ class CurrencyTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->mockProvider->expects( $this->once() )
 			->method( 'checkConfigBE' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$attributes = array(
 			'currency.include' => ' EUR , USD ',
@@ -76,9 +76,9 @@ class CurrencyTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->mockProvider->expects( $this->once() )
 			->method( 'checkConfigBE' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
-		$result = $this->object->checkConfigBE( array() );
+		$result = $this->object->checkConfigBE( [] );
 
 		$this->assertEquals( 2, count( $result ) );
 		$this->assertInternalType( 'null', $result['currency.include'] );
@@ -90,10 +90,10 @@ class CurrencyTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->mockProvider->expects( $this->once() )
 			->method( 'checkConfigBE' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$attributes = array(
-			'currency.include' => array(),
+			'currency.include' => [],
 			'currency.exclude' => 1,
 		);
 		$result = $this->object->checkConfigBE( $attributes );
@@ -106,7 +106,7 @@ class CurrencyTest extends \PHPUnit_Framework_TestCase
 
 	public function testIsAvailableNoConfig()
 	{
-		$this->servItem->setConfig( array() );
+		$this->servItem->setConfig( [] );
 
 		$this->mockProvider->expects( $this->once() )
 			->method( 'isAvailable' )

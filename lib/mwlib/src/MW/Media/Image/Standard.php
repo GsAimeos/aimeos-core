@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @copyright Metaways Infosystems GmbH, 2014
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2017
+ * @copyright Metaways Infosystems GmbH, 2014
+ * @copyright Aimeos (aimeos.org), 2015-2019
  * @package MW
  * @subpackage Media
  */
@@ -22,10 +22,10 @@ class Standard
 	extends \Aimeos\MW\Media\Image\Base
 	implements \Aimeos\MW\Media\Image\Iface
 {
-	private $info;
-	private $image;
-	private $origimage;
+	private static $watermark = null;
+
 	private $options;
+	private $image;
 
 
 	/**
@@ -40,16 +40,27 @@ class Standard
 	{
 		parent::__construct( $mimetype );
 
+		if( !self::$watermark && isset( $options['image']['watermark'] ) )
+		{
+			if( ( $watermark = @file_get_contents( $options['image']['watermark'] ) ) === false )
+			{
+				$msg = sprintf( 'Watermark image "%1$s" not found', $options['image']['watermark'] );
+				throw new \Aimeos\MW\Media\Exception( $msg );
+			}
+
+			if( ( $image = @imagecreatefromstring( $watermark ) ) === false ) {
+				throw new \Aimeos\MW\Media\Exception( sprintf( 'The watermark image isn\'t supported by GDlib' ) );
+			}
+
+			self::$watermark = $image;
+		}
+
 		if( ( $this->image = @imagecreatefromstring( $content ) ) === false ) {
-			throw new \Aimeos\MW\Media\Exception( sprintf( 'The image type isn\'t supported by GDlib.') );
+			throw new \Aimeos\MW\Media\Exception( sprintf( 'The image type isn\'t supported by GDlib' ) );
 		}
 
-		if( ( $this->info = getimagesizefromstring( $content ) ) === false ) {
-			throw new \Aimeos\MW\Media\Exception( sprintf( 'Unable to retrieve image size' ) );
-		}
-
-		if( imagealphablending( $this->image, false ) === false ) {
-			throw new \Aimeos\MW\Media\Exception( sprintf( 'GD library failed (imagealphablending)') );
+		if( imagealphablending( $this->image, true ) === false ) {
+			throw new \Aimeos\MW\Media\Exception( sprintf( 'GD library failed (imagealphablending)' ) );
 		}
 
 		$this->options = $options;
@@ -61,13 +72,31 @@ class Standard
 	 */
 	public function __destruct()
 	{
-		if( $this->origimage ) {
-			imagedestroy( $this->origimage );
-		}
-
 		if( $this->image ) {
 			imagedestroy( $this->image );
 		}
+	}
+
+
+	/**
+	 * Returns the height of the image
+	 *
+	 * @return integer Height in pixel
+	 */
+	public function getHeight()
+	{
+		return imagesy( $this->image );
+	}
+
+
+	/**
+	 * Returns the width of the image
+	 *
+	 * @return integer Width in pixel
+	 */
+	public function getWidth()
+	{
+		return imagesx( $this->image );
 	}
 
 
@@ -83,6 +112,10 @@ class Standard
 	{
 		if( $mimetype === null ) {
 			$mimetype = $this->getMimeType();
+		}
+
+		if( self::$watermark !== null ) {
+			$this->watermark();
 		}
 
 		$quality = 90;
@@ -115,7 +148,7 @@ class Standard
 				case 'image/png':
 
 					if( imagesavealpha( $this->image, true ) === false ) {
-						throw new \Aimeos\MW\Media\Exception( sprintf( 'GD library failed (imagesavealpha)') );
+						throw new \Aimeos\MW\Media\Exception( sprintf( 'GD library failed (imagesavealpha)' ) );
 					}
 
 					if( @imagepng( $this->image, $filename, (int) 10 - $quality / 10 ) === false ) {
@@ -125,7 +158,7 @@ class Standard
 					break;
 
 				default:
-					throw new \Aimeos\MW\Media\Exception( sprintf( 'File format "%1$s" is not supported', $this->getMimeType() ) );
+					throw new \Aimeos\MW\Media\Exception( sprintf( 'File format "%1$s" is not supported', $mimetype ) );
 			}
 
 			if( $filename === null ) {
@@ -143,82 +176,108 @@ class Standard
 	/**
 	 * Scales the image to the given width and height.
 	 *
-	 * @param integer $width New width of the image
-	 * @param integer $height New height of the image
+	 * @param integer|null $width New width of the image or null for automatic calculation
+	 * @param integer|null $height New height of the image or null for automatic calculation
 	 * @param boolean $fit True to keep the width/height ratio of the image
 	 * @return \Aimeos\MW\Media\Iface Self object for method chaining
 	 */
 	public function scale( $width, $height, $fit = true )
 	{
+		$w = imagesx( $this->image );
+		$h = imagesy( $this->image );
+		$fit = (bool) $fit;
+
+		$newWidth = $width;
+		$newHeight = $height;
+
 		if( $fit === true )
 		{
-			list( $width, $height ) = $this->getSizeFitted( $this->info[0], $this->info[1], $width, $height );
+			list( $newWidth, $newHeight ) = $this->getSizeFitted( $w, $h, $width, $height );
 
-			if( $this->info[0] <= $width && $this->info[1] <= $height ) {
+			if( $w <= $newWidth && $h <= $newHeight ) {
 				return $this;
 			}
 		}
-
-		if( function_exists( 'imagescale' ) === true )
+		elseif( $width && $height )
 		{
-			if( ( $result = imagescale( $this->image, $width, $height, IMG_BICUBIC ) ) === false ) {
-				throw new \Aimeos\MW\Media\Exception( 'Unable to scale image' );
-			}
-
-			$this->image = $result;
-		}
-		else
-		{
-			$this->image = $this->resample( $this->image, $this->info[0], $this->info[1], $width, $height );
+			$ratio = ( $w < $h ? $width / $w : $height / $h );
+			$newHeight = (int) $h * $ratio;
+			$newWidth = (int) $w * $ratio;
 		}
 
-		$this->info[0] = $width;
-		$this->info[1] = $height;
-
-		return $this;
+		return $this->resize( $newWidth, $newHeight, $width, $height, $fit );
 	}
 
 
 	/**
-	 * Resamples the image to the given width and height.
+	 * Resizes and crops the image if necessary
 	 *
-	 * @param resource GDlib image object
-	 * @param integer $srcWidth Width of the existing image
-	 * @param integer $srcHeight Height of the existing image
-	 * @param integer $destWidth Width of the new image
-	 * @param integer $destHeight Height of the new image
-	 * @return resource New GDlib image object
+	 * @param integer $scaleWidth Width of the image before cropping
+	 * @param integer $scaleHeight Height of the image before cropping
+	 * @param integer $width New width of the image
+	 * @param integer $height New height of the image
+	 * @param boolean $fit True to keep the width/height ratio of the image
+	 * @return \Aimeos\MW\Media\Image\Standard Resized media object
 	 */
-	protected function resample( $image, $srcWidth, $srcHeight, $destWidth, $destHeight )
+	protected function resize( $scaleWidth, $scaleHeight, $width, $height, $fit )
 	{
-		if( ( $newImage = imagecreatetruecolor( $destWidth, $destHeight ) ) === false ) {
-			throw new \Aimeos\MW\Media\Exception( 'Unable to create new image' );
+		if( ( $result = imagescale( $this->image, $scaleWidth, $scaleHeight, IMG_BICUBIC ) ) === false ) {
+			throw new \Aimeos\MW\Media\Exception( 'Unable to scale image' );
 		}
 
-		try
+		$newMedia = clone $this;
+
+		$width = ( $width ?: $scaleWidth );
+		$height = ( $height ?: $scaleHeight );
+
+		$x0 = (int) ( $scaleWidth / 2 - $width / 2 );
+		$y0 = (int) ( $scaleHeight / 2 - $height / 2 );
+
+		if( $fit === false && ( $x0 || $y0 ) )
 		{
-			if( imagealphablending( $newImage, false ) === false ) {
-				throw new \Aimeos\MW\Media\Exception( sprintf( 'GD library failed (imagealphablending)') );
+			if( ( $newImage = imagecreatetruecolor( $width, $height ) ) === false ) {
+				throw new \Aimeos\MW\Media\Exception( 'Unable to create new image' );
 			}
 
-			if( ( $transparent = imagecolorallocatealpha( $newImage, 255, 255, 255, 127 ) ) === false ) {
-				throw new \Aimeos\MW\Media\Exception( sprintf( 'GD library failed (imagecolorallocatealpha)') );
+			if( imagecopy( $newImage, $result, 0, 0, $x0, $y0, $width, $height ) === false ) {
+				throw new \Aimeos\MW\Media\Exception( 'Unable to crop image' );
 			}
 
-			if( imagefilledrectangle( $newImage, 0, 0, $destWidth, $destHeight, $transparent ) === false ) {
-				throw new \Aimeos\MW\Media\Exception( sprintf( 'GD library failed (imagefilledrectangle)') );
-			}
-
-			if( imagecopyresampled( $newImage, $image, 0, 0, 0, 0, $destWidth, $destHeight, $srcWidth, $srcHeight ) === false ) {
-				throw new \Aimeos\MW\Media\Exception( 'Unable to resize image' );
-			}
+			imagedestroy( $result );
+			$newMedia->image = $newImage;
 		}
-		catch( \Exception $e )
+		else
 		{
-			imagedestroy( $newImage );
-			throw $e;
+			$newMedia->image = $result;
 		}
 
-		return $newImage;
+		return $newMedia;
+	}
+
+
+	/**
+	 * Adds the configured water mark to the image
+	 */
+	protected function watermark()
+	{
+		$ww = imagesx( self::$watermark );
+		$wh = imagesy( self::$watermark );
+
+		$ratio = min( $this->getWidth() / $ww, $this->getHeight() / $wh );
+		$newHeight = (int) ( $wh * $ratio );
+		$newWidth = (int) ( $ww * $ratio );
+
+		if( ( $wimage = imagescale( self::$watermark, $newWidth, $newHeight, IMG_BICUBIC ) ) === false ) {
+			throw new \Aimeos\MW\Media\Exception( 'Unable to scale image' );
+		}
+
+		$dx = (int) ( $this->getWidth() - $newWidth ) / 2;
+		$dy = (int) ( $this->getHeight() - $newHeight ) / 2;
+
+		if( imagecopy( $this->image, $wimage, $dx, $dy, 0, 0, $newWidth, $newHeight ) === false ) {
+			throw new \Aimeos\MW\Media\Exception( sprintf( 'Failed to apply watermark immage to file "%1$s"', $filename ) );
+		}
+
+		imagedestroy( $wimage );
 	}
 }

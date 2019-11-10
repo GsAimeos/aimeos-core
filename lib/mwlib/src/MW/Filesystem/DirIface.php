@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Filesystem
  */
@@ -32,7 +32,7 @@ interface DirIface
 	 * Creates a new directory for the given path
 	 *
 	 * @param string $path Path to the directory
-	 * @return void
+	 * @return \Aimeos\MW\Filesystem\DirIface Filesystem object for fluent interface
 	 * @throws \Aimeos\MW\Filesystem\Exception If an error occurs
 	 */
 	public function mkdir( $path );
@@ -41,7 +41,7 @@ interface DirIface
 	 * Deletes the directory for the given path
 	 *
 	 * @param string $path Path to the directory
-	 * @return void
+	 * @return \Aimeos\MW\Filesystem\DirIface Filesystem object for fluent interface
 	 * @throws \Aimeos\MW\Filesystem\Exception If an error occurs
 	 */
 	public function rmdir( $path );

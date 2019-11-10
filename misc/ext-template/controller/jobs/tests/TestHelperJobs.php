@@ -1,11 +1,6 @@
 <?php
 
 
-/**
- * @copyright Metaways Infosystems GmbH, 2011
- * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
- */
 class TestHelperJobs
 {
 	private static $aimeos;
@@ -22,6 +17,20 @@ class TestHelperJobs
 	}
 
 
+	public static function getAimeos()
+	{
+		if( !isset( self::$aimeos ) )
+		{
+			require_once 'Bootstrap.php';
+			spl_autoload_register( 'Aimeos\\Bootstrap::autoload' );
+
+			self::$aimeos = new \Aimeos\Bootstrap();
+		}
+
+		return self::$aimeos;
+	}
+
+
 	public static function getContext( $site = 'unittest' )
 	{
 		if( !isset( self::$context[$site] ) ) {
@@ -29,21 +38,6 @@ class TestHelperJobs
 		}
 
 		return clone self::$context[$site];
-	}
-
-
-	private static function getAimeos()
-	{
-		if( !isset( self::$aimeos ) )
-		{
-			require_once 'Bootstrap.php';
-			spl_autoload_register( 'Aimeos\\Bootstrap::autoload' );
-
-			$extdir = dirname( dirname( dirname( __DIR__ ) ) );
-			self::$aimeos = new \Aimeos\Bootstrap( array( $extdir ), false );
-		}
-
-		return self::$aimeos;
 	}
 
 
@@ -93,7 +87,7 @@ class TestHelperJobs
 		$ctx->setSession( $session );
 
 
-		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::createManager( $ctx );
+		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::create( $ctx );
 		$locale = $localeManager->bootstrap( $site, 'de', '', false );
 		$ctx->setLocale( $locale );
 
@@ -102,7 +96,7 @@ class TestHelperJobs
 		$ctx->setView( $view );
 
 
-		$ctx->setEditor( 'core:controller/jobs' );
+		$ctx->setEditor( '<extname>:cntl/jobs' );
 
 		return $ctx;
 	}

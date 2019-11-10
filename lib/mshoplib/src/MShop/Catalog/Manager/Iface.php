@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Catalog
  */
@@ -18,7 +18,7 @@ namespace Aimeos\MShop\Catalog\Manager;
  * @subpackage Catalog
  */
 interface Iface
-	extends \Aimeos\MShop\Common\Manager\Find\Iface
+	extends \Aimeos\MShop\Common\Manager\Iface, \Aimeos\MShop\Common\Manager\Find\Iface, \Aimeos\MShop\Common\Manager\ListRef\Iface
 {
 	/**
 	 * Returns a list of item IDs, that are in the path of given item ID.
@@ -27,7 +27,7 @@ interface Iface
 	 * @param string[] $ref List of domains to fetch list items and referenced items for
 	 * @return array Associative list of items implementing \Aimeos\MShop\Catalog\Item\Iface with IDs as keys
 	 */
-	public function getPath( $id, array $ref = array() );
+	public function getPath( $id, array $ref = [] );
 
 
 	/**
@@ -39,7 +39,7 @@ interface Iface
 	 * @param \Aimeos\MW\Criteria\Iface|null $criteria Optional criteria object with conditions
 	 * @return \Aimeos\MShop\Catalog\Item\Iface Catalog item, maybe with subnodes
 	 */
-	public function getTree( $id = null, array $ref = array(), $level = \Aimeos\MW\Tree\Manager\Base::LEVEL_TREE, \Aimeos\MW\Criteria\Iface $criteria = null );
+	public function getTree( $id = null, array $ref = [], $level = \Aimeos\MW\Tree\Manager\Base::LEVEL_TREE, \Aimeos\MW\Criteria\Iface $criteria = null );
 
 
 	/**
@@ -48,7 +48,7 @@ interface Iface
 	 * @param \Aimeos\MShop\Catalog\Item\Iface $item Item which should be inserted
 	 * @param string|null $parentId ID of the parent item where the item should be inserted into
 	 * @param string|null $refId ID of the item where the item should be inserted before (null to append)
-	 * @return void
+	 * @return \Aimeos\MShop\Catalog\Item\Iface Inserted catalog item
 	 */
 	public function insertItem( \Aimeos\MShop\Catalog\Item\Iface $item, $parentId = null, $refId = null );
 
@@ -60,7 +60,16 @@ interface Iface
 	 * @param string $oldParentId ID of the old parent item which currently contains the item that should be removed
 	 * @param string $newParentId ID of the new parent item where the item should be moved to
 	 * @param string|null $refId ID of the item where the item should be inserted before (null to append)
-	 * @return void
+	 * @return \Aimeos\MShop\Catalog\Manager\Iface Manager object for chaining method calls
 	 */
 	public function moveItem( $id, $oldParentId, $newParentId, $refId = null );
+
+	/**
+	 * Updates an item object.
+	 *
+	 * @param \Aimeos\MShop\Catalog\Item\Iface $item Item object whose data should be saved
+	 * @param boolean $fetch True if the new ID should be returned in the item
+	 * @return \Aimeos\MShop\Catalog\Item\Iface $item Updated item including the generated ID
+	 */
+	public function saveItem( \Aimeos\MShop\Catalog\Item\Iface $item, $fetch = true );
 }

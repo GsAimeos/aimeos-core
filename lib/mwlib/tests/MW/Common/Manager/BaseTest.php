@@ -2,21 +2,21 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  */
 
 
 namespace Aimeos\MW\Common\Manager;
 
 
-class BaseTest extends \PHPUnit_Framework_TestCase
+class BaseTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
 
 	protected function setUp()
 	{
-		$this->object = $this->getMockForAbstractClass( '\Aimeos\MW\Common\Manager\Base' );
+		$this->object = $this->getMockForAbstractClass( \Aimeos\MW\Common\Manager\Base::class );
 	}
 
 
@@ -38,13 +38,35 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 		$criteria->setSortations( array( $criteria->sort( '+', 'sort:list(\'key\')' ) ) );
 
 
-		$class = new \ReflectionClass( '\Aimeos\MW\Common\Manager\Base' );
+		$class = new \ReflectionClass( \Aimeos\MW\Common\Manager\Base::class );
 		$method = $class->getMethod( 'getCriteriaKeyList' );
 		$method->setAccessible( true );
 
 		$result = $method->invokeArgs( $this->object, array( $criteria, array( 'product.id' ) ) );
 
 		$this->assertEquals( array( 'list', 'product', 'product.id' ), $result );
+	}
+
+
+	public function testGetSearchFunctionsArray()
+	{
+		$func = function() {};
+
+		$args = array(
+			'code' => 'product.datestart',
+			'internalcode' => 'mspro."start"',
+			'internaltype' => 'string',
+			'type' => 'datetime',
+			'label' => 'test',
+			'function' => $func,
+		);
+
+		$class = new \ReflectionClass( \Aimeos\MW\Common\Manager\Base::class );
+		$method = $class->getMethod( 'getSearchFunctions' );
+		$method->setAccessible( true );
+
+		$result = $method->invokeArgs( $this->object, array( array( $args ) ) );
+		$this->assertEquals( array( 'product.datestart' => function() {} ), $result );
 	}
 
 
@@ -58,7 +80,7 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 			'label' => 'test',
 		);
 
-		$class = new \ReflectionClass( '\Aimeos\MW\Common\Manager\Base' );
+		$class = new \ReflectionClass( \Aimeos\MW\Common\Manager\Base::class );
 		$method = $class->getMethod( 'getSearchTranslations' );
 		$method->setAccessible( true );
 
@@ -78,7 +100,7 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 		);
 		$attr = new \Aimeos\MW\Criteria\Attribute\Standard( $args );
 
-		$class = new \ReflectionClass( '\Aimeos\MW\Common\Manager\Base' );
+		$class = new \ReflectionClass( \Aimeos\MW\Common\Manager\Base::class );
 		$method = $class->getMethod( 'getSearchTranslations' );
 		$method->setAccessible( true );
 
@@ -89,12 +111,12 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 
 	public function testGetSearchTranslationsException()
 	{
-		$class = new \ReflectionClass( '\Aimeos\MW\Common\Manager\Base' );
+		$class = new \ReflectionClass( \Aimeos\MW\Common\Manager\Base::class );
 		$method = $class->getMethod( 'getSearchTranslations' );
 		$method->setAccessible( true );
 
-		$this->setExpectedException( '\Aimeos\Mw\Exception' );
-		$method->invokeArgs( $this->object, array( array( array() ) ) );
+		$this->setExpectedException( \Aimeos\Mw\Exception::class );
+		$method->invokeArgs( $this->object, array( array( [] ) ) );
 	}
 
 
@@ -108,7 +130,7 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 			'label' => 'test',
 		);
 
-		$class = new \ReflectionClass( '\Aimeos\MW\Common\Manager\Base' );
+		$class = new \ReflectionClass( \Aimeos\MW\Common\Manager\Base::class );
 		$method = $class->getMethod( 'getSearchTypes' );
 		$method->setAccessible( true );
 
@@ -128,7 +150,7 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 		);
 		$attr = new \Aimeos\MW\Criteria\Attribute\Standard( $args );
 
-		$class = new \ReflectionClass( '\Aimeos\MW\Common\Manager\Base' );
+		$class = new \ReflectionClass( \Aimeos\MW\Common\Manager\Base::class );
 		$method = $class->getMethod( 'getSearchTypes' );
 		$method->setAccessible( true );
 
@@ -139,11 +161,11 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 
 	public function testGetSearchTypesException()
 	{
-		$class = new \ReflectionClass( '\Aimeos\MW\Common\Manager\Base' );
+		$class = new \ReflectionClass( \Aimeos\MW\Common\Manager\Base::class );
 		$method = $class->getMethod( 'getSearchTypes' );
 		$method->setAccessible( true );
 
-		$this->setExpectedException( '\Aimeos\Mw\Exception' );
-		$method->invokeArgs( $this->object, array( array( array() ) ) );
+		$this->setExpectedException( \Aimeos\Mw\Exception::class );
+		$method->invokeArgs( $this->object, array( array( [] ) ) );
 	}
 }

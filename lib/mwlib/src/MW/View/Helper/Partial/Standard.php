@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage View
  */
@@ -28,7 +28,7 @@ class Standard
 	 * @param array $params Associative list of key/value pair that should be available in the partial
 	 * @return string Rendered partial content
 	 */
-	public function transform( $file, array $params = array() )
+	public function transform( $file, array $params = [] )
 	{
 		$view = clone $this->getView();
 		$view->assign( $params );

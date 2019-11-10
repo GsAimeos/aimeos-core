@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -22,18 +22,7 @@ class SupplierAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function getPreDependencies()
 	{
-		return array( 'MShopSetLocale', 'ProductListAddTestData' );
-	}
-
-
-	/**
-	 * Returns the list of task names which depends on this task.
-	 *
-	 * @return array List of task names
-	 */
-	public function getPostDependencies()
-	{
-		return array();
+		return ['MShopSetLocale'];
 	}
 
 
@@ -42,13 +31,10 @@ class SupplierAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function migrate()
 	{
-		$iface = '\\Aimeos\\MShop\\Context\\Item\\Iface';
-		if( !( $this->additional instanceof $iface ) ) {
-			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Additionally provided object is not of type "%1$s"', $iface ) );
-		}
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Context\Item\Iface::class, $this->additional );
 
 		$this->msg( 'Adding supplier test data', 0 );
-		$this->additional->setEditor( 'core:unittest' );
+		$this->additional->setEditor( 'core:lib/mshoplib' );
 
 		$this->addSupplierData();
 
@@ -63,7 +49,7 @@ class SupplierAddTestData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	private function addSupplierData()
 	{
-		$supplierManager = \Aimeos\MShop\Supplier\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$supplierManager = \Aimeos\MShop\Supplier\Manager\Factory::create( $this->additional, 'Standard' );
 		$supplierAddressManager = $supplierManager->getSubManager( 'address', 'Standard' );
 
 		$ds = DIRECTORY_SEPARATOR;
@@ -73,10 +59,10 @@ class SupplierAddTestData extends \Aimeos\MW\Setup\Task\Base
 			throw new \Aimeos\MShop\Exception( sprintf( 'No file "%1$s" found for supplier domain', $path ) );
 		}
 
-		$supIds = array();
+		$supIds = [];
 		$supplier = $supplierManager->createItem();
 
-		$this->conn->begin();
+		$supplierManager->begin();
 
 		foreach( $testdata['supplier'] as $key => $dataset )
 		{
@@ -123,6 +109,6 @@ class SupplierAddTestData extends \Aimeos\MW\Setup\Task\Base
 			$supplierAddressManager->saveItem( $supAdr, false );
 		}
 
-		$this->conn->commit();
+		$supplierManager->commit();
 	}
 }

@@ -3,7 +3,7 @@
 namespace Aimeos\MW\DB;
 
 
-class DBALTest extends \PHPUnit_Framework_TestCase
+class DBALTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $config;
@@ -34,8 +34,6 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 
 	protected function tearDown()
 	{
-		$this->object = new \Aimeos\MW\DB\Manager\DBAL( $this->config );
-
 		$conn = $this->object->acquire();
 		$conn->create( 'DROP TABLE "mw_unit_test"' )->execute()->finish();
 		$this->object->release( $conn );
@@ -59,7 +57,7 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 
 		$result = $conn->create( $sqlselect )->execute();
 
-		$rows = array();
+		$rows = [];
 		while( ( $row = $result->fetch() ) !== false ) {
 			$rows[] = $row;
 		}
@@ -91,7 +89,7 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 
 		$result = $conn->create( $sqlselect )->execute();
 
-		$rows = array();
+		$rows = [];
 		while( ( $row = $result->fetch() ) !== false ) {
 			$rows[] = $row;
 		}
@@ -119,7 +117,7 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 
 		$result = $conn->create( $sqlselect )->execute();
 
-		$rows = array();
+		$rows = [];
 		while( ( $row = $result->fetch() ) !== false ) {
 			$rows[] = $row;
 		}
@@ -145,12 +143,12 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 		$stmt = $conn->create( $sqlinsert );
 		$stmt->execute()->finish();
 
-		$conn->rollback();
+		$conn->commit();
 		$conn->commit();
 
 		$result = $conn->create( $sqlselect )->execute();
 
-		$rows = array();
+		$rows = [];
 		while( ( $row = $result->fetch() ) !== false ) {
 			$rows[] = $row;
 		}
@@ -176,12 +174,12 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 		$stmt = $conn->create( $sqlinsert );
 		$stmt->execute()->finish();
 
-		$conn->commit();
+		$conn->rollback();
 		$conn->rollback();
 
 		$result = $conn->create( $sqlselect )->execute();
 
-		$rows = array();
+		$rows = [];
 		while( ( $row = $result->fetch() ) !== false ) {
 			$rows[] = $row;
 		}
@@ -227,6 +225,19 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 	}
 
 
+	public function testStmtSimpleBindApostrophes()
+	{
+		$conn = $this->object->acquire();
+
+		$sqlinsert = 'INSERT INTO "mw_unit_test" ("id", "name") VALUES (1, \'' . $conn->escape( '\'\'' ) . '\')';
+
+		$stmt = $conn->create( $sqlinsert );
+		$stmt->execute()->finish();
+
+		$this->object->release( $conn );
+	}
+
+
 	public function testStmtSimpleBind()
 	{
 		$sqlinsert = 'INSERT INTO "mw_unit_test" ("name") VALUES (?)';
@@ -243,20 +254,27 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	public function testStmtSimpleBindParamType()
+	public function testStmtSimpleInvalidBindParamType()
 	{
-		$sqlinsert2 =  'INSERT INTO "mw_unit_test" ("name") VALUES (?)';
+		$sqlinsert2 = 'INSERT INTO "mw_unit_test" ("id", "name") VALUES (?, ?)';
 
 		$conn = $this->object->acquire();
 
-		$stmt2 = $conn->create( $sqlinsert2 );
-		$stmt2->bind( 1, 0.15, 123);
-		$result = $stmt2->execute();
-		$rows = $result->affectedRows();
-		$result->finish();
+		try
+		{
+			$stmt2 = $conn->create( $sqlinsert2 );
+			$stmt2->bind( 1, 1, \Aimeos\MW\DB\Statement\Base::PARAM_INT );
+			$stmt2->bind( 2, 0.15, 123 );
+			$stmt2->execute();
+		}
+		catch( \Aimeos\MW\DB\Exception $de )
+		{
+			$this->object->release( $conn );
+			return;
+		}
 
-		$this->assertEquals( 'INSERT INTO "mw_unit_test" ("name") VALUES (\'0.15\')', strval( $stmt2 ) );
-		$this->assertEquals( 1, $rows );
+		$this->object->release( $conn );
+		$this->fail( 'An expected exception has not been raised' );
 	}
 
 
@@ -269,13 +287,13 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 		try {
 			$stmt = $conn->create( $sqlinsert );
 			$stmt->execute();
-		} catch ( \Aimeos\MW\DB\Exception $de ) {
+		} catch( \Aimeos\MW\DB\Exception $de ) {
 			$this->object->release( $conn );
 			return;
 		}
 
 		$this->object->release( $conn );
-		$this->fail('An expected exception has not been raised');
+		$this->fail( 'An expected exception has not been raised' );
 	}
 
 
@@ -322,7 +340,7 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 
 	public function testWrongFieldType()
 	{
-		$this->setExpectedException('\\Aimeos\\MW\\DB\\Exception');
+		$this->setExpectedException( \Aimeos\MW\DB\Exception::class );
 		$sqlinsert = 'INSERT INTO "mw_unit_test" ("id", "name") VALUES (?, ?)';
 
 		$conn = $this->object->acquire();
@@ -332,8 +350,9 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 			$stmt = $conn->create( $sqlinsert, \Aimeos\MW\DB\Connection\Base::TYPE_PREP );
 			$stmt->bind( 1, 1 );
 			$stmt->bind( 2, 'test', 123 );
+			$stmt->execute();
 		}
-		catch ( \Aimeos\MW\DB\Exception $e )
+		catch( \Aimeos\MW\DB\Exception $e )
 		{
 			$this->object->release( $conn );
 			throw $e;
@@ -347,7 +366,7 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 		$raw = $conn->getRawObject();
 		$this->object->release( $conn );
 
-		$this->assertInstanceOf( '\Doctrine\DBAL\Connection', $raw );
+		$this->assertInstanceOf( \Doctrine\DBAL\Connection::class, $raw );
 	}
 
 
@@ -357,13 +376,13 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 
 		$conn = $this->object->acquire();
 
-		$this->setExpectedException('\\Aimeos\\MW\\DB\\Exception');
+		$this->setExpectedException( \Aimeos\MW\DB\Exception::class );
 
 		try
 		{
 			$conn->create( $sql )->execute()->finish();
 		}
-		catch ( \Aimeos\MW\DB\Exception $e )
+		catch( \Aimeos\MW\DB\Exception $e )
 		{
 			$this->object->release( $conn );
 			throw $e;
@@ -375,13 +394,13 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 	{
 		$conn = $this->object->acquire();
 
-		$this->setExpectedException('\\Aimeos\\MW\\DB\\Exception');
+		$this->setExpectedException( \Aimeos\MW\DB\Exception::class );
 
 		try
 		{
 			$conn->create( 'SELECT *' )->execute()->finish();
 		}
-		catch ( \Aimeos\MW\DB\Exception $e )
+		catch( \Aimeos\MW\DB\Exception $e )
 		{
 			$this->object->release( $conn );
 			throw $e;
@@ -395,13 +414,13 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 
 		$conn = $this->object->acquire();
 
-		$this->setExpectedException('\\Aimeos\\MW\\DB\\Exception');
+		$this->setExpectedException( \Aimeos\MW\DB\Exception::class );
 
 		try
 		{
 			$conn->create( $sql, 123 );
 		}
-		catch (\Aimeos\MW\DB\Exception $e)
+		catch( \Aimeos\MW\DB\Exception $e )
 		{
 			$this->object->release( $conn );
 			throw $e;
@@ -411,50 +430,22 @@ class DBALTest extends \PHPUnit_Framework_TestCase
 
 	public function testDBALException()
 	{
-		$this->setExpectedException('\\Aimeos\\MW\\DB\\Exception');
-		$conn = new TestForDBALException();
-		$this->object->release($conn);
+		$mock = $this->getMockBuilder( \Aimeos\MW\DB\Connection\Iface::class )->getMock();
+
+		$this->setExpectedException( \Aimeos\MW\DB\Exception::class );
+		$this->object->release( $mock );
 	}
 
 
 	public function testDBFactory()
 	{
-		$this->assertInstanceOf('\\Aimeos\\MW\\DB\\Manager\\Iface', $this->object);
+		$this->assertInstanceOf( \Aimeos\MW\DB\Manager\Iface::class, $this->object );
 	}
 
 
 	public function testFactoryFail()
 	{
-		$this->setExpectedException('\\Aimeos\\MW\\DB\\Exception');
-		\Aimeos\MW\DB\Factory::createManager( \TestHelperMw::getConfig(), 'notDefined' );
-	}
-}
-
-
-
-class TestForDBALException implements \Aimeos\MW\DB\Connection\Iface
-{
-	public function create($sql, $type = \Aimeos\MW\DB\Connection\Base::TYPE_SIMPLE)
-	{
-	}
-
-	public function escape($data)
-	{
-	}
-
-	public function getRawObject()
-	{
-	}
-
-	public function begin()
-	{
-	}
-
-	public function commit()
-	{
-	}
-
-	public function rollback()
-	{
+		$this->setExpectedException( \Aimeos\MW\DB\Exception::class );
+		\Aimeos\MW\DB\Factory::create( \TestHelperMw::getConfig(), 'notDefined' );
 	}
 }

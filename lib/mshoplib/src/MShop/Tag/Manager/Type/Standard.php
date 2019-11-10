@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Tag
  */
@@ -19,14 +19,13 @@ namespace Aimeos\MShop\Tag\Manager\Type;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Type\Base
-	implements \Aimeos\MShop\Tag\Manager\Type\Iface
+	implements \Aimeos\MShop\Tag\Manager\Type\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
 		'tag.type.id' => array(
 			'code' => 'tag.type.id',
 			'internalcode' => 'mtagty."id"',
-			'internaldeps' => array( 'LEFT JOIN "mshop_tag_type" AS mtagty ON ( mtag."typeid" = mtagty."id" )' ),
-			'label' => 'Tag type ID',
+			'label' => 'Type ID',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
@@ -34,59 +33,69 @@ class Standard
 		'tag.type.siteid' => array(
 			'code' => 'tag.type.siteid',
 			'internalcode' => 'mtagty."siteid"',
-			'label' => 'Tag type site ID',
+			'label' => 'Type site ID',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 			'public' => false,
 		),
+		'tag.type.label' => array(
+			'code' => 'tag.type.label',
+			'internalcode' => 'mtagty."label"',
+			'label' => 'Type label',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		),
 		'tag.type.code' => array(
 			'code' => 'tag.type.code',
 			'internalcode' => 'mtagty."code"',
-			'label' => 'Tag type code',
+			'label' => 'Type code',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'tag.type.domain' => array(
 			'code' => 'tag.type.domain',
 			'internalcode' => 'mtagty."domain"',
-			'label' => 'Tag type domain',
+			'label' => 'Type domain',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'tag.type.label' => array(
-			'code' => 'tag.type.label',
-			'internalcode' => 'mtagty."label"',
-			'label' => 'Tag type label',
-			'type' => 'string',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'tag.type.position' => array(
+			'code' => 'tag.type.position',
+			'internalcode' => 'mtagty."pos"',
+			'label' => 'Type position',
+			'type' => 'integer',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
 		'tag.type.status' => array(
 			'code' => 'tag.type.status',
 			'internalcode' => 'mtagty."status"',
-			'label' => 'Tag type status',
+			'label' => 'Type status',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
 		),
-		'tag.type.mtime'=> array(
-			'code'=>'tag.type.mtime',
-			'internalcode'=>'mtagty."mtime"',
-			'label'=>'Tag type modification date',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'tag.type.ctime' => array(
+			'code' => 'tag.type.ctime',
+			'internalcode' => 'mtagty."ctime"',
+			'label' => 'Type create date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'tag.type.ctime'=> array(
-			'code'=>'tag.type.ctime',
-			'internalcode'=>'mtagty."ctime"',
-			'label'=>'Tag type creation date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'tag.type.mtime' => array(
+			'code' => 'tag.type.mtime',
+			'internalcode' => 'mtagty."mtime"',
+			'label' => 'Type modify date',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'tag.type.editor'=> array(
-			'code'=>'tag.type.editor',
-			'internalcode'=>'mtagty."editor"',
-			'label'=>'Tag type editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'tag.type.editor' => array(
+			'code' => 'tag.type.editor',
+			'internalcode' => 'mtagty."editor"',
+			'label' => 'Type editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
 
@@ -106,16 +115,17 @@ class Standard
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param array $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Tag\Manager\Type\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/tag/manager/type/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array() ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, [] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/tag/manager/type/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/tag/manager/type/standard/delete' );
 	}
 
 
@@ -123,13 +133,13 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/tag/manager/type/submanagers';
 
-		return $this->getResourceTypeBase( 'tag/type', $path, array(), $withsub );
+		return $this->getResourceTypeBase( 'tag/type', $path, [], $withsub );
 	}
 
 
@@ -137,7 +147,7 @@ class Standard
 	 * Returns the attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array List of attribute items implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -160,7 +170,7 @@ class Standard
 		 */
 		$path = 'mshop/tag/manager/type/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -247,7 +257,8 @@ class Standard
 		 *  mshop/tag/manager/type/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the product controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the tag
+		 * type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2015.12
@@ -266,13 +277,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the tag type manager.
+		 * ("\Aimeos\MShop\Tag\Manager\Type\Decorator\*") around the tag type
+		 * manager.
 		 *
 		 *  mshop/tag/manager/type/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the product
-		 * controller.
+		 * "\Aimeos\MShop\Tag\Manager\Type\Decorator\Decorator2" only to the tag
+		 * type manager.
 		 *
 		 * @param array List of decorator names
 		 * @since 2015.12

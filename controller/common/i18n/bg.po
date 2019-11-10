@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Plamen Petkov <mcplamen@gmail.com>, 2016
+# Plamen Petkov <mcplamen@gmail.com>, 2016,2019
 msgid ""
 msgstr ""
 "Project-Id-Version: aimeos-core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-03 12:04+0100\n"
-"PO-Revision-Date: 2016-06-07 09:37+0000\n"
+"POT-Creation-Date: 2019-10-03 10:00+0200\n"
+"PO-Revision-Date: 2019-04-30 12:40+0000\n"
 "Last-Translator: Plamen Petkov <mcplamen@gmail.com>\n"
 "Language-Team: Bulgarian (http://www.transifex.com/aimeos/aimeos-core/language/bg/)\n"
 "MIME-Version: 1.0\n"
@@ -29,6 +29,14 @@ msgstr "Класът \"%1$s\" не е намерен"
 #, php-format
 msgid "Class \"%1$s\" not found"
 msgstr "Класът \"%1$s\" не е намерен"
+
+#, php-format
+msgid "Downloading file \"%1$s\" failed"
+msgstr "Изтеглянето на файл \"%1$s\" неуспешно"
+
+#, php-format
+msgid "File \"%1$s\" not found"
+msgstr "Файл \"%1$s\" не е намерен"
 
 #, php-format
 msgid "Invalid characters in class name \"%1$s\""

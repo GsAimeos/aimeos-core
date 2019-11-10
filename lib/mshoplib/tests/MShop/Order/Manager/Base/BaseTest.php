@@ -2,14 +2,14 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2016
+ * @copyright Aimeos (aimeos.org), 2016-2018-2018
  */
 
 
 namespace Aimeos\MShop\Order\Manager\Base;
 
 
-class BaseTest extends \PHPUnit_Framework_TestCase
+class BaseTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -34,7 +34,7 @@ class BaseTest extends \PHPUnit_Framework_TestCase
 		$this->object->setSession( $order, 'test' );
 		$session = $this->object->getSession( 'test' );
 
-		$this->assertInstanceof( '\\Aimeos\\MShop\\Order\\Item\\Base\\Iface', $session );
+		$this->assertInstanceOf( \Aimeos\MShop\Order\Item\Base\Iface::class, $session );
 		$this->assertEquals( 'test comment', $order->getComment() );
 		$this->assertEquals( $order, $session );
 	}

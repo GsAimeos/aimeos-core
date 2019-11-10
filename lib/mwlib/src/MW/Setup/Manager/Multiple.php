@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage Setup
  */
@@ -20,14 +20,13 @@ namespace Aimeos\MW\Setup\Manager;
  */
 class Multiple extends \Aimeos\MW\Setup\Manager\Base
 {
-	private $dbm;
 	private $type;
 	private $additional;
-	private $tasks = array();
-	private $tasksDone = array();
-	private $dependencies = array();
-	private $reverse = array();
-	private $conns = array();
+	private $tasks = [];
+	private $tasksDone = [];
+	private $dependencies = [];
+	private $reverse = [];
+	private $conns = [];
 
 
 	/**
@@ -47,9 +46,8 @@ class Multiple extends \Aimeos\MW\Setup\Manager\Base
 			throw new \Aimeos\MW\Setup\Exception( 'No databases configured in resource config file' );
 		}
 
-		$this->dbm = $dbm;
 		$this->additional = $additional;
-		$schemas = array();
+		$schemas = [];
 
 		$this->type = ( isset( $dbconfig['db']['adapter'] ) ? $dbconfig['db']['adapter'] : '' );
 
@@ -63,24 +61,10 @@ class Multiple extends \Aimeos\MW\Setup\Manager\Base
 				throw new \Aimeos\MW\Setup\Exception( sprintf( 'Configuration parameter "%1$s" missing in "%2$s"', 'database', $rname ) );
 			}
 
-			$this->conns[$rname] = $dbm->acquire( $rname );
-			$schemas[$rname] = $this->createSchema( $this->conns[$rname], $dbconf['adapter'], $dbconf['database'] );
+			$schemas[$rname] = $this->createSchema( $dbm, $rname, $dbconf['adapter'], $dbconf['database'] );
 		}
 
-		$this->setupTasks( (array) $taskpath, $this->conns, $schemas );
-	}
-
-
-	/**
-	 * Cleans up the object
-	 */
-	public function __destruct()
-	{
-		foreach( $this->conns as $name => $conn ) {
-			$this->dbm->release( $conn, $name );
-		}
-
-		unset( $this->dbm );
+		$this->setupTasks( (array) $taskpath, $schemas, $dbm );
 	}
 
 
@@ -91,6 +75,7 @@ class Multiple extends \Aimeos\MW\Setup\Manager\Base
 	 */
 	public function clean( $task = null )
 	{
+		$this->tasksDone = [];
 		$tasks = ( $task !== null && isset( $this->tasks[$task] ) ? array( $task => $this->tasks[$task] ) : $this->tasks );
 
 		foreach( $tasks as $taskname => $task ) {
@@ -106,6 +91,7 @@ class Multiple extends \Aimeos\MW\Setup\Manager\Base
 	 */
 	public function migrate( $task = null )
 	{
+		$this->tasksDone = [];
 		$tasks = ( $task !== null && isset( $this->tasks[$task] ) ? array( $task => $this->tasks[$task] ) : $this->tasks );
 
 		foreach( $tasks as $taskname => $task ) {
@@ -121,6 +107,7 @@ class Multiple extends \Aimeos\MW\Setup\Manager\Base
 	 */
 	public function rollback( $task = null )
 	{
+		$this->tasksDone = [];
 		$tasks = ( $task !== null && isset( $this->tasks[$task] ) ? array( $task => $this->tasks[$task] ) : $this->tasks );
 
 		foreach( array_reverse( $tasks, true ) as $taskname => $task ) {
@@ -130,24 +117,12 @@ class Multiple extends \Aimeos\MW\Setup\Manager\Base
 
 
 	/**
-	 * Executes all tasks for the given database type
-	 *
-	 * @param string $dbtype Name of the database type (mysql, etc.)
-	 * @deprecated 2016.05
-	 */
-	public function run( $dbtype )
-	{
-		$this->migrate();
-	}
-
-
-	/**
 	 * Runs the clean method of the given tasks and their dependencies
 	 *
-	 * @param array $tasknames List of task names
-	 * @param array $stack List of task names that are scheduled after this task
+	 * @param string[] $tasknames List of task names
+	 * @param string[] $stack List of task names that are scheduled after this task
 	 */
-	protected function cleanTasks( array $tasknames, array $stack = array() )
+	protected function cleanTasks( array $tasknames, array $stack = [] )
 	{
 		foreach( $tasknames as $taskname )
 		{
@@ -175,10 +150,10 @@ class Multiple extends \Aimeos\MW\Setup\Manager\Base
 	/**
 	 * Runs the given tasks depending on their dependencies.
 	 *
-	 * @param array $tasknames List of task names
-	 * @param array $stack List of task names that are sheduled after this task
+	 * @param string[] $tasknames List of task names
+	 * @param string[] $stack List of task names that are sheduled after this task
 	 */
-	protected function migrateTasks( array $tasknames, array $stack = array() )
+	protected function migrateTasks( array $tasknames, array $stack = [] )
 	{
 		foreach( $tasknames as $taskname )
 		{
@@ -198,9 +173,7 @@ class Multiple extends \Aimeos\MW\Setup\Manager\Base
 				$this->migrateTasks( (array) $this->dependencies[$taskname], $stack );
 			}
 
-			if( isset( $this->tasks[$taskname] ) )
-			{
-				$this->tasks[$taskname]->run( $this->type );
+			if( isset( $this->tasks[$taskname] ) ) {
 				$this->tasks[$taskname]->migrate();
 			}
 
@@ -212,10 +185,10 @@ class Multiple extends \Aimeos\MW\Setup\Manager\Base
 	/**
 	 * Runs the rollback method of the given tasks and their dependencies
 	 *
-	 * @param array $tasknames List of task names
-	 * @param array $stack List of task names that are sheduled after this task
+	 * @param string[] $tasknames List of task names
+	 * @param string[] $stack List of task names that are sheduled after this task
 	 */
-	protected function rollbackTasks( array $tasknames, array $stack = array() )
+	protected function rollbackTasks( array $tasknames, array $stack = [] )
 	{
 		foreach( $tasknames as $taskname )
 		{
@@ -247,21 +220,18 @@ class Multiple extends \Aimeos\MW\Setup\Manager\Base
 	/**
 	 * Sets up the tasks and their dependencies.
 	 *
-	 * @param array $paths List of paths containing setup task classes
-	 * @param array $conns Associative list of db connections with the resource name as key
-	 * @param array $schemas Associative list of db schemas with the resource name as key
+	 * @param string[] $paths List of paths containing setup task classes
+	 * @param \Aimeos\MW\Setup\DBSchema\Iface[] $schemas Associative list of db schemas with the resource name as key
 	 */
-	protected function setupTasks( array $paths, array $conns, array $schemas )
+	protected function setupTasks( array $paths, array $schemas, \Aimeos\MW\DB\Manager\Iface $dbm )
 	{
-		$defconn = ( isset( $conns['db'] ) ? $conns['db'] : reset( $conns ) );
 		$defschema = ( isset( $schemas['db'] ) ? $schemas['db'] : reset( $schemas ) );
-
-		$this->tasks = $this->createTasks( $paths, $defschema, $defconn, $this->additional );
+		$this->tasks = $this->createTasks( $paths, $defschema, $dbm->acquire(), $this->additional );
 
 		foreach( $this->tasks as $name => $task )
 		{
 			$task->setSchemas( $schemas );
-			$task->setConnections( $conns );
+			$task->setDatabaseManager( $dbm );
 
 			foreach( (array) $task->getPreDependencies() as $taskname )
 			{

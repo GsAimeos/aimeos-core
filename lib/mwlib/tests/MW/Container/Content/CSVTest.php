@@ -8,9 +8,9 @@ namespace Aimeos\MW\Container\Content;
  *
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
-class CSVTest extends \PHPUnit_Framework_TestCase
+class CSVTest extends \PHPUnit\Framework\TestCase
 {
 	protected function setUp()
 	{
@@ -47,7 +47,6 @@ class CSVTest extends \PHPUnit_Framework_TestCase
 			'csv-enclosure' => ':',
 			'csv-escape' => '\\',
 			'csv-lineend' => "\r\n",
-			'csv-lineend-subst' => " ",
 		);
 
 		$path = __DIR__ . DIRECTORY_SEPARATOR . 'tempfile';
@@ -64,7 +63,7 @@ class CSVTest extends \PHPUnit_Framework_TestCase
 		}
 		$csv->close();
 
-		$expected = ":test:;:file:;:data:\r\n:\\: :;:\0:;:\\:\r\n";
+		$expected = ":test:;:file:;:data:\r\n:\\:\r\n:;:\0:;:\\:\r\n";
 
 		if( ( $actual = file_get_contents( $csv->getResource() ) ) === false ) {
 			throw new \RuntimeException( sprintf( 'Unable to get content of file "%1$s"', $csv->getResource() ) );
@@ -86,7 +85,7 @@ class CSVTest extends \PHPUnit_Framework_TestCase
 			array( '"', ',', '\\' ),
 		);
 
-		$actual = array();
+		$actual = [];
 		foreach( $csv as $entry ) {
 			$actual[] = $entry;
 		}

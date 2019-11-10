@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage View
  */
@@ -12,7 +12,7 @@ namespace Aimeos\MW\View\Helper\Content;
 
 
 /**
- * View helper class for retrieving configuration values.
+ * View helper class for generating media URLs
  *
  * @package MW
  * @subpackage View

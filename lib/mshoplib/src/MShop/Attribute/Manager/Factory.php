@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Attribute
  */
@@ -31,7 +31,7 @@ class Factory
 	 * @throws \Aimeos\MShop\Attribute\Exception|\Aimeos\MShop\Exception If requested manager
 	 * implementation couldn't be found or initialisation fails
 	 */
-	public static function createManager( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
+	public static function create( \Aimeos\MShop\Context\Item\Iface $context, $name = null )
 	{
 		/** mshop/attribute/manager/name
 		 * Class name of the used attribute manager implementation
@@ -72,14 +72,14 @@ class Factory
 
 		if( ctype_alnum( $name ) === false )
 		{
-			$classname = is_string( $name ) ? '\\Aimeos\\MShop\\Attribute\\Manager\\' . $name : '<not a string>';
+			$classname = is_string( $name ) ? '\Aimeos\MShop\Attribute\Manager\\' . $name : '<not a string>';
 			throw new \Aimeos\MShop\Attribute\Exception( sprintf( 'Invalid characters in class name "%1$s"', $classname ) );
 		}
 
-		$iface = '\\Aimeos\\MShop\\Attribute\\Manager\\Iface';
-		$classname = '\\Aimeos\\MShop\\Attribute\\Manager\\' . $name;
+		$iface = \Aimeos\MShop\Attribute\Manager\Iface::class;
+		$classname = '\Aimeos\MShop\Attribute\Manager\\' . $name;
 
-		$manager = self::createManagerBase( $context, $classname, $iface );
+		$manager = self::createManager( $context, $classname, $iface );
 
 		/** mshop/attribute/manager/decorators/excludes
 		 * Excludes decorators added by the "common" option from the attribute manager
@@ -140,12 +140,12 @@ class Factory
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the attribute manager.
+		 * ("\Aimeos\MShop\Attribute\Manager\Decorator\*") around the attribute manager.
 		 *
 		 *  mshop/attribute/manager/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the attribute
+		 * "\Aimeos\MShop\Attribute\Manager\Decorator\Decorator2" only to the attribute
 		 * controller.
 		 *
 		 * @param array List of decorator names
@@ -159,4 +159,3 @@ class Factory
 	}
 
 }
-

@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -42,10 +42,7 @@ class MShopAddLocaleData extends \Aimeos\MW\Setup\Task\Base
 	 */
 	public function migrate()
 	{
-		$iface = '\\Aimeos\\MShop\\Context\\Item\\Iface';
-		if( !( $this->additional instanceof $iface ) ) {
-			throw new \Aimeos\MW\Setup\Exception( sprintf( 'Additionally provided object is not of type "%1$s"', $iface ) );
-		}
+		\Aimeos\MW\Common\Base::checkClass( \Aimeos\MShop\Context\Item\Iface::class, $this->additional );
 
 		$this->msg( 'Adding locale data if not yet present', 0 );
 
@@ -56,7 +53,7 @@ class MShopAddLocaleData extends \Aimeos\MW\Setup\Task\Base
 
 		$code = $this->additional->getConfig()->get( 'setup/site', 'default' );
 
-		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::createManager( $this->additional, 'Standard' );
+		$localeManager = \Aimeos\MShop\Locale\Manager\Factory::create( $this->additional, 'Standard' );
 		$siteManager = $localeManager->getSubManager( 'site' );
 
 		try
@@ -64,6 +61,7 @@ class MShopAddLocaleData extends \Aimeos\MW\Setup\Task\Base
 			$siteItem = $siteManager->createItem();
 			$siteItem->setLabel( $code );
 			$siteItem->setCode( $code );
+			$siteItem->setStatus( 1 );
 
 			$siteManager->insertItem( $siteItem );
 		}
@@ -78,6 +76,7 @@ class MShopAddLocaleData extends \Aimeos\MW\Setup\Task\Base
 			$localeItem->setSiteId( $siteItem->getId() );
 			$localeItem->setLanguageId( 'en' );
 			$localeItem->setCurrencyId( 'EUR' );
+			$localeItem->setStatus( 1 );
 
 			$localeManager->saveItem( $localeItem, false );
 		}
@@ -97,7 +96,7 @@ class MShopAddLocaleData extends \Aimeos\MW\Setup\Task\Base
 	 * @param \Aimeos\MShop\Common\Manager\Iface $localeManager Locale manager
 	 * @param array $data Associative list of locale site data
 	 * @param string $manager Manager implementation name
-	 * @param integer|null $parentId Parent id of the locale item
+	 * @param string|null $parentId Parent id of the locale item
 	 * @return array Associative list of keys from the data and generated site ID
 	 */
 	protected function addLocaleSiteData( \Aimeos\MShop\Common\Manager\Iface $localeManager, array $data, $manager = 'Standard', $parentId = null )
@@ -106,7 +105,7 @@ class MShopAddLocaleData extends \Aimeos\MW\Setup\Task\Base
 
 		$localeSiteManager = $localeManager->getSubManager( 'site', $manager );
 		$siteItem = $localeSiteManager->createItem();
-		$siteIds = array();
+		$siteIds = [];
 
 		foreach( $data as $key => $dataset )
 		{
@@ -151,7 +150,8 @@ class MShopAddLocaleData extends \Aimeos\MW\Setup\Task\Base
 	{
 		$this->msg( 'Adding data for MShop locale currencies', 1 );
 
-		$currencyItemManager = $localeManager->getSubManager( 'currency', 'Standard' );
+		$currencyManager = $localeManager->getSubManager( 'currency', 'Standard' );
+		$items = $currencyManager->searchItems( $currencyManager->createSearch()->setSlice( 0, 0x7fffffff ) );
 
 		$num = $total = 0;
 
@@ -159,15 +159,18 @@ class MShopAddLocaleData extends \Aimeos\MW\Setup\Task\Base
 		{
 			$total++;
 
-			$currencyItem = $currencyItemManager->createItem();
-			$currencyItem->setCode( $dataset['id'] );
-			$currencyItem->setLabel( $dataset['label'] );
-			$currencyItem->setStatus( $dataset['status'] );
+			if( !isset( $items[$dataset['id']] ) )
+			{
+				$currencyItem = $currencyManager->createItem();
+				$currencyItem->setCode( $dataset['id'] );
+				$currencyItem->setLabel( $dataset['label'] );
+				$currencyItem->setStatus( $dataset['status'] );
 
-			try {
-				$currencyItemManager->saveItem( $currencyItem );
-				$num++;
-			} catch( \Exception $e ) {; } // if currency was already available
+				$items[$dataset['id']] = $currencyItem;
+			}
+
+			$currencyManager->saveItem( $items[$dataset['id']] );
+			$num++;
 		}
 
 		$this->status( $num > 0 ? $num . '/' . $total : 'OK' );
@@ -184,22 +187,27 @@ class MShopAddLocaleData extends \Aimeos\MW\Setup\Task\Base
 	{
 		$this->msg( 'Adding data for MShop locale languages', 1 );
 
-		$languageItemManager = $localeManager->getSubManager( 'language', 'Standard' );
+		$languageManager = $localeManager->getSubManager( 'language', 'Standard' );
+		$items = $languageManager->searchItems( $languageManager->createSearch()->setSlice( 0, 0x7fffffff ) );
 
 		$num = $total = 0;
 
 		foreach( $data as $dataset )
 		{
 			$total++;
-			$languageItem = $languageItemManager->createItem();
-			$languageItem->setCode( $dataset['id'] );
-			$languageItem->setLabel( $dataset['label'] );
-			$languageItem->setStatus( $dataset['status'] );
 
-			try {
-				$languageItemManager->saveItem( $languageItem );
-				$num++;
-			} catch( \Exception $e ) {; } // if language was already available
+			if( !isset( $items[$dataset['id']] ) )
+			{
+				$languageItem = $languageManager->createItem();
+				$languageItem->setCode( $dataset['id'] );
+				$languageItem->setLabel( $dataset['label'] );
+				$languageItem->setStatus( $dataset['status'] );
+
+				$items[$dataset['id']] = $languageItem;
+			}
+
+			$languageManager->saveItem( $items[$dataset['id']] );
+			$num++;
 		}
 
 		$this->status( $num > 0 ? $num . '/' . $total : 'OK' );

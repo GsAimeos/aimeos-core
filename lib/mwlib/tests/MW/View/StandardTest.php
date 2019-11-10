@@ -3,14 +3,14 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2012
- * @copyright Aimeos (aimeos.org), 2015-2017
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MW\View;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 	private $translate;
@@ -42,7 +42,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		unset( $this->object->test );
 		$this->assertEquals( false, isset( $this->object->test ) );
 
-		$this->setExpectedException( '\\Aimeos\\MW\\View\\Exception' );
+		$this->setExpectedException( \Aimeos\MW\View\Exception::class );
 		$this->object->test;
 	}
 
@@ -66,20 +66,20 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testCallCreateHelper()
 	{
 		$enc = $this->object->encoder();
-		$this->assertInstanceOf( '\\Aimeos\\MW\\View\\Helper\\Iface', $enc );
+		$this->assertInstanceOf( \Aimeos\MW\View\Helper\Iface::class, $enc );
 	}
 
 
 	public function testCallInvalidName()
 	{
-		$this->setExpectedException( '\\Aimeos\\MW\\View\\Exception' );
+		$this->setExpectedException( \Aimeos\MW\View\Exception::class );
 		$this->object->invalid();
 	}
 
 
 	public function testCallUnknown()
 	{
-		$this->setExpectedException( '\\Aimeos\\MW\\View\\Exception' );
+		$this->setExpectedException( \Aimeos\MW\View\Exception::class );
 		$this->object->unknown();
 	}
 
@@ -96,21 +96,13 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->object->addHelper( 'translate', $this->translate );
 
 		$ds = DIRECTORY_SEPARATOR;
-		$filenames = array( 'notexisting', __DIR__ . $ds . '_testfiles'. $ds . 'template.php' );
+		$filenames = array( 'notexisting', __DIR__ . $ds . '_testfiles' . $ds . 'template1' );
 
+		$output = $this->object->assign( array( 'quantity' => 1 ) )->render( $filenames );
+		$this->assertEquals( "Number of files: 1 File", $output );
 
-		$this->object->assign( array( 'quantity' => 1 ) );
-		$output = $this->object->render( $filenames );
-
-		$expected = "Number of files: 1 File";
-		$this->assertEquals( $expected, $output );
-
-
-		$this->object->assign( array( 'quantity' => 0 ) );
-		$output = $this->object->render( $filenames );
-
-		$expected = "Number of files: 0 Files";
-		$this->assertEquals( $expected, $output );
+		$output = $this->object->assign( array( 'quantity' => 0 ) )->render( $filenames );
+		$this->assertEquals( "Number of files: 0 Files", $output );
 	}
 
 
@@ -118,18 +110,10 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->object->addHelper( 'translate', $this->translate );
 
+		$output = $this->object->assign( ['quantity' => 1] )->render( ['notexisting', 'template1'] );
+		$this->assertEquals( "Number of files: 1 File", $output );
 
-		$this->object->assign( array( 'quantity' => 1 ) );
-		$output = $this->object->render( array( 'notexisting', 'template.php' ) );
-
-		$expected = "Number of files: 1 File";
-		$this->assertEquals( $expected, $output );
-
-
-		$this->object->assign( array( 'quantity' => 2 ) );
-		$output = $this->object->render( array( 'notexisting', 'template.phtml' ) );
-
-		$expected = "Number of directories: 2";
-		$this->assertEquals( $expected, $output );
+		$output = $this->object->assign( ['quantity' => 2] )->render( ['notexisting', 'template2'] );
+		$this->assertEquals( "Number of directories: 2", $output );
 	}
 }

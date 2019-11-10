@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Attribute
  */
@@ -19,24 +19,54 @@ namespace Aimeos\MShop\Attribute\Item;
  * @subpackage Attribute
  */
 class Standard
-	extends \Aimeos\MShop\Common\Item\ListRef\Base
+	extends \Aimeos\MShop\Common\Item\Base
 	implements \Aimeos\MShop\Attribute\Item\Iface
 {
-	private $values;
+	use \Aimeos\MShop\Common\Item\ListRef\Traits {
+		__clone as __cloneList;
+	}
+	use \Aimeos\MShop\Common\Item\PropertyRef\Traits {
+		__clone as __cloneProperty;
+	}
 
 
 	/**
 	 * Initializes the attribute item.
 	 *
 	 * @param array $values Associative array with id, domain, code, and status to initialize the item properties; Optional
-	 * @param \Aimeos\MShop\Common\Lists\Item\Iface[] $listItems List of list items
+	 * @param \Aimeos\MShop\Common\Item\Lists\Iface[] $listItems List of list items
 	 * @param \Aimeos\MShop\Common\Item\Iface[] $refItems List of referenced items
+	 * @param \Aimeos\MShop\Common\Item\Property\Iface[] $propItems List of property items
 	 */
-	public function __construct( array $values = array(), array $listItems = array(), array $refItems = array() )
+	public function __construct( array $values = [], array $listItems = [],
+		array $refItems = [], array $propItems = [] )
 	{
-		parent::__construct( 'attribute.', $values, $listItems, $refItems );
+		parent::__construct( 'attribute.', $values );
 
-		$this->values = $values;
+		$this->initListItems( $listItems, $refItems );
+		$this->initPropertyItems( $propItems );
+	}
+
+
+	/**
+	 * Creates a deep clone of all objects
+	 */
+	public function __clone()
+	{
+		parent::__clone();
+		$this->__cloneList();
+		$this->__cloneProperty();
+	}
+
+
+	/**
+	 * Returns the unique key of the attribute item
+	 *
+	 * @return string Unique key consisting of domain/type/code
+	 */
+	public function getKey()
+	{
+		return md5( $this->getDomain() . '|' . $this->getType() . '|' . $this->getCode() );
 	}
 
 
@@ -47,11 +77,7 @@ class Standard
 	 */
 	public function getDomain()
 	{
-		if( isset( $this->values['attribute.domain'] ) ) {
-			return (string) $this->values['attribute.domain'];
-		}
-
-		return '';
+		return (string) $this->get( 'attribute.domain', '' );
 	}
 
 
@@ -63,44 +89,7 @@ class Standard
 	 */
 	public function setDomain( $domain )
 	{
-		if( $domain == $this->getDomain() ) { return $this; }
-
-		$this->values['attribute.domain'] = (string) $domain;
-		$this->setModified();
-
-		return $this;
-	}
-
-
-	/**
-	 * Returns the type id of the attribute.
-	 *
-	 * @return integer|null Type of the attribute
-	 */
-	public function getTypeId()
-	{
-		if( isset( $this->values['attribute.typeid'] ) ) {
-			return (int) $this->values['attribute.typeid'];
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Sets the new type of the attribute.
-	 *
-	 * @param integer|null $typeid Type of the attribute
-	 * @return \Aimeos\MShop\Attribute\Item\Iface Attribute item for chaining method calls
-	 */
-	public function setTypeId( $typeid )
-	{
-		if( $typeid == $this->getTypeId() ) { return $this; }
-
-		$this->values['attribute.typeid'] = (int) $typeid;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'attribute.domain', (string) $domain );
 	}
 
 
@@ -111,26 +100,19 @@ class Standard
 	 */
 	public function getType()
 	{
-		if( isset( $this->values['attribute.type'] ) ) {
-			return (string) $this->values['attribute.type'];
-		}
-
-		return null;
+		return $this->get( 'attribute.type' );
 	}
 
 
 	/**
-	 * Returns the localized name of the type
+	 * Sets the new type of the attribute.
 	 *
-	 * @return string|null Localized name of the type
+	 * @param string $type Type of the attribute
+	 * @return \Aimeos\MShop\Attribute\Item\Iface Attribute item for chaining method calls
 	 */
-	public function getTypeName()
+	public function setType( $type )
 	{
-		if( isset( $this->values['attribute.typename'] ) ) {
-			return (string) $this->values['attribute.typename'];
-		}
-
-		return null;
+		return $this->set( 'attribute.type', $this->checkCode( $type ) );
 	}
 
 
@@ -141,11 +123,7 @@ class Standard
 	 */
 	public function getCode()
 	{
-		if( isset( $this->values['attribute.code'] ) ) {
-			return (string) $this->values['attribute.code'];
-		}
-
-		return '';
+		return (string) $this->get( 'attribute.code', '' );
 	}
 
 
@@ -157,16 +135,7 @@ class Standard
 	 */
 	public function setCode( $code )
 	{
-		if( strlen( $code ) > 255 ) {
-			throw new \Aimeos\MShop\Attribute\Exception( sprintf( 'Code must not be longer than 255 characters' ) );
-		}
-
-		if( $code == $this->getCode() ) { return $this; }
-
-		$this->values['attribute.code'] = (string) $code;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'attribute.code', $this->checkCode( $code, 255 ) );
 	}
 
 
@@ -177,11 +146,7 @@ class Standard
 	 */
 	public function getLabel()
 	{
-		if( isset( $this->values['attribute.label'] ) ) {
-			return (string) $this->values['attribute.label'];
-		}
-
-		return '';
+		return (string) $this->get( 'attribute.label', '' );
 	}
 
 
@@ -193,12 +158,7 @@ class Standard
 	 */
 	public function setLabel( $label )
 	{
-		if( $label == $this->getLabel() ) { return $this; }
-
-		$this->values['attribute.label'] = (string) $label;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'attribute.label', (string) $label );
 	}
 
 
@@ -209,11 +169,7 @@ class Standard
 	 */
 	public function getStatus()
 	{
-		if( isset( $this->values['attribute.status'] ) ) {
-			return (int) $this->values['attribute.status'];
-		}
-
-		return 0;
+		return (int) $this->get( 'attribute.status', 1 );
 	}
 
 
@@ -225,12 +181,7 @@ class Standard
 	 */
 	public function setStatus( $status )
 	{
-		if( $status == $this->getStatus() ) { return $this; }
-
-		$this->values['attribute.status'] = (int) $status;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'attribute.status', (int) $status );
 	}
 
 
@@ -241,11 +192,7 @@ class Standard
 	 */
 	public function getPosition()
 	{
-		if( isset( $this->values['attribute.position'] ) ) {
-			return (int) $this->values['attribute.position'];
-		}
-
-		return 0;
+		return (int) $this->get( 'attribute.position', 0 );
 	}
 
 
@@ -257,12 +204,7 @@ class Standard
 	 */
 	public function setPosition( $pos )
 	{
-		if( $pos == $this->getPosition() ) { return $this; }
-
-		$this->values['attribute.position'] = (int) $pos;
-		$this->setModified();
-
-		return $this;
+		return $this->set( 'attribute.position', (int) $pos );
 	}
 
 
@@ -278,52 +220,67 @@ class Standard
 
 
 	/**
-	 * Sets the item values from the given array.
+	 * Tests if the item is available based on status, time, language and currency
 	 *
-	 * @param array $list Associative list of item keys and their values
-	 * @return array Associative list of keys and their values that are unknown
+	 * @return boolean True if available, false if not
 	 */
-	public function fromArray( array $list )
+	public function isAvailable()
 	{
-		$unknown = array();
-		$list = parent::fromArray( $list );
-		unset( $list['attribute.type'], $list['attribute.typename'] );
+		return parent::isAvailable() && $this->getStatus() > 0;
+	}
+
+
+	/*
+	 * Sets the item values from the given array and removes that entries from the list
+	 *
+	 * @param array &$list Associative list of item keys and their values
+	 * @param boolean True to set private properties too, false for public only
+	 * @return \Aimeos\MShop\Attribute\Item\Iface Attribute item for chaining method calls
+	 */
+	public function fromArray( array &$list, $private = false )
+	{
+		$item = parent::fromArray( $list, $private );
 
 		foreach( $list as $key => $value )
 		{
 			switch( $key )
 			{
-				case 'attribute.domain': $this->setDomain( $value ); break;
-				case 'attribute.code': $this->setCode( $value ); break;
-				case 'attribute.status': $this->setStatus( $value ); break;
-				case 'attribute.typeid': $this->setTypeId( $value ); break;
-				case 'attribute.position': $this->setPosition( $value ); break;
-				case 'attribute.label': $this->setLabel( $value ); break;
-				default: $unknown[$key] = $value;
+				case 'attribute.domain': $item = $item->setDomain( $value ); break;
+				case 'attribute.code': $item = $item->setCode( $value ); break;
+				case 'attribute.status': $item = $item->setStatus( $value ); break;
+				case 'attribute.type': $item = $item->setType( $value ); break;
+				case 'attribute.position': $item = $item->setPosition( $value ); break;
+				case 'attribute.label': $item = $item->setLabel( $value ); break;
+				default: continue 2;
 			}
+
+			unset( $list[$key] );
 		}
 
-		return $unknown;
+		return $item;
 	}
 
 
 	/**
 	 * Returns the item values as array.
 	 *
+	 * @param boolean True to return private properties, false for public only
 	 * @return array Associative list of item properties and their values
 	 */
-	public function toArray()
+	public function toArray( $private = false )
 	{
-		$list = parent::toArray();
+		$list = parent::toArray( $private );
 
 		$list['attribute.domain'] = $this->getDomain();
-		$list['attribute.code'] = $this->getCode();
-		$list['attribute.status'] = $this->getStatus();
-		$list['attribute.typeid'] = $this->getTypeId();
 		$list['attribute.type'] = $this->getType();
-		$list['attribute.typename'] = $this->getTypeName();
-		$list['attribute.position'] = $this->getPosition();
+		$list['attribute.code'] = $this->getCode();
 		$list['attribute.label'] = $this->getLabel();
+		$list['attribute.status'] = $this->getStatus();
+		$list['attribute.position'] = $this->getPosition();
+
+		if( $private === true ) {
+			$list['attribute.key'] = $this->getKey();
+		}
 
 		return $list;
 	}

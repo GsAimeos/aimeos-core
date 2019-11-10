@@ -2,7 +2,7 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MW
  * @subpackage View
  */
@@ -23,8 +23,8 @@ class Standard
 	extends \Aimeos\MW\View\Helper\Base
 	implements \Aimeos\MW\View\Helper\Block\Iface
 {
-	private $blocks = array();
-	private $stack = array();
+	private $blocks = [];
+	private $stack = [];
 
 
 	/**

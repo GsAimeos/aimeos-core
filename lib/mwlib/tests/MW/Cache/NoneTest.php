@@ -2,14 +2,14 @@
 
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MW\Cache;
 
 
-class NoneTest extends \PHPUnit_Framework_TestCase
+class NoneTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -26,27 +26,27 @@ class NoneTest extends \PHPUnit_Framework_TestCase
 	}
 
 
+	public function testClear()
+	{
+		$this->assertTrue( $this->object->clear() );
+	}
+
+
 	public function testDelete()
 	{
-		$this->object->delete( 'test' );
+		$this->assertTrue( $this->object->delete( 'test' ) );
 	}
 
 
 	public function testDeleteMultiple()
 	{
-		$this->object->deleteMultiple( array( 'test' ) );
+		$this->assertTrue( $this->object->deleteMultiple( array( 'test' ) ) );
 	}
 
 
 	public function testDeleteByTags()
 	{
-		$this->object->deleteByTags( array( 'test' ) );
-	}
-
-
-	public function testClear()
-	{
-		$this->object->clear();
+		$this->assertTrue( $this->object->deleteByTags( array( 'test' ) ) );
 	}
 
 
@@ -62,20 +62,20 @@ class NoneTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	public function testGetMultipleByTags()
+	public function testHas()
 	{
-		$this->assertEquals( array(), $this->object->getMultipleByTags( array( 'test' ) ) );
+		$this->assertFalse( $this->object->has( 'test' ) );
 	}
 
 
 	public function testSet()
 	{
-		$this->object->set( 'test', 'testval' );
+		$this->assertTrue( $this->object->set( 'test', 'testval' ) );
 	}
 
 
 	public function testSetMultiple()
 	{
-		$this->object->setMultiple( array() );
+		$this->object->setMultiple( [] );
 	}
 }

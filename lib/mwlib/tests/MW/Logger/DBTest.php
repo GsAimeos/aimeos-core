@@ -3,7 +3,7 @@
 namespace Aimeos\MW\Logger;
 
 
-class DBTest extends \PHPUnit_Framework_TestCase
+class DBTest extends \PHPUnit\Framework\TestCase
 {
 	private static $dbm;
 	private $object;
@@ -23,7 +23,7 @@ class DBTest extends \PHPUnit_Framework_TestCase
 		$table->addColumn( 'facility', 'string', array( 'length' => 32 ) );
 		$table->addColumn( 'request', 'string', array( 'length' => 32 ) );
 		$table->addColumn( 'tstamp', 'string', array( 'length' => 20 ) );
-		$table->addColumn( 'priority', 'integer', array() );
+		$table->addColumn( 'priority', 'integer', [] );
 		$table->addColumn( 'message', 'text', array( 'length' => 0xffff ) );
 
 		$conn = self::$dbm->acquire();
@@ -100,8 +100,8 @@ class DBTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( 'error', $row['message'] );
 
 
-		$this->setExpectedException('\\Aimeos\\MW\\Logger\\Exception');
-		$this->object->log( 'wrong log level', -1);
+		$this->setExpectedException( \Aimeos\MW\Logger\Exception::class );
+		$this->object->log( 'wrong log level', -1 );
 	}
 
 
@@ -110,7 +110,7 @@ class DBTest extends \PHPUnit_Framework_TestCase
 		$conn = self::$dbm->acquire();
 		$conn->create( 'DELETE FROM "mw_log_test"' )->execute()->finish();
 
-		$this->object->log( array ( 'scalar', 'errortest' ) );
+		$this->object->log( array( 'scalar', 'errortest' ) );
 
 		$result = $conn->create( 'SELECT * FROM "mw_log_test"' )->execute();
 

@@ -1,14 +1,16 @@
 <?php
 
-namespace Aimeos\Perf;
-
-
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
-class ProductTest extends \PHPUnit_Framework_TestCase
+
+
+namespace Aimeos\Perf;
+
+
+class ProductTest extends \PHPUnit\Framework\TestCase
 {
 	private $item;
 	private $context;
@@ -18,7 +20,7 @@ class ProductTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->context = \TestHelperMShop::getContext( 'unitperf' );
 
-		$productManager = \Aimeos\MShop\Product\Manager\Factory::createManager( $this->context );
+		$productManager = \Aimeos\MShop\Product\Manager\Factory::create( $this->context );
 		$search = $productManager->createSearch();
 		$search->setSlice( 0, 1 );
 		$result = $productManager->searchItems( $search, array( 'text', 'media', 'price', 'product', 'attribute' ) );
@@ -33,10 +35,10 @@ class ProductTest extends \PHPUnit_Framework_TestCase
 	{
 		$start = microtime( true );
 
-		$productManager = \Aimeos\MShop\Product\Manager\Factory::createManager( $this->context );
+		$productManager = \Aimeos\MShop\Product\Manager\Factory::create( $this->context );
 		$product = $productManager->getItem( $this->item->getId(), array( 'text', 'media', 'price', 'product', 'attribute' ) );
 
-		$ids = array();
+		$ids = [];
 		foreach( $product->getRefItems( 'product' ) as $subproduct ) {
 			$ids[] = $subproduct->getId();
 		}

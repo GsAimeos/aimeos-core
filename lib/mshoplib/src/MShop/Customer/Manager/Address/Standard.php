@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2013
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  * @package MShop
  * @subpackage Customer
  */
@@ -20,11 +20,11 @@ namespace Aimeos\MShop\Customer\Manager\Address;
  */
 class Standard
 	extends \Aimeos\MShop\Common\Manager\Address\Base
-	implements \Aimeos\MShop\Customer\Manager\Address\Iface
+	implements \Aimeos\MShop\Customer\Manager\Address\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
 {
 	private $searchConfig = array(
 		'customer.address.id' => array(
-			'label' => 'Customer address ID',
+			'label' => 'Address ID',
 			'code' => 'customer.address.id',
 			'internalcode' => 'mcusad."id"',
 			'internaldeps' => array( 'LEFT JOIN "mshop_customer_address" AS mcusad ON ( mcus."id" = mcusad."parentid" )' ),
@@ -34,187 +34,186 @@ class Standard
 		),
 		// no siteid
 		'customer.address.parentid' => array(
-			'label' => 'Customer address parent ID',
+			'label' => 'Address parent ID',
 			'code' => 'customer.address.parentid',
 			'internalcode' => 'mcusad."parentid"',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
-		'customer.address.company'=> array(
-			'label' => 'Customer address company',
+		'customer.address.company' => array(
+			'label' => 'Address company',
 			'code' => 'customer.address.company',
 			'internalcode' => 'mcusad."company"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
-		'customer.address.vatid'=> array(
-			'label' => 'Customer address Vat ID',
+		'customer.address.vatid' => array(
+			'label' => 'Address Vat ID',
 			'code' => 'customer.address.vatid',
 			'internalcode' => 'mcusad."vatid"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.salutation' => array(
-			'label' => 'Customer address salutation',
+			'label' => 'Address salutation',
 			'code' => 'customer.address.salutation',
 			'internalcode' => 'mcusad."salutation"',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.title' => array(
-			'label' => 'Customer address title',
+			'label' => 'Address title',
 			'code' => 'customer.address.title',
 			'internalcode' => 'mcusad."title"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.firstname' => array(
-			'label' => 'Customer address firstname',
+			'label' => 'Address firstname',
 			'code' => 'customer.address.firstname',
 			'internalcode' => 'mcusad."firstname"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.lastname' => array(
-			'label' => 'Customer address lastname',
+			'label' => 'Address lastname',
 			'code' => 'customer.address.lastname',
 			'internalcode' => 'mcusad."lastname"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.address1' => array(
-			'label' => 'Customer address address part one',
+			'label' => 'Address address part one',
 			'code' => 'customer.address.address1',
 			'internalcode' => 'mcusad."address1"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.address2' => array(
-			'label' => 'Customer address address part two',
+			'label' => 'Address address part two',
 			'code' => 'customer.address.address2',
 			'internalcode' => 'mcusad."address2"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.address3' => array(
-			'label' => 'Customer address address part three',
+			'label' => 'Address address part three',
 			'code' => 'customer.address.address3',
 			'internalcode' => 'mcusad."address3"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.postal' => array(
-			'label' => 'Customer address postal',
+			'label' => 'Address postal',
 			'code' => 'customer.address.postal',
 			'internalcode' => 'mcusad."postal"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.city' => array(
-			'label' => 'Customer address city',
+			'label' => 'Address city',
 			'code' => 'customer.address.city',
 			'internalcode' => 'mcusad."city"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.state' => array(
-			'label' => 'Customer address state',
+			'label' => 'Address state',
 			'code' => 'customer.address.state',
 			'internalcode' => 'mcusad."state"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.languageid' => array(
-			'label' => 'Customer address language',
+			'label' => 'Address language',
 			'code' => 'customer.address.languageid',
 			'internalcode' => 'mcusad."langid"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.countryid' => array(
-			'label' => 'Customer address country',
+			'label' => 'Address country',
 			'code' => 'customer.address.countryid',
 			'internalcode' => 'mcusad."countryid"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.telephone' => array(
-			'label' => 'Customer address telephone',
+			'label' => 'Address telephone',
 			'code' => 'customer.address.telephone',
 			'internalcode' => 'mcusad."telephone"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.email' => array(
-			'label' => 'Customer address email',
+			'label' => 'Address email',
 			'code' => 'customer.address.email',
 			'internalcode' => 'mcusad."email"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.telefax' => array(
-			'label' => 'Customer address telefax',
+			'label' => 'Address telefax',
 			'code' => 'customer.address.telefax',
 			'internalcode' => 'mcusad."telefax"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.website' => array(
-			'label' => 'Customer address website',
+			'label' => 'Address website',
 			'code' => 'customer.address.website',
 			'internalcode' => 'mcusad."website"',
 			'type' => 'string',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 		),
 		'customer.address.longitude' => array(
-			'label' => 'Customer address longitude',
+			'label' => 'Address longitude',
 			'code' => 'customer.address.longitude',
 			'internalcode' => 'mcusad."longitude"',
-			'type' => 'string',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'type' => 'float',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_FLOAT,
+			'public' => false,
 		),
 		'customer.address.latitude' => array(
-			'label' => 'Customer address latitude',
+			'label' => 'Address latitude',
 			'code' => 'customer.address.latitude',
 			'internalcode' => 'mcusad."latitude"',
-			'type' => 'string',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
-		),
-		'customer.address.flag' => array(
-			'label' => 'Customer address flag',
-			'code' => 'customer.address.flag',
-			'internalcode' => 'mcusad."flag"',
-			'type' => 'integer',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'type' => 'float',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_FLOAT,
+			'public' => false,
 		),
 		'customer.address.position' => array(
 			'code' => 'customer.address.position',
 			'internalcode' => 'mcusad."pos"',
-			'label' => 'Customer address position',
+			'label' => 'Address position',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
 		),
-		'customer.address.ctime'=> array(
-			'code'=>'customer.address.ctime',
-			'internalcode'=>'mcusad."ctime"',
-			'label'=>'Customer address create date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'customer.address.ctime' => array(
+			'code' => 'customer.address.ctime',
+			'internalcode' => 'mcusad."ctime"',
+			'label' => 'Address create date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'customer.address.mtime'=> array(
-			'code'=>'customer.address.mtime',
-			'internalcode'=>'mcusad."mtime"',
-			'label'=>'Customer address modification date/time',
-			'type'=> 'datetime',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'customer.address.mtime' => array(
+			'code' => 'customer.address.mtime',
+			'internalcode' => 'mcusad."mtime"',
+			'label' => 'Address modify date/time',
+			'type' => 'datetime',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
-		'customer.address.editor'=> array(
-			'code'=>'customer.address.editor',
-			'internalcode'=>'mcusad."editor"',
-			'label'=>'Customer address editor',
-			'type'=> 'string',
-			'internaltype'=> \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+		'customer.address.editor' => array(
+			'code' => 'customer.address.editor',
+			'internalcode' => 'mcusad."editor"',
+			'label' => 'Address editor',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
+			'public' => false,
 		),
 	);
 
@@ -234,16 +233,17 @@ class Standard
 	/**
 	 * Removes old entries from the storage.
 	 *
-	 * @param array $siteids List of IDs for sites whose entries should be deleted
+	 * @param string[] $siteids List of IDs for sites whose entries should be deleted
+	 * @return \Aimeos\MShop\Customer\Manager\Address\Iface Manager object for chaining method calls
 	 */
-	public function cleanup( array $siteids )
+	public function clear( array $siteids )
 	{
 		$path = 'mshop/customer/manager/address/submanagers';
-		foreach( $this->getContext()->getConfig()->get( $path, array() ) as $domain ) {
-			$this->getSubManager( $domain )->cleanup( $siteids );
+		foreach( $this->getContext()->getConfig()->get( $path, [] ) as $domain ) {
+			$this->getObject()->getSubManager( $domain )->clear( $siteids );
 		}
 
-		$this->cleanupBase( $siteids, 'mshop/customer/manager/address/standard/delete' );
+		return $this->clearBase( $siteids, 'mshop/customer/manager/address/standard/delete' );
 	}
 
 
@@ -251,13 +251,13 @@ class Standard
 	 * Returns the available manager types
 	 *
 	 * @param boolean $withsub Return also the resource type of sub-managers if true
-	 * @return array Type of the manager and submanagers, subtypes are separated by slashes
+	 * @return string[] Type of the manager and submanagers, subtypes are separated by slashes
 	 */
 	public function getResourceType( $withsub = true )
 	{
 		$path = 'mshop/customer/manager/address/submanagers';
 
-		return $this->getResourceTypeBase( 'customer/address', $path, array(), $withsub );
+		return $this->getResourceTypeBase( 'customer/address', $path, [], $withsub );
 	}
 
 
@@ -265,7 +265,7 @@ class Standard
 	 * Returns the list attributes that can be used for searching.
 	 *
 	 * @param boolean $withsub Return also attributes of sub-managers if true
-	 * @return array List of attribute items implementing \Aimeos\MW\Criteria\Attribute\Iface
+	 * @return \Aimeos\MW\Criteria\Attribute\Iface[] List of search attribute items
 	 */
 	public function getSearchAttributes( $withsub = true )
 	{
@@ -288,7 +288,7 @@ class Standard
 		 */
 		$path = 'mshop/customer/manager/address/submanagers';
 
-		return $this->getSearchAttributesBase( $this->searchConfig, $path, array(), $withsub );
+		return $this->getSearchAttributesBase( $this->searchConfig, $path, [], $withsub );
 	}
 
 
@@ -375,7 +375,8 @@ class Standard
 		 *  mshop/customer/manager/address/decorators/global = array( 'decorator1' )
 		 *
 		 * This would add the decorator named "decorator1" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the customer controller.
+		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator1" only to the customer
+		 * address manager.
 		 *
 		 * @param array Address of decorator names
 		 * @since 2014.03
@@ -394,13 +395,14 @@ class Standard
 		 * modify what is returned to the caller.
 		 *
 		 * This option allows you to wrap local decorators
-		 * ("\Aimeos\MShop\Common\Manager\Decorator\*") around the customer address manager.
+		 * ("\Aimeos\MShop\Customer\Manager\Address\Decorator\*") around the customer
+		 * address manager.
 		 *
 		 *  mshop/customer/manager/address/decorators/local = array( 'decorator2' )
 		 *
 		 * This would add the decorator named "decorator2" defined by
-		 * "\Aimeos\MShop\Common\Manager\Decorator\Decorator2" only to the customer
-		 * controller.
+		 * "\Aimeos\MShop\Customer\Manager\Address\Decorator\Decorator2" only to the
+		 * customer address manager.
 		 *
 		 * @param array Address of decorator names
 		 * @since 2014.03
@@ -420,7 +422,7 @@ class Standard
 	 * @param array $values List of attributes for address item
 	 * @return \Aimeos\MShop\Customer\Item\Address\Iface New address item
 	 */
-	protected function createItemBase( array $values = array( ) )
+	protected function createItemBase( array $values = [] )
 	{
 		return new \Aimeos\MShop\Customer\Item\Address\Standard( $this->getPrefix(), $values );
 	}

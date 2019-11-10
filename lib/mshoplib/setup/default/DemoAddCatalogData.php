@@ -3,7 +3,7 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2014
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
@@ -55,12 +55,12 @@ class DemoAddCatalogData extends \Aimeos\MW\Setup\Task\MShopAddDataAbstract
 
 
 		$item = null;
-		$manager = \Aimeos\MShop\Factory::createManager( $context, 'catalog' );
+		$manager = \Aimeos\MShop::create( $context, 'catalog' );
 
 		try
 		{
 			// Don't delete the catalog node because users are likely use it for production
-			$item = $manager->getTree( null, array(), \Aimeos\MW\Tree\Manager\Base::LEVEL_ONE );
+			$item = $manager->getTree( null, [], \Aimeos\MW\Tree\Manager\Base::LEVEL_ONE );
 
 			$this->removeItems( $item->getId(), 'catalog/lists', 'catalog', 'media' );
 			$this->removeItems( $item->getId(), 'catalog/lists', 'catalog', 'text' );

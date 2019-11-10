@@ -3,14 +3,14 @@
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Metaways Infosystems GmbH, 2011
- * @copyright Aimeos (aimeos.org), 2015-2016
+ * @copyright Aimeos (aimeos.org), 2015-2018
  */
 
 
 namespace Aimeos\MAdmin\Log\Manager;
 
 
-class StandardTest extends \PHPUnit_Framework_TestCase
+class StandardTest extends \PHPUnit\Framework\TestCase
 {
 	private $object;
 
@@ -27,15 +27,21 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	}
 
 
-	public function testCleanup()
+	public function testClear()
 	{
-		$this->object->cleanup( array( -1 ) );
+		$this->assertInstanceOf( \Aimeos\MAdmin\Log\Manager\Iface::class, $this->object->clear( [-1] ) );
 	}
 
 
 	public function testCreateItem()
 	{
-		$this->assertInstanceOf( '\\Aimeos\\MAdmin\\Log\\Item\\Iface', $this->object->createItem() );
+		$this->assertInstanceOf( \Aimeos\MAdmin\Log\Item\Iface::class, $this->object->createItem() );
+	}
+
+
+	public function testDeleteItems()
+	{
+		$this->assertInstanceOf( \Aimeos\MAdmin\Log\Manager\Iface::class, $this->object->deleteItems( [-1] ) );
 	}
 
 
@@ -50,14 +56,14 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	public function testGetSearchAttributes()
 	{
 		foreach( $this->object->getSearchAttributes() as $attr ) {
-			$this->assertInstanceOf( '\\Aimeos\\MW\\Criteria\\Attribute\\Iface', $attr );
+			$this->assertInstanceOf( \Aimeos\MW\Criteria\Attribute\Iface::class, $attr );
 		}
 	}
 
 
 	public function testGetSubManager()
 	{
-		$this->setExpectedException( '\\Aimeos\\MAdmin\\Exception' );
+		$this->setExpectedException( \Aimeos\MAdmin\Exception::class );
 		$this->object->getSubManager( 'unknown' );
 	}
 
@@ -66,7 +72,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 	{
 		$search = $this->object->createSearch();
 
-		$expr = array();
+		$expr = [];
 		$expr[] = $search->compare( '!=', 'log.id', null );
 		$expr[] = $search->compare( '!=', 'log.siteid', null );
 		$expr[] = $search->compare( '==', 'log.facility', 'unittest facility' );
@@ -77,7 +83,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 		$total = 0;
 		$search->setConditions( $search->combine( '&&', $expr ) );
-		$results = $this->object->searchItems( $search, array(), $total );
+		$results = $this->object->searchItems( $search, [], $total );
 
 		$this->assertEquals( 1, count( $results ) );
 		$this->assertEquals( 1, $total );
@@ -90,7 +96,7 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 
 	public function testGetItem()
 	{
-		$criteria = $this->object->createSearch();
+		$criteria = $this->object->createSearch()->setSlice( 0, 1 );
 		$criteria->setConditions( $criteria->compare( '==', 'log.priority', 1 ) );
 		$result = $this->object->searchItems( $criteria );
 
@@ -107,13 +113,13 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$item = $this->object->createItem();
 		$item->setMessage( 'unit test message' );
 		$item->setRequest( 'unit test rqst' );
-		$this->object->saveItem( $item );
+		$resultSaved = $this->object->saveItem( $item );
 
 		$itemSaved = $this->object->getItem( $item->getId() );
 
 		$itemExp = clone $itemSaved;
 		$itemExp->setRequest( 'unit test request' );
-		$this->object->saveItem( $itemExp );
+		$resultUpd = $this->object->saveItem( $itemExp );
 		$itemUpd = $this->object->getItem( $item->getId() );
 
 		$this->object->deleteItem( $item->getId() );
@@ -134,14 +140,17 @@ class StandardTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( $itemExp->getRequest(), $itemUpd->getRequest() );
 		$this->assertEquals( $itemExp->getPriority(), $itemUpd->getPriority() );
 
-		$this->setExpectedException( '\\Aimeos\\MAdmin\\Log\\Exception' );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultSaved );
+		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultUpd );
+
+		$this->setExpectedException( \Aimeos\MAdmin\Log\Exception::class );
 		$this->object->getItem( $item->getId() );
 	}
 
 
 	public function testLog()
 	{
-		$mock = $this->getMockBuilder( '\Aimeos\MAdmin\Log\Manager\Standard' )
+		$mock = $this->getMockBuilder( \Aimeos\MAdmin\Log\Manager\Standard::class )
 			->setConstructorArgs( array( \TestHelperMShop::getContext() ) )
 			->setMethods( array( 'saveItem' ) )
 			->getMock();
