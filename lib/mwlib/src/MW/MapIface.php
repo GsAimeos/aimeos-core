@@ -39,7 +39,23 @@ interface MapIface extends \ArrayAccess, \Countable, \IteratorAggregate
 	 *
 	 * @return MapIface Same map for fluid interface
 	 */
-	public function clear();
+	public function clear() : MapIface;
+
+	/**
+	 * Return the values of a single column/property from an array of arrays or list of items.
+	 *
+	 * Example:
+	 *  Map::from( [['id' => 'i1', 'val' => 'v1'], ['id' => 'i2', 'val' => 'v2']] )->col( 'val', 'id' );
+	 * Returns:
+	 *  ['i1' => 'v1', 'i2' => 'v2']
+	 *
+	 * If $indexcol is omitted, the result will be indexed from 0-n.
+	 *
+	 * @param string $valuecol Name of the value property
+	 * @param string|null $indexcol Name of the index property
+	 * @return MapIface New instance with mapped entries
+	 */
+	public function col( string $valuecol, $indexcol = null ) : MapIface;
 
 	/**
 	 * Push all of the given items onto the map.
@@ -64,26 +80,28 @@ interface MapIface extends \ArrayAccess, \Countable, \IteratorAggregate
 	public function count() : int;
 
 	/**
-	 * Get the items in the map whose keys are not present in the given items.
+	 * Returns the keys/values in the map whose values are not present in the given items.
 	 *
 	 * @param iterable $items List of items
-	 * @param  callable|null $callback Function with (keyA, keyB) parameters and returns -1 (<), 0 (=) and 1 (>)
+	 * @param  callable|null $callback Function with (valueA, valueB) parameters and returns -1 (<), 0 (=) and 1 (>)
 	 * @return MapIface New map
 	 */
 	public function diff( iterable $items, callable $callback = null ) : MapIface;
 
 	/**
-	 * Get the items in the collection whose keys and values are not present in the given items.
+	 * Returns the keys/values in the map whose keys and values are not present in the given items.
 	 *
 	 * @param iterable $items List of items
+	 * @param  callable|null $callback Function with (valueA, valueB) parameters and returns -1 (<), 0 (=) and 1 (>)
 	 * @return MapIface New map
 	 */
 	public function diffAssoc( iterable $items, callable $callback = null ) : MapIface;
 
 	/**
-	 * Get the items in the collection whose keys are not present in the given items.
+	 * Returns the keys/values in the map whose keys are not present in the given items.
 	 *
 	 * @param iterable $items List of items
+	 * @param  callable|null $callback Function with (keyA, keyB) parameters and returns -1 (<), 0 (=) and 1 (>)
 	 * @return MapIface New map
 	 */
 	public function diffKeys( iterable $items, callable $callback = null ) : MapIface;
@@ -95,6 +113,18 @@ interface MapIface extends \ArrayAccess, \Countable, \IteratorAggregate
 	 * @return MapIface Same map for fluid interface
 	 */
 	public function each( callable $callback ) : MapIface;
+
+	/**
+	 * Tests if the passed items are equal to the items in the map.
+	 *
+	 * Items are compared by their string values:
+	 * (string) $item1 === (string) $item2
+	 *
+	 * @param iterable $items List of items to test against
+	 * @param bool $assoc True to compare keys too, false to compare only values
+	 * @return bool True if both are equal, false if not
+	 */
+	public function equals( iterable $items, $assoc = false ) : bool;
 
 	/**
 	 * Run a filter over each of the items.
@@ -302,7 +332,7 @@ interface MapIface extends \ArrayAccess, \Countable, \IteratorAggregate
 	 *
 	 * @param mixed $value Item to search for
 	 * @param bool $strict True if type of the item should be checked too
-	 * @return mixed Value from map or null if not found
+	 * @return mixed|null Value from map or null if not found
 	 */
 	public function search( $value, $strict = true );
 
@@ -318,7 +348,7 @@ interface MapIface extends \ArrayAccess, \Countable, \IteratorAggregate
 	/**
 	 * Get and remove the first item from the map.
 	 *
-	 * @return mixed Value from map or null if not found
+	 * @return mixed|null Value from map or null if not found
 	 */
 	public function shift();
 

@@ -100,10 +100,25 @@ class Map implements MapIface
 	 *
 	 * @return MapIface Same map for fluid interface
 	 */
-	public function clear()
+	public function clear() : MapIface
 	{
 		$this->items = [];
 		return $this;
+	}
+
+
+	/**
+	 * Return the values of a single column/property from an array of arrays or list of items.
+	 *
+	 * @inheritDoc
+	 *
+	 * @param string $valuecol Name of the value property
+	 * @param string|null $indexcol Name of the index property
+	 * @return MapIface New instance with mapped entries
+	 */
+	public function col( string $valuecol, $indexcol = null ) : MapIface
+	{
+		return new static( array_column( $this->items, $valuecol, $indexcol ) );
 	}
 
 
@@ -146,10 +161,10 @@ class Map implements MapIface
 
 
 	/**
-	 * Get the items in the map whose keys are not present in the given items.
+	 * Returns the keys/values in the map whose values are not present in the given items.
 	 *
 	 * @param iterable $items List of items
-	 * @param  callable|null $callback Function with (keyA, keyB) parameters and returns -1 (<), 0 (=) and 1 (>)
+	 * @param  callable|null $callback Function with (valueA, valueB) parameters and returns -1 (<), 0 (=) and 1 (>)
 	 * @return MapIface New map
 	 */
 	public function diff( iterable $items, callable $callback = null ) : MapIface
@@ -163,9 +178,10 @@ class Map implements MapIface
 
 
 	/**
-	 * Get the items in the collection whose keys and values are not present in the given items.
+	 * Returns the keys/values in the map whose keys and values are not present in the given items.
 	 *
 	 * @param iterable $items List of items
+	 * @param  callable|null $callback Function with (valueA, valueB) parameters and returns -1 (<), 0 (=) and 1 (>)
 	 * @return MapIface New map
 	 */
 	public function diffAssoc( iterable $items, callable $callback = null ) : MapIface
@@ -179,9 +195,10 @@ class Map implements MapIface
 
 
 	/**
-	 * Get the items in the collection whose keys are not present in the given items.
+	 * Returns the keys/values in the map whose keys are not present in the given items.
 	 *
 	 * @param iterable $items List of items
+	 * @param  callable|null $callback Function with (keyA, keyB) parameters and returns -1 (<), 0 (=) and 1 (>)
 	 * @return MapIface New map
 	 */
 	public function diffKeys( iterable $items, callable $callback = null ) : MapIface
@@ -210,6 +227,27 @@ class Map implements MapIface
 		}
 
 		return $this;
+	}
+
+
+	/**
+	 * Tests if the passed items are equal to the items in the map.
+	 *
+	 * @inheritDoc
+	 *
+	 * @param iterable $items List of items to test against
+	 * @param bool $assoc True to compare keys too, false to compare only values
+	 * @return bool True if both are equal, false if not
+	 */
+	public function equals( iterable $items, $assoc = false ) : bool
+	{
+		$items = $this->getArray( $items );
+
+		if( $assoc ) {
+			return array_diff_assoc( $this->items, $items ) === [] && array_diff_assoc( $items, $this->items ) === [];
+		}
+
+		return array_diff( $this->items, $items ) === [] && array_diff( $items, $this->items ) === [];
 	}
 
 
@@ -594,13 +632,15 @@ class Map implements MapIface
 	 *
 	 * @param mixed $value Item to search for
 	 * @param bool $strict True if type of the item should be checked too
-	 * @return mixed Value from map or null if not found
+	 * @return mixed|null Value from map or null if not found
 	 */
 	public function search( $value, $strict = true )
 	{
 		if( ( $result = array_search( $value, $this->items, $strict ) ) !== false ) {
 			return $result;
 		}
+
+		return null;
 	}
 
 
@@ -621,7 +661,7 @@ class Map implements MapIface
 	/**
 	 * Get and remove the first item from the map.
 	 *
-	 * @return mixed Value from map or null if not found
+	 * @return mixed|null Value from map or null if not found
 	 */
 	public function shift()
 	{
