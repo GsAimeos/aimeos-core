@@ -15,12 +15,12 @@ return array(
 			$table = $schema->createTable( 'mshop_subscription' );
 
 			$table->addColumn( 'id', 'bigint', array( 'autoincrement' => true ) );
-			$table->addColumn( 'siteid', 'integer', array( 'notnull' => false ) );
+			$table->addColumn( 'siteid', 'string', ['length' => 255] );
 			$table->addColumn( 'baseid', 'bigint', [] );
 			$table->addColumn( 'ordprodid', 'bigint', [] );
 			$table->addColumn( 'next', 'date', ['notnull' => false] );
 			$table->addColumn( 'end', 'date', ['notnull' => false] );
-			$table->addColumn( 'productid', 'string', array( 'length' => 36 ) );
+			$table->addColumn( 'productid', 'string', array( 'length' => 36, 'default' => '' ) );
 			$table->addColumn( 'interval', 'string', array( 'length' => 32 ) );
 			$table->addColumn( 'reason', 'smallint', array( 'notnull' => false ) );
 			$table->addColumn( 'period', 'smallint', array( 'default' => 0 ) );

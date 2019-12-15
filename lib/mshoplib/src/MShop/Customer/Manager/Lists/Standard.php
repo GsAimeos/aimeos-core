@@ -34,8 +34,8 @@ class Standard
 			'code' => 'customer.lists.siteid',
 			'internalcode' => 'mcusli."siteid"',
 			'label' => 'List site ID',
-			'type' => 'integer',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'customer.lists.parentid' => array(
@@ -44,6 +44,14 @@ class Standard
 			'label' => 'List parent Id',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
+		),
+		'customer.lists.key' => array(
+			'code' => 'customer.lists.key',
+			'internalcode' => 'mcusli."key"',
+			'label' => 'List key',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'customer.lists.type' => array(

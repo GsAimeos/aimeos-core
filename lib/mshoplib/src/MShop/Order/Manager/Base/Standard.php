@@ -35,8 +35,8 @@ class Standard extends Base
 			'code' => 'order.base.siteid',
 			'internalcode' => 'mordba."siteid"',
 			'label' => 'Order site ID',
-			'type' => 'integer',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'order.base.sitecode' => array(
@@ -667,7 +667,7 @@ class Standard extends Base
 			}
 
 			$stmt->bind( $idx++, $item->getCustomerId() );
-			$stmt->bind( $idx++, $localeItem->getSite()->getCode() );
+			$stmt->bind( $idx++, $localeItem->getSiteItem()->getCode() );
 			$stmt->bind( $idx++, $item->getLocale()->getLanguageId() );
 			$stmt->bind( $idx++, $priceItem->getCurrencyId() );
 			$stmt->bind( $idx++, $priceItem->getValue() );
@@ -974,8 +974,8 @@ class Standard extends Base
 			'price.value' => $row['order.base.price'],
 			'price.costs' => $row['order.base.costs'],
 			'price.rebate' => $row['order.base.rebate'],
-			'price.taxvalue' => $row['order.base.taxvalue'],
 			'price.taxflag' => $row['order.base.taxflag'],
+			'price.taxvalue' => $row['order.base.taxvalue'],
 		] );
 
 		// you may need the site object! take care!

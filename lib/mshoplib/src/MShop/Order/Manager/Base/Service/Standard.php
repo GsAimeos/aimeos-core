@@ -36,8 +36,8 @@ class Standard
 			'code' => 'order.base.service.siteid',
 			'internalcode' => 'mordbase."siteid"',
 			'label' => 'Service site ID',
-			'type' => 'integer',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'order.base.service.baseid' => array(
@@ -910,7 +910,7 @@ class Standard
 						'price.costs' => $row['order.base.service.costs'],
 						'price.rebate' => $row['order.base.service.rebate'],
 						'price.taxflag' => $row['order.base.service.taxflag'],
-						'price.tax' => $row['order.base.service.taxvalue'],
+						'price.taxvalue' => $row['order.base.service.taxvalue'],
 					] );
 
 					$items[(string) $row['order.base.service.id']] = array( 'price' => $price, 'item' => $row );

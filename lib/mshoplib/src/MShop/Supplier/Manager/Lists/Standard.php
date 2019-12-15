@@ -33,8 +33,8 @@ class Standard
 			'code' => 'supplier.lists.siteid',
 			'internalcode' => 'msupli."siteid"',
 			'label' => 'List site ID',
-			'type' => 'integer',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'supplier.lists.parentid' => array(
@@ -43,6 +43,14 @@ class Standard
 			'label' => 'List parent ID',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
+		),
+		'supplier.lists.key' => array(
+			'code' => 'supplier.lists.key',
+			'internalcode' => 'msupli."key"',
+			'label' => 'List key',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'supplier.lists.type' => array(

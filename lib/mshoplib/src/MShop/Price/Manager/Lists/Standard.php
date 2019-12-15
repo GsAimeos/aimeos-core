@@ -34,8 +34,8 @@ class Standard
 			'code' => 'price.lists.siteid',
 			'internalcode' => 'mprili."siteid"',
 			'label' => 'List site ID',
-			'type' => 'integer',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'price.lists.parentid' => array(
@@ -44,6 +44,14 @@ class Standard
 			'label' => 'List price ID',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
+		),
+		'price.lists.key' => array(
+			'code' => 'price.lists.key',
+			'internalcode' => 'mprili."key"',
+			'label' => 'List key',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'price.lists.type' => array(

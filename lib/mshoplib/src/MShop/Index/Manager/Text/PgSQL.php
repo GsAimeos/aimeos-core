@@ -59,7 +59,7 @@ class PgSQL
 				$regex = '/(\&|\||\!|\-|\+|\>|\<|\(|\)|\~|\*|\:|\"|\'|\@|\\| )+/';
 				$search = trim( preg_replace( $regex, ' ', $params[1] ), "' \t\n\r\0\x0B" );
 
-				$str = implode( ':* & ', explode( ' ', strtolower( $search ) ) );
+				$str = implode( ':* & ', explode( ' ', mb_strtolower( $search ) ) );
 				$params[1] = '\'' . $str . ':*\'';
 			}
 
@@ -67,7 +67,8 @@ class PgSQL
 		};
 
 		$name = 'index.text:relevance';
-		$expr = $this->toExpression( 'mindte."siteid"', $this->getSiteIds( $level ) );
+		$siteIds = $this->getSiteIds( $level );
+		$expr = $siteIds ? $this->toExpression( 'mindte."siteid"', $siteIds ) : '1=1';
 		$this->searchConfig[$name]['internalcode'] = str_replace( ':site', $expr, $this->searchConfig[$name]['internalcode'] );
 		$this->searchConfig['index.text:relevance']['function'] = $func;
 	}

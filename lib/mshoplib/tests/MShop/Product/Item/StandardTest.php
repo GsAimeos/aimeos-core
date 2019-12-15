@@ -63,6 +63,20 @@ class StandardTest extends \PHPUnit\Framework\TestCase
 	}
 
 
+	public function testDynamicMethods()
+	{
+		\Aimeos\MShop\Product\Item\Standard::method( 'test', function( $name ) {
+			return $this->bdata[$name];
+		} );
+
+		$object = new \Aimeos\MShop\Product\Item\Standard( $this->values );
+		$this->assertEquals( 'TEST', $object->test( 'product.code' ) );
+
+		$this->setExpectedException( \BadMethodCallException::class );
+		$object->invalid();
+	}
+
+
 	public function testMagicMethods()
 	{
 		$this->assertFalse( isset( $this->object->test ) );
@@ -353,6 +367,27 @@ class StandardTest extends \PHPUnit\Framework\TestCase
 		$this->object->setStatus( 0 );
 		$this->assertFalse( $this->object->isAvailable() );
 		$this->object->setStatus( -1 );
+		$this->assertFalse( $this->object->isAvailable() );
+	}
+
+
+	public function testIsAvailableOnTime()
+	{
+		$this->assertTrue( $this->object->isAvailable() );
+		$this->object->setDateStart( date( 'Y-m-d H:i:s', time() + 600 ) );
+		$this->assertFalse( $this->object->isAvailable() );
+		$this->object->setDateEnd( date( 'Y-m-d H:i:s', time() - 600 ) );
+		$this->assertFalse( $this->object->isAvailable() );
+	}
+
+
+	public function testIsAvailableEvent()
+	{
+		$this->object->setType( 'event' );
+		$this->assertTrue( $this->object->isAvailable() );
+		$this->object->setDateStart( date( 'Y-m-d H:i:s', time() + 600 ) );
+		$this->assertTrue( $this->object->isAvailable() );
+		$this->object->setDateEnd( date( 'Y-m-d H:i:s', time() - 600 ) );
 		$this->assertFalse( $this->object->isAvailable() );
 	}
 

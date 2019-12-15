@@ -39,8 +39,8 @@ class Standard
 			'code' => 'supplier.siteid',
 			'internalcode' => 'msup."siteid"',
 			'label' => 'Site ID',
-			'type' => 'integer',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'supplier.label' => array(
@@ -90,10 +90,8 @@ class Standard
 		),
 		'supplier:has' => array(
 			'code' => 'supplier:has()',
-			'internalcode' => '(
-				SELECT msupli_has."id" FROM mshop_supplier_list AS msupli_has
-				WHERE msup."id" = msupli_has."parentid" AND :site AND :key LIMIT 1
-			)',
+			'internalcode' => ':site :key AND msupli."id"',
+			'internaldeps' => ['LEFT JOIN "mshop_supplier_list" AS msupli ON ( msupli."parentid" = msup."id" )'],
 			'label' => 'Supplier has list item, parameter(<domain>[,<list type>[,<reference ID>)]]',
 			'type' => 'null',
 			'internaltype' => 'null',
@@ -121,13 +119,23 @@ class Standard
 
 		$this->searchConfig['supplier:has']['function'] = function( &$source, array $params ) use ( $self, $siteIds ) {
 
-			foreach( $params as $key => $param ) {
-				$params[$key] = trim( $param, '\'' );
+			array_walk_recursive( $params, function( &$v ) {
+				$v = trim( $v, '\'' );
+			} );
+
+			$keys = [];
+			$params[1] = isset( $params[1] ) ? $params[1] : '';
+			$params[2] = isset( $params[2] ) ? $params[2] : '';
+
+			foreach( (array) $params[1] as $type ) {
+				foreach( (array) $params[2] as $id ) {
+					$keys[] = $params[0] . '|' . ( $type ? $type . '|' : '' ) . $id;
+				}
 			}
 
-			$source = str_replace( ':site', $self->toExpression( 'msupli_has."siteid"', $siteIds ), $source );
-			$str = $self->toExpression( 'msupli_has."key"', join( '|', $params ), isset( $params[2] ) ? '==' : '=~' );
-			$source = str_replace( ':key', $str, $source );
+			$sitestr = $siteIds ? $self->toExpression( 'msupli."siteid"', $siteIds ) . ' AND' : '';
+			$keystr = $self->toExpression( 'msupli."key"', $keys, $params[2] !== '' ? '==' : '=~' );
+			$source = str_replace( [':site', ':key'], [$sitestr, $keystr], $source );
 
 			return $params;
 		};

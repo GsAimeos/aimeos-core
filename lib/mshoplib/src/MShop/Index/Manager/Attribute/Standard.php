@@ -78,15 +78,15 @@ class Standard
 		$siteIds = $this->getSiteIds( $level );
 
 		$this->searchConfig['index.attribute:allof']['function'] = function( $source, array $params ) {
-			return [$params[0], count( explode( ',', $params[0] ) )];
+			return [$params[0], count( $params[0] )];
 		};
 
 		$name = 'index.attribute:allof';
-		$expr = $this->toExpression( 'mindat_allof."siteid"', $siteIds );
+		$expr = $siteIds ? $this->toExpression( 'mindat_allof."siteid"', $siteIds ) : '1=1';
 		$this->searchConfig[$name]['internalcode'] = str_replace( ':site', $expr, $this->searchConfig[$name]['internalcode'] );
 
 		$name = 'index.attribute:oneof';
-		$expr = $this->toExpression( 'mindat_oneof."siteid"', $siteIds );
+		$expr = $siteIds ? $this->toExpression( 'mindat_oneof."siteid"', $siteIds ) : '1=1';
 		$this->searchConfig[$name]['internalcode'] = str_replace( ':site', $expr, $this->searchConfig[$name]['internalcode'] );
 	}
 

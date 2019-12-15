@@ -117,7 +117,7 @@ class Standard extends Base implements Iface
 	 */
 	public function getCode()
 	{
-		return (string) $this->get( 'customer.code', '' );
+		return (string) $this->get( 'customer.code', $this->getPaymentAddress()->getEmail() );
 	}
 
 
@@ -239,8 +239,10 @@ class Standard extends Base implements Iface
 	{
 		$list = $this->getGroups();
 
-		if( array_diff( $ids, $list ) !== [] || array_diff( $list, $ids ) !== [] ) {
+		if( array_diff( $ids, $list ) !== [] || array_diff( $list, $ids ) !== [] )
+		{
 			$this->groups = $ids;
+			$this->setModified();
 		}
 
 		return $this;

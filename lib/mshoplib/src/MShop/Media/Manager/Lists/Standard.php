@@ -34,8 +34,8 @@ class Standard
 			'code' => 'media.lists.siteid',
 			'internalcode' => 'mmedli."siteid"',
 			'label' => 'List site ID',
-			'type' => 'integer',
-			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'media.lists.parentid' => array(
@@ -44,6 +44,14 @@ class Standard
 			'label' => 'List media ID',
 			'type' => 'integer',
 			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_INT,
+			'public' => false,
+		),
+		'media.lists.key' => array(
+			'code' => 'media.lists.key',
+			'internalcode' => 'mmedli."key"',
+			'label' => 'List key',
+			'type' => 'string',
+			'internaltype' => \Aimeos\MW\DB\Statement\Base::PARAM_STR,
 			'public' => false,
 		),
 		'media.lists.type' => array(

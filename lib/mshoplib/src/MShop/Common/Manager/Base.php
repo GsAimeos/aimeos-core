@@ -474,8 +474,30 @@ abstract class Base extends \Aimeos\MW\Common\Manager\Base
 	 */
 	protected function getSiteIds( $sitelevel )
 	{
+		/** mshop/common/manager/sitecheck
+		 * Enables or disables using the site IDs in search queries
+		 *
+		 * For market places, products of different shop owners managing their
+		 * own sites should be shown in the frontend. By default, only the items
+		 * from the current site are displayed. Setting this option to false
+		 * disables the restriction to the current site and shows all products
+		 * from all sites. This does also apply to all other records from
+		 * different domains than "product".
+		 *
+		 * This option is most effective if it's only set for the shop frontend,
+		 * so the shop owners will only see and manager their own products in
+		 * the administration interface.
+		 *
+		 * @param boolean True to resrict items to the current site, false to show item form all sites
+		 * @since 2016.10
+		 * @category Developer
+		 */
+		if( $this->context->getConfig()->get( 'mshop/common/manager/sitecheck', true ) == false ) {
+			return [];
+		}
+
 		$locale = $this->context->getLocale();
-		$siteIds = array( $locale->getSiteId() );
+		$siteIds = [$locale->getSiteId()];
 
 		if( $sitelevel & \Aimeos\MShop\Locale\Manager\Base::SITE_PATH ) {
 			$siteIds = array_merge( $siteIds, $locale->getSitePath() );
@@ -611,7 +633,10 @@ abstract class Base extends \Aimeos\MW\Common\Manager\Base
 		$sep = $this->getKeySeparator();
 		$name = $prefix . $sep . 'id';
 
-		if( isset( $attributes[$name] ) && $attributes[$name] instanceof $iface ) {
+		if( isset( $attributes[$prefix] ) && $attributes[$prefix] instanceof $iface ) {
+			return $attributes[$prefix]->getInternalDeps();
+		}
+		elseif( isset( $attributes[$name] ) && $attributes[$name] instanceof $iface ) {
 			return $attributes[$name]->getInternalDeps();
 		}
 		else if( isset( $attributes['id'] ) && $attributes['id'] instanceof $iface ) {
@@ -709,37 +734,19 @@ abstract class Base extends \Aimeos\MW\Common\Manager\Base
 	 */
 	protected function getSearchSiteConditions( \Aimeos\MW\Criteria\Iface $search, array $keys, array $attributes, array $siteIds )
 	{
-		/** mshop/common/manager/sitecheck
-		 * Enables or disables using the site IDs in search queries
-		 *
-		 * For market places, products of different shop owners managing their
-		 * own sites should be shown in the frontend. By default, only the items
-		 * from the current site are displayed. Setting this option to false
-		 * disables the restriction to the current site and shows all products
-		 * from all sites. This does also apply to all other records from
-		 * different domains than "product".
-		 *
-		 * This option is most effective if it's only set for the shop frontend,
-		 * so the shop owners will only see and manager their own products in
-		 * the administration interface.
-		 *
-		 * @param boolean True to resrict items to the current site, false to show item form all sites
-		 * @since 2016.10
-		 * @category Developer
-		 */
-		if( $this->context->getConfig()->get( 'mshop/common/manager/sitecheck', true ) == false ) {
-			return [];
-		}
-
 		$cond = [];
-		$sep = $this->getKeySeparator();
 
-		foreach( $keys as $key )
+		if( !empty( $siteIds ) )
 		{
-			$name = $key . $sep . 'siteid';
+			$sep = $this->getKeySeparator();
 
-			if( isset( $attributes[$name] ) ) {
-				$cond[] = $search->compare( '==', $name, $siteIds );
+			foreach( $keys as $key )
+			{
+				$name = $key . $sep . 'siteid';
+
+				if( isset( $attributes[$name] ) ) {
+					$cond[] = $search->compare( '==', $name, $siteIds );
+				}
 			}
 		}
 
@@ -827,6 +834,7 @@ abstract class Base extends \Aimeos\MW\Common\Manager\Base
 			}
 		}
 
+		$joins = array_unique( $joins );
 		$cond = $this->getSearchSiteConditions( $search, $keys, $attributes, $siteIds );
 
 		if( $conditions !== null ) {
